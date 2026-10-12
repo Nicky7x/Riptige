@@ -17,7 +17,7 @@ Projeto independente e não oficial de engenharia reversa de **Riptide GP: Reneg
 
 O código-fonte do editor é público, mas os modelos/malhas/assets do jogo são conteúdo comercial. Por isso **nenhum APK, APF ou HTML com dados do jogo será colocado aqui**. O arquivo HTML *pessoal* com as arenas embutidas foi entregue privadamente ao usuário. Você também pode construir sua própria versão local sem fazer upload para site algum.
 
-## Criar uma cópia pessoal no Poco X8 Pro
+## Criar uma cópia pessoal no seu aparelho
 
 No Termux:
 
