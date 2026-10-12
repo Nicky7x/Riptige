@@ -1,4 +1,5 @@
 # Riptide Map Lab — editor de arenas Android (experimental)
+![Imagem do jogo](https://image.api.playstation.com/cdn/EP0786/CUSA04558_00/FREE_CONTENT5XN6qnbzXyLL9Qm4mJ2Q/PREVIEW_SCREENSHOT8_490657.jpg)
 
 Projeto independente e não oficial de engenharia reversa de **Riptide GP: Renegade**. Objetivo: permitir criação de pistas personalizadas no Android, começando pela leitura, visualização e edição de **malhas de colisão** da Vector Engine.
 
