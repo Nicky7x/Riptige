@@ -91,3 +91,14 @@ Abra o HTML diretamente no navegador Android, sem instalar APK ou depender de se
 **Verificações:** o editor com 9 arenas foi aberto em Chromium headless em modo celular; em ambiente sem WebGL o fallback mostrou a malha real; órbita, seleção, alternância de arenas e exportação de mudanças em **951 vértices** foram exercitadas sem erros JS. **Não é teste feito no Poco físico** nem demonstra carregamento da pista no jogo.
 
 **Escopo e limitação:** o visor 3D exibe exclusivamente malhas de colisão originais, não geometria visual/texturizada. Deslocamentos XY têm efeito apenas na cópia binária editada; o APF experimental permanece separado. Adicionar modelos, rampas visuais, água, checkpoints ou IA exige decodificação adicional.
+
+
+## Aplicativo Android nativo (Java + editor 3D integrado) — alfa
+
+Novo projeto em [`android/`](android) com workflow de [build do APK](.github/workflows/build-android.yml). O app oferece **importação única, local e offline** do XAPK original pelo seletor Android, lê `assets/Assets.apf`, valida/decomprime malhas compatíveis (APF v6, zlib e LZMA1), guarda os recursos apenas no armazenamento privado do aparelho, mostra o editor 3D e exporta patches via diálogo do Android. Não inclui os arquivos comerciais do jogo no repositório.
+
+- [Como usar / compilar](README-ANDROID.md)
+- [GitHub Actions: builds e artefatos](../../actions/workflows/build-android.yml)
+- O app usa Java + WebView acelerado para manter a interface 3D já desenvolvida, evitando refazer a renderização em Kotlin puro.
+- **Status de distribuição:** a compilação remota precisa resultar em sucesso para que haja um `app-debug.apk` disponível. A compilação inicial falhou por ação de SDK obsoleta; workflow corrigido para `android-actions/setup-android@v4` e nova compilação iniciada.
+- O que se edita são malhas de colisão, **não** os modelos visuais ou uma arena pronta para executar no Renegade.
