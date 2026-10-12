@@ -68,3 +68,18 @@ Agente / data / issue-PR / hipótese / procedimento / evidência / falhas / test
 - **Teste real de interface em ambiente controlado:** HTML gerado de **9 arenas e 75 malhas** abriu em Chromium headless configurado com tela e toque mobile. No ambiente de teste, WebGL esteve indisponível, portanto **o fallback Canvas foi efetivamente executado**; WebGL teve verificação de sintaxe, mas ainda **não** teste de renderização real em GPU Android. Cena inicial carregou nove malhas CityA sem erros; controles de órbita, focar, ver arena, troca para CityB/retorno, aplicação de deslocamento Z+0,5 em 951 vértices, preservação do estado e download de patch JSON de 286078 bytes foram verificados.
 - **Restrições:** geometria física, não cenário texturizado. Gestos de movimentação de trechos via WebGL/Canvas precisam ser validados no celular real. Não foi criado um APK executável ou uma arena jogável.
 - **Próxima ação:** testar desempenho, legibilidade e gestos no Poco X8 Pro; depois decodificar geometria visual para integrar objetos 3D visíveis.
+
+
+## 2026-10-12 — M1.6: projeto APK Android (ChatGPT)
+
+**Motivo:** o usuário deseja instalar e testar um aplicativo Android, com build automática pelo GitHub Actions, além do editor em HTML.
+
+**Arquivos:** `android/settings.gradle`, `android/build.gradle`, `android/app/build.gradle`, `android/app/src/main/java/com/nicky7x/riptidemaplab/{ApfImporter,MainActivity}.java`, `android/app/src/main/assets/editor_template.html`, `android/app/src/test/.../ApfImporterTest.java`, `README-ANDROID.md`, `.github/workflows/build-android.yml`.
+
+**Abordagem:** Java nativo gerencia SAF (escolha de XAPK e exportação), extração de `base.apk/assets/Assets.apf` em streaming, leitura do índice FPUV v6, descompressão zlib e LZMA1 raw via `org.tukaani:xz`, validação de vértices/triângulos, cache privado por app. O editor original WebGL/Canvas é renderizado numa WebView local. Os scripts no template são incorporados e **nenhum recurso do jogo** foi enviado ao GitHub. Apenas na primeira execução o usuário seleciona seu XAPK original, evitando uploads recorrentes.
+
+**Testes locais executados:** compilação via `javac` do módulo de parser com stubs mínimos de dependências externas, exercício do decodificador zlib com malha sintética e validação de contagem de vértices/triângulos (PASS). HTML sem assets proprietários gerado com único placeholder JSON, renderização numa instância Chromium headless com arena sintética, deslocamento de vértices e exportação de patch (PASS). Isso **não** substitui um teste APK nativo.
+
+**Primeira falha identificada no Actions:** `android-actions/setup-android@v3` tentou instalar pacote removido `tools`, retornando erro antes de compilar. **Correção aplicada:** migrado para `setup-android@v4` com `packages: platform-tools`. Segunda execução disparada para compilar e executar testes JUnit; status de APK depende do resultado.
+
+**Limitações:** APK instalável e compatibilidade no Poco X8 Pro ainda dependem de `assembleDebug` bem-sucedido e teste real. Ainda não existe importação de geometria visual nem suporte a mapas novos dentro do jogo.
