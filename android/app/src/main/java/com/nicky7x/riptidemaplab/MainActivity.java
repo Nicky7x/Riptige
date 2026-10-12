@@ -43,20 +43,21 @@ public final class MainActivity extends Activity {
             getWindow().setDecorFitsSystemWindows(false);
             page.setOnApplyWindowInsetsListener((view,insets)->{
                 android.graphics.Insets bars=insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
-                view.setPadding(bars.left,bars.top,bars.right,bars.bottom);
+                view.setPadding(bars.left,Math.max(bars.top,dp(64)),bars.right,bars.bottom);
                 return insets;
             });
         } else {
             page.setFitsSystemWindows(true);
+            page.setPadding(0,dp(48),0,0);
         }
         LinearLayout toolbar=new LinearLayout(this);
         toolbar.setOrientation(LinearLayout.HORIZONTAL);
         toolbar.setGravity(Gravity.CENTER);
-        toolbar.setPadding(dp(12),dp(14),dp(12),dp(10));
+        toolbar.setPadding(dp(18),dp(22),dp(18),dp(18));
         importButton=new Button(this);importButton.setText("Importar XAPK");importButton.setTextSize(13);
         importButton.setAllCaps(false);
         importButton.setOnClickListener(v->selectXapk());
-        LinearLayout.LayoutParams left=new LinearLayout.LayoutParams(0,dp(52),1f);
+        LinearLayout.LayoutParams left=new LinearLayout.LayoutParams(0,dp(58),1f);
         left.setMargins(dp(4),0,dp(6),0);
         toolbar.addView(importButton,left);
         homeButton=new Button(this);homeButton.setText("Abrir editor");homeButton.setTextSize(13);
