@@ -91,3 +91,16 @@ Agente / data / issue-PR / hipótese / procedimento / evidência / falhas / test
 - **Resultado físico:** APK `app-debug.apk` de 115296 bytes, SHA-256 `03e2f5bd179acf203c31cb22a4b2fc78689ec06d0011d9033db6694bff5e43e9`, contém `classes.dex`, `AndroidManifest.xml`, `assets/editor_template.html` sem arquivos comerciais; biblioteca LZMA/XZ incorporada no dex.
 - **Mudança que resolveu o CI:** `setup-android@v3` instalava pacote SDK `tools` obsoleto e falhava; atualizado para `android-actions/setup-android@v4` com instalação apenas de `platform-tools`. Gradle 8.13/AGP 8.13.2 com Java17 compilou com sucesso.
 - **Testes efetivos:** testes unitários sintéticos JUnit passaram no CI, Android debug APK compilado e artefato publicado. Editor web também passou smoke test sintético em navegador. **Não** houve teste em emulador, teste de instalação no Poco ou teste real de XAPK na camada Java/Android. Esses resultados ficam pendentes.
+
+
+## 2026-10-12 — M1.8: correção de layout e montagem 3D completa (ChatGPT)
+
+**Motivação:** usuário confirmou que o APK v0.1 abre e importa as arenas no Poco X8 Pro, mas os dois botões superiores ficavam cobertos pela área de notificações; as arenas pareciam divididas em trechos isolados.
+
+**Causa encontrada:** no Java, a toolbar não aplicava os insets do sistema no Android 15. No WebGL e no fallback Canvas, `onlySelected=true` mais `scene.focusSelected()` ao abrir a arena ocultavam os demais meshes, apesar de todos já serem importados.
+
+**Alterações realizadas:** `MainActivity.java`: layout horizontal centralizado, botões com pesos iguais, altura 52dp e `WindowInsets` explícitos em API30+; `fitsSystemWindows` anterior. `web/scene3d.js`, `web/scene3d_fallback.js`: começam com `onlySelected=false`, controle `scene3d-show-all`, `getVisibleCount()`, enquadramento sem mudar visibilidade. `web/bundle_loader.js`: após montar recursos chama `focusAll()` e mostra contagem de malhas da arena. `tools/build_private_editor.py` gera tanto HTML pessoal quanto template Android sem recursos proprietários (`--android-template`). Template nativo atualizado, `android/app/build.gradle`: versionCode 2, versionName 0.2.0-alpha.
+
+**Verificações executadas:** 9 testes Python e suíte JS de colisão passaram; novos asserts de composição passaram; HTML pessoal gerado a partir do XAPK privado apresentou 9 arenas e 75 malhas válidas. Playwright/Chromium headless mobile (430×875): CityA com 9 visíveis após abrir, selecionar Zone03 e focar; alternância para uma malha exibe 1; Ver arena restaura 9; CityB com 10; exportação de patch mantida; nenhum erro JS.
+
+**Limitações:** mudança de insets na interface Java ainda depende de execução física no Poco para confirmar o toque no topo. "Montar tudo" é **visualização simultânea das malhas físicas nas coordenadas originais**, não conversão para uma única malha, nem edição dos prédios, água ou IA; as 12 malhas não validadas continuam ausentes. Compilação APK CI será registrada após resultado.
