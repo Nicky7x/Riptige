@@ -20,3 +20,6 @@
 ## Build
 
 Workflow: `.github/workflows/build-android.yml`, roda Gradle `:app:testDebugUnitTest :app:assembleDebug`; artefato `riptide-map-lab-android-debug` contém `app-debug.apk`. APK não contém assets do jogo; importa XAPK original localmente uma única vez.
+## Instalação lado a lado
+
+A v0.1 e a v0.2 foram compiladas em jobs separados no GitHub Actions, cada um com certificado **debug** diferente (comprovado a partir do APK Signing Block v2). Portanto, a v0.2 inclui `applicationIdSuffix '.v02'` no build debug e rótulo `Riptide Map Lab v0.2`, para poder instalar **ao lado** do v0.1 sem apagá-lo. Você terá de selecionar o XAPK local novamente uma vez na v0.2 porque os dados privados não são compartilhados entre aplicativos. **Não desinstale a v0.1 para testar a v0.2.**
