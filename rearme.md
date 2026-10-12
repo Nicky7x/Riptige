@@ -128,3 +128,15 @@ A análise dos blocos APK Signature Scheme v2 dos APKs debug v0.1 e v0.2 mostrou
 **Método:** transformação de cada recurso via `RiptideCore.parse`/`updateVertex`, comparação com base original e atualização de preview e estado persistente; saída de patch continua incluindo nome de recurso individual para não corromper relações APF. Não se juntam bytes binários dos colliders em um único recurso.
 
 **Limites:** juntamos **visualmente** os trechos em uma mesma cena, não modelos texturizados, e ainda não há prova de que mudanças carregam no jogo. Validação final requer teste no Poco. O novo APK depende do sucesso de GitHub Actions.
+
+
+## 2026-10-12 — M1.8: interpretação e prévia dos modelos 3D visuais (ChatGPT)
+
+- **Pedido:** foco no desenvolvimento de recursos visuais; separar rigidamente os modos Arena inteira e Trecho individual.
+- **Descoberta:** formato `VuStaticModelAsset/Level` tem três distâncias LOD, lista de materiais UTF-8, grupos de 48 bytes com stream/material/offset/triângulos/AABB, buffers de vértices intercalados e índices u16. As primeiras 12 bytes de cada vértice são XYZ f32. A ordem entre `stream_index` e `material_index` foi verificada cruzando a soma das contagens de índices de modelo grande.
+- **Método:** parser Python read-only `tools/visual_models.py` com limite de recursos e comparação com dados reais, seguido de porta Java `ApfImporter.makeVisualPreview()`. São criados buffers sintéticos de prévia em formato compatível com o renderizador, sem reutilizar esses bytes para alterar o jogo.
+- **Evidência:** 223 de 248 modelos sob `VuStaticModelAsset/Level/` passaram validação Python, 25 rejeitados por variantes não decodificadas ou tamanho divergente; `CityA/Zone01` contém quatro streams de vértices com strides distintos (32/28/24/28). O jogo original não foi alterado.
+- **Integração Android:** importador local cria catálogo `__visuals` com modelos visuais embutidos no armazenamento privado; `web/bundle_loader.js` separa camadas visuais/físicas e vista arena/trecho. O modo visual é **somente leitura sem texturas**, enquanto modo colisão mantém as edições. A exportação de patch continua exclusiva das colisões.
+- **Testes efetuados:** 12 testes Python, incluindo três sintéticos para modelos visuais; Chromium renderizou 20 modelos visuais de CityA na arena toda, quatro associados a um trecho, e comutou para colisões sem erros de JavaScript. Smoke inicial com um modelo CityA também passou.
+- **Bugs CI observados e corrigidos:** inclusão do JSON `__visuals` exigia tratamento de `JSONException`, além de corrigir quebra de linha literal inserida no primeiro patch; execução final do Actions é a fonte de validação de build.
+- **Limites:** não decodifica texturas/materiais instanciados, nem transforma os modelos visuais em recursos modificados carregáveis no jogo. Falta validação no Poco X8 Pro para importar os novos modelos e fluidez da cena.
