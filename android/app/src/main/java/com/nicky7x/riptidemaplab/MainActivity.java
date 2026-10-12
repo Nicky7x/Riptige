@@ -73,10 +73,39 @@ public final class MainActivity extends Activity {
         settings.setJavaScriptEnabled(true);settings.setDomStorageEnabled(true);
         settings.setAllowFileAccess(false);settings.setAllowContentAccess(false);
         settings.setAllowFileAccessFromFileURLs(false);settings.setAllowUniversalAccessFromFileURLs(false);
-        settings.setBlockNetworkLoads(true);
+        settings.setBlockNetworkLoads(false); // All network requests are intercepted and denied, except local JSON.
         web.setBackgroundColor(Color.rgb(11,18,32));
         web.addJavascriptInterface(new Bridge(),"AndroidBridge");
+        web.setWebChromeClient(new WebChromeClient(){
+            @Override public boolean onConsoleMessage(ConsoleMessage message){
+                if(message.messageLevel()==ConsoleMessage.MessageLevel.ERROR)
+                    onUi(()->setStatus("Erro 3D: "+message.message()));
+                return true;
+            }
+        });
         web.setWebViewClient(new WebViewClient(){
+            @Override public WebResourceResponse shouldInterceptRequest(WebView view,WebResourceRequest request){
+                Uri u=request.getUrl();
+                if("https".equals(u.getScheme())&&"appassets.androidplatform.net".equals(u.getHost())&&
+                    "/arenas_bundle.json".equals(u.getPath())){
+                    try{
+                        File local=new File(getFilesDir(),"arenas_bundle.json");
+                        if(!local.isFile())throw new FileNotFoundException("Arenas não importadas");
+                        WebResourceResponse response=new WebResourceResponse("application/json","UTF-8",
+                            new BufferedInputStream(new FileInputStream(local)));
+                        java.util.Map<String,String> headers=new java.util.HashMap<>();
+                        headers.put("Cache-Control","no-store");
+                        headers.put("Access-Control-Allow-Origin","*");
+                        response.setResponseHeaders(headers);
+                        return response;
+                    }catch(IOException ignored){
+                        return new WebResourceResponse("text/plain","UTF-8",404,"Not Found",
+                            java.util.Collections.emptyMap(),new ByteArrayInputStream(new byte[0]));
+                    }
+                }
+                return new WebResourceResponse("text/plain","UTF-8",403,"Forbidden",
+                    java.util.Collections.emptyMap(),new ByteArrayInputStream(new byte[0]));
+            }
             @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest request){
                 // Our editor contains no external resources. Block all navigations outside itself.
                 return !"https".equals(request.getUrl().getScheme()) ||
