@@ -109,3 +109,14 @@ Novo projeto em [`android/`](android) com workflow de [build do APK](.github/wor
 **GitHub Actions [run #11](https://github.com/Nicky7x/Riptige/actions/runs/38308033274)**: **success** em `:app:testDebugUnitTest :app:assembleDebug`. Artefato `riptide-map-lab-android-debug` (ID 11773641104) gerou `app-debug.apk` de **115.296 bytes** (SHA-256 `03e2f5bd179acf203c31cb22a4b2fc78689ec06d0011d9033db6694bff5e43e9`). Esta é uma build **debug** compilada em runner GitHub, não um APK de publicação na Play Store.
 
 **Importante:** falta teste de instalação, importação real do XAPK e performance WebGL no Poco X8 Pro. O APK NÃO contém arquivos proprietários do jogo. Ao iniciar, selecione sua cópia original do XAPK apenas uma vez, para extrair recursos localmente. Nenhum jogo instalado é modificado.
+
+
+## v0.2.0-alpha — ajustes de usabilidade do Poco (12/10/2026)
+
+- **Botões superiores** Importar XAPK e Abrir editor agora ficam centralizados, com margens e altura adequada para toque, e respeitam explicitamente os *WindowInsets* das barras de status e navegação (inclusive Android 15/targetSdk 35).
+- **Arena inteira montada por padrão:** quando você seleciona uma arena, todas as malhas de colisão reconhecidas aparecem juntas em suas posições originais na cena 3D. Exemplo do XAPK testado: CityA possui 9 malhas compatíveis; CityB possui 10. O número varia entre arenas.
+- **Focar seleção** apenas aproxima a câmera, sem esconder o restante. Marque/desmarque **Arena completa (todas as malhas)** para alternar entre vista completa e uma malha isolada; **Ver arena** volta à vista completa.
+- O editor **não funde nem altera os arquivos binários originais** na visualização. Eles permanecem separados para que cada patch corresponda ao recurso APF correto. Ainda só mostramos geometria de colisão, não os modelos texturizados ou uma arena jogável.
+- [Notas de versão e testes](docs/RELEASE_NOTES_v0.2.md).
+
+Para atualizar, baixe o artefato da build Android v0.2 em [GitHub Actions](../../actions/workflows/build-android.yml) quando ela estiver concluída. Instale **sobre** v0.1 sem desinstalar para manter os dados previamente importados, desde que a assinatura debug seja compatível.
