@@ -61,6 +61,9 @@
       <div class="muted">Malhas de colisão montadas juntas, sem texturas. Arraste para orbitar; toque em um trecho para selecioná-lo. Dois dedos: mover câmera e ampliar.</div></div>
      <div class="screen"><div class="view3d"><canvas id="arena3d" aria-label="Visualização de arena 3D" style="height:min(69vh,670px);min-height:350px;touch-action:none"></canvas>
       <div class="view3d-watermark">COLISÕES · PRÉVIA 3D</div></div>
+      <div class="buttonrow" style="margin-top:10px"><button id="mode-arena" class="primary">▣ Arena inteira</button><button id="mode-section">▤ Trecho individual</button></div>
+      <div class="buttonrow" style="margin-top:8px"><button id="layer-visual">◈ Geometria visual 3D</button><button id="layer-collision" class="primary">◇ Colisões (edição)</button></div>
+      <p id="visual-layer-note" class="muted" style="margin:8px 0">Os modelos visuais estão sem texturas e são somente leitura.</p>
       <div class="buttonrow" style="margin-top:12px;flex-wrap:wrap"><button id="scene3d-orbit" class="primary">✥ Orbitar</button>
        <button id="scene3d-move">↔ Mover trecho</button><button id="scene3d-focus">◎ Focar seleção</button>
        <button id="scene3d-all">▣ Ver arena</button></div>
@@ -530,10 +533,13 @@ setEnabled(false);updateSummary();render();
 (()=>{'use strict';
 const $=s=>document.getElementById(s);
 const bundle=JSON.parse($('private-assets').textContent);
+const visuals=bundle.__visuals||{};delete bundle.__visuals;
 const editor=window.RiptideEditor;
 const arena=$('arena-select'),zone=$('zone-select'),notes=$('bundle-message');
 const cache=new Map(),modified=new Map(),scene=window.RiptideScene3D||null;
 let arenaToken=0;
+let viewMode='arena',layer='collision';
+const visualCache=new Map();
 $('arena-count').textContent=Object.keys(bundle).length;
 $('mesh-count').textContent=Object.values(bundle).reduce((s,v)=>s+Object.keys(v).length,0);
 const key=()=>arena.value+'/'+zone.value;
@@ -553,20 +559,75 @@ async function getOriginal(ar,segment){const key=ar+'/'+segment,asset=bundle[ar]
   const b=await inflate(asset.blob);
   if(b.byteLength!==asset.size)throw Error('Tamanho incorreto '+key);
   cache.set(key,b);return b;}
-async function openSceneArena(){if(!scene)return;
-  const token=++arenaToken,ar=arena.value,records=[];
-  $('scene3d-info').textContent='Montando a arena 3D '+ar+'…';
-  try{for(const segment of Object.keys(bundle[ar]).sort()){
-    const b=await getOriginal(ar,segment);if(token!==arenaToken)return;
-    const res=bundle[ar][segment].source+'.bin';
-    records.push({key:segment,data:modified.get(res)?.bytes||b});
-  }
-  if(token!==arenaToken)return;
-  await scene.loadArena(records);scene.select(zone.value);scene.focusAll();
-  $('arena-summary').textContent='Arena '+ar+': '+records.length+' malhas reunidas na mesma cena 3D. Toque numa delas para editar.';
-  }catch(err){$('scene3d-info').textContent='Falha na prévia 3D: '+err.message;}
+async function getVisual(ar,name){
+  const id='visual/'+ar+'/'+name,asset=visuals[ar]?.[name];
+  if(!asset)throw new Error('Modelo visual não encontrado');
+  if(visualCache.has(id))return visualCache.get(id);
+  const bytes=await inflate(asset.blob);
+  if(bytes.byteLength!==asset.size)throw new Error('Modelo visual corrompido: '+name);
+  visualCache.set(id,bytes);return bytes;
 }
-function syncScene(){if(!scene)return;const snap=editor.getSnapshot();if(snap&&zone.value)scene.update(zone.value,snap.bytes);}
+function modelForSection(section){
+  const models=Object.keys(visuals[arena.value]||{});
+  const base=section.replace(/_col$/i,'');
+  return models.find(x=>x===base) || models.find(x=>x.startsWith(base+'_')) || models[0] || '';
+}
+function setControls(){
+  $('mode-arena')?.classList.toggle('primary',viewMode==='arena');
+  $('mode-section')?.classList.toggle('primary',viewMode==='segment');
+  $('layer-visual')?.classList.toggle('primary',layer==='visual');
+  $('layer-collision')?.classList.toggle('primary',layer==='collision');
+  if($('layer-visual'))$('layer-visual').disabled=!Object.keys(visuals[arena.value]||{}).length;
+  if($('scene3d-move'))$('scene3d-move').disabled=layer==='visual';
+  if($('scene3d-show-all')){$('scene3d-show-all').checked=true;$('scene3d-show-all').disabled=true;}
+  if($('scene3d-all'))$('scene3d-all').disabled=viewMode==='segment';
+  if($('scene3d-focus'))$('scene3d-focus').disabled=viewMode==='arena';
+  if($('visual-layer-note'))$('visual-layer-note').textContent=layer==='visual'
+    ?'Prévia dos modelos 3D do jogo SEM texturas. Somente leitura; a edição física continua independente.'
+    :'Malhas físicas de colisão (editáveis). Não representam a aparência texturizada final.';
+}
+async function openSceneArena(){
+  if(!scene)return;
+  const token=++arenaToken,ar=arena.value,records=[];
+  setControls();
+  $('scene3d-info').textContent='Carregando '+(layer==='visual'?'geometria visual':'colisões')+' de '+ar+'…';
+  try{
+    if(layer==='visual'){
+      let names=Object.keys(visuals[ar]||{}).sort();
+      if(viewMode==='segment'){
+        const base=zone.value.replace(/_col$/i,'');
+        const subset=names.filter(n=>n===base||n.startsWith(base+'_'));
+        names=subset.length?subset:(modelForSection(zone.value)?[modelForSection(zone.value)]:[]);
+      }
+      for(const name of names){
+        const data=await getVisual(ar,name);if(token!==arenaToken)return;
+        records.push({key:name,data});
+      }
+    }else{
+      let names=Object.keys(bundle[ar]).sort();
+      if(viewMode==='segment')names=names.filter(n=>n===zone.value);
+      for(const section of names){
+        const data=await getOriginal(ar,section);if(token!==arenaToken)return;
+        const source=bundle[ar][section].source+'.bin';
+        records.push({key:section,data:modified.get(source)?.bytes||data});
+      }
+    }
+    if(token!==arenaToken)return;
+    await scene.loadArena(records);
+    if(layer==='collision')scene.select(zone.value);
+    else if(viewMode==='segment')scene.select(modelForSection(zone.value));
+    scene.focusAll();
+    const type=layer==='visual'?'modelos visuais SEM texturas':'trechos de colisão';
+    $('arena-summary').textContent='Arena '+ar+' · '+records.length+' '+type+
+      (viewMode==='arena'?' exibidos juntos.':' · apenas o trecho selecionado.')+
+      (layer==='visual'?' Visualização somente leitura.':'');
+  }catch(err){if(token===arenaToken)$('scene3d-info').textContent='Falha na prévia 3D: '+err.message;}
+}
+$('mode-arena')?.addEventListener('click',()=>{viewMode='arena';openSceneArena();});
+$('mode-section')?.addEventListener('click',()=>{viewMode='segment';openSceneArena();});
+$('layer-visual')?.addEventListener('click',()=>{layer='visual';scene?.setMode('orbit');openSceneArena();});
+$('layer-collision')?.addEventListener('click',()=>{layer='collision';openSceneArena();});
+function syncScene(){if(!scene||layer!=='collision')return;const snap=editor.getSnapshot();if(snap&&zone.value)scene.update(zone.value,snap.bytes);}
 
 let loading=0;
 async function openZone(){const token=++loading;
@@ -583,9 +644,8 @@ async function openZone(){const token=++loading;
     notes.textContent='Trecho '+id+' · '+asset.vertices.toLocaleString('pt-BR')+' vértices. Colisão apenas; não altera visual do jogo.';
   }catch(e){notes.textContent='Falha ao abrir recurso: '+e.message;}
 }
-arena.addEventListener('change',()=>{saveCurrent();populateZones();openZone();openSceneArena();});
-zone.addEventListener('change',()=>{saveCurrent();openZone();});
-
+arena.addEventListener('change',()=>{saveCurrent();populateZones();if(layer==='visual'&&!Object.keys(visuals[arena.value]||{}).length)layer='collision';openZone();openSceneArena();});
+zone.addEventListener('change',()=>{saveCurrent();openZone();if(viewMode==='segment')openSceneArena();});
 async function moveEntireArena(){
   const delta=['bulk-x','bulk-y','bulk-z'].map(id=>Number($(id).value));
   if(delta.some(n=>!Number.isFinite(n)||Math.abs(n)>100000)){notes.textContent='Deslocamento inválido';return;}
@@ -621,6 +681,7 @@ async function moveEntireArena(){
 }
 $('bulk-arena')?.addEventListener('click',moveEntireArena);
 
+
 $('bulk-apply').addEventListener('click',()=>{
  const delta=['bulk-x','bulk-y','bulk-z'].map(id=>Number($(id).value));
  try{editor.moveAll(...delta);saveCurrent();syncScene();}catch(e){notes.textContent=e.message;}
@@ -638,8 +699,8 @@ $('bundle-export').addEventListener('click',()=>{
 ['apply','undo','redo'].forEach(id=>$(id).addEventListener('click',()=>queueMicrotask(()=>{saveCurrent();syncScene();})));
 $('stage').addEventListener('pointerup',()=>queueMicrotask(()=>{saveCurrent();syncScene();}));
 if(scene){scene.on({
-  onSelect(section){if(zone.value===section)return;zone.value=section;zone.dispatchEvent(new Event('change'));},
-  onMove(section,delta){if(zone.value!==section)return;
+  onSelect(section){if(layer==='visual')return;if(zone.value===section)return;zone.value=section;zone.dispatchEvent(new Event('change'));},
+  onMove(section,delta){if(layer==='visual'||zone.value!==section)return;
     try{editor.moveAll(...delta);saveCurrent();syncScene();
       notes.textContent='Trecho '+section+' deslocado em 3D. '+editor.getSnapshot().patch.changes.length+' vértices alterados.';
     }catch(err){notes.textContent='Não foi possível mover: '+err.message;}}
