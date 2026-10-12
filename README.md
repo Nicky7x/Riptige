@@ -102,3 +102,10 @@ Novo projeto em [`android/`](android) com workflow de [build do APK](.github/wor
 - O app usa Java + WebView acelerado para manter a interface 3D já desenvolvida, evitando refazer a renderização em Kotlin puro.
 - **Status de distribuição:** a compilação remota precisa resultar em sucesso para que haja um `app-debug.apk` disponível. A compilação inicial falhou por ação de SDK obsoleta; workflow corrigido para `android-actions/setup-android@v4` e nova compilação iniciada.
 - O que se edita são malhas de colisão, **não** os modelos visuais ou uma arena pronta para executar no Renegade.
+
+
+### Primeira build Android aprovada — 12/10/2026
+
+**GitHub Actions [run #11](https://github.com/Nicky7x/Riptige/actions/runs/38308033274)**: **success** em `:app:testDebugUnitTest :app:assembleDebug`. Artefato `riptide-map-lab-android-debug` (ID 11773641104) gerou `app-debug.apk` de **115.296 bytes** (SHA-256 `03e2f5bd179acf203c31cb22a4b2fc78689ec06d0011d9033db6694bff5e43e9`). Esta é uma build **debug** compilada em runner GitHub, não um APK de publicação na Play Store.
+
+**Importante:** falta teste de instalação, importação real do XAPK e performance WebGL no Poco X8 Pro. O APK NÃO contém arquivos proprietários do jogo. Ao iniciar, selecione sua cópia original do XAPK apenas uma vez, para extrair recursos localmente. Nenhum jogo instalado é modificado.
