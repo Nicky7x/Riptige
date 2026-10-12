@@ -14,7 +14,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    buildTypes { release { minifyEnabled false } }
+    buildTypes { debug { applicationIdSuffix '.v02' } release { minifyEnabled false } }
 }
 
 dependencies { implementation 'org.tukaani:xz:1.10' }

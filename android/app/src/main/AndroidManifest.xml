@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application android:label="Riptide Map Lab" android:allowBackup="false"
+    <application android:label="Riptide Map Lab v0.2" android:allowBackup="false"
       android:supportsRtl="true" android:theme="@android:style/Theme.Material.Light.NoActionBar"
       android:usesCleartextTraffic="false" android:hardwareAccelerated="true">
         <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="unspecified">
