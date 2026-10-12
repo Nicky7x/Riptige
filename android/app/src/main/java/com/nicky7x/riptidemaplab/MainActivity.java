@@ -186,11 +186,9 @@ public final class MainActivity extends Activity {
         worker.execute(()->{
             try{
                 String html=readAsset(HTML_TEMPLATE);
-                String json=readFile(bundle);
                 if(!html.contains("__EMBEDDED_ASSETS__"))throw new IOException("Template incompatível");
-                // Avoid breaking script tag even for malicious archive names.
-                json=json.replace("<","\\u003c").replace("&","\\u0026");
-                html=html.replace("__EMBEDDED_ASSETS__",json);
+                // Keep large arena data on disk. Inject only a tiny marker into the HTML.
+                html=html.replace("__EMBEDDED_ASSETS__","{\\"__external_bundle\\":true}");
                 final String result=html;
                 onUi(()->{setStatus("Editor 3D · arenas locais · sem upload");
                     web.loadDataWithBaseURL("https://appassets.androidplatform.net/",result,"text/html","UTF-8",null);});
@@ -212,6 +210,12 @@ public final class MainActivity extends Activity {
     private void setStatus(String message){status.setText(message);}
     private void onUi(Runnable r){runOnUiThread(r);}
     private final class Bridge {
+        @JavascriptInterface public void reportError(String message){
+            onUi(()->setStatus(message!=null&&message.length()<500?message:"Falha ao iniciar editor"));
+        }
+        @JavascriptInterface public void editorReady(int count){
+            onUi(()->setStatus("Editor 3D pronto · "+count+" arenas locais · sem upload"));
+        }
         @JavascriptInterface public void exportJson(String filename,String contents){
             if(contents==null||contents.length()>12_000_000)return;
             onUi(()->{
