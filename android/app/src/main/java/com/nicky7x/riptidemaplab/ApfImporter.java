@@ -121,7 +121,8 @@ public final class ApfImporter {
         }
         if(meshes==0)throw new IOException("Não encontrei malhas compatíveis nesse XAPK");
         int arenaCount=arenas.length();
-        try { arenas.put("__visuals",visuals); }\n        catch(org.json.JSONException e) { throw new IOException("Catálogo visual inválido",e); }
+        try { arenas.put("__visuals",visuals); }
+        catch(org.json.JSONException e) { throw new IOException("Catálogo visual inválido",e); }
         return new Result(arenas.toString(),arenaCount,meshes,skipped);
     }
 
