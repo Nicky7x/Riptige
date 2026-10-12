@@ -66,3 +66,19 @@ A malha `CityA/Zone01_col` contém **951 vértices** e **1620 triângulos**. For
 4. Só depois, reconstruir uma cópia do APF/APK para teste offline controlado.
 
 Nenhum binário proprietário é publicado. Referência de engenharia reversa de ferramenta para jogos Vector Unit: https://github.com/boyoftime/bbr-apf-studio (compatibilidade com Riptide não comprovada).
+
+
+## Alternativas de abertura (2026-10-12)
+
+### GitHub Pages
+O editor foi copiado para a branch `gh-pages`, na raiz, com `index.html`, scripts JS e `.nojekyll`. Para ativar: [Settings → Pages](https://github.com/Nicky7x/Riptige/settings/pages) → **Deploy from a branch** → branch **gh-pages** → pasta **/(root)** → **Save**. Quando a publicação estiver concluída, o URL esperado é **https://nicky7x.github.io/Riptige/**. O endereço ainda não foi confirmado ativo pelo agente que preparou a branch.
+
+A página é estática: usa `<input type=file>` e processamento JavaScript no dispositivo, sem upload de arquivos à hospedagem.
+
+### Sem hospedagem ou Termux
+Baixe [`web/editor-offline.html`](../web/editor-offline.html) pela interface Raw/Download do GitHub, salve como arquivo `.html` e abra-o no navegador Android a partir do gerenciador de arquivos. O HTML inclui o JavaScript embutido, sem depender de scripts externos ou rede. Dependendo do gerenciador/navegador, a abertura local de HTML pode variar. Este modo ainda não foi testado no Poco do usuário.
+
+**Atenção:** o HTML sozinho não extrai malhas proprietárias do XAPK; para abrir uma malha real, use `tools/export_collision.py` no Termux ou outra ferramenta local compatível. **Não envie** XAPK/APF ou arquivos extraídos ao repositório.
+
+### PairIP
+Na amostra XAPK do usuário, foi localizada `lib/arm64-v8a/libpairipcore.so` dentro de `split_config.arm64_v8a.apk`. O binário indica presença de PairIP, mas não prova que o jogo esteja bloqueando uma modificação específica. O editor externo não altera o aplicativo instalado. Estudar a lógica dos formatos é uma tarefa separada de qualquer verificação de assinatura/integridade.
