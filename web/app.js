@@ -57,8 +57,8 @@ catch(e){log(e.message,true);}
 });
 $('projection').addEventListener('change',e=>{axis=e.target.value.split(',').map(Number);render();});
 $('edges').addEventListener('change',e=>{showEdges=e.target.checked;render();});
-$('undo').addEventListener('click',()=>{const h=history.pop();if(!h)return;core.updateVertex(mesh,h.i,h.before);future.push(h);recalc();render();});
-$('redo').addEventListener('click',()=>{const h=future.pop();if(!h)return;core.updateVertex(mesh,h.i,h.after);history.push(h);recalc();render();});
+$('undo').addEventListener('click',()=>{const h=history.pop();if(!h)return;if(h.bulk){for(const v of h.bulk)core.updateVertex(mesh,v.i,v.before);}else core.updateVertex(mesh,h.i,h.before);future.push(h);recalc();render();});
+$('redo').addEventListener('click',()=>{const h=future.pop();if(!h)return;if(h.bulk){for(const v of h.bulk)core.updateVertex(mesh,v.i,v.after);}else core.updateVertex(mesh,h.i,h.after);history.push(h);recalc();render();});
 function download(blob,name){const a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);}
 $('savebin').addEventListener('click',()=>{if(!mesh)return;download(new Blob([mesh.buffer],{type:'application/octet-stream'}),fileName.replace(/\.bin$/i,'')+'.edited.bin');log('Malha .bin exportada; o restante do arquivo não foi modificado. Compatibilidade in-game NÃO testada.');});
 $('savepatch').addEventListener('click',()=>{if(!mesh)return;const patch={format:'riptide-collision-vertex-patch-v1',source_filename:fileName,
@@ -75,5 +75,29 @@ canvas.addEventListener('pointermove',e=>{if(!dragging||selected<0)return;const[
 const c=mesh.vertices[selected].slice();c[axis[0]]=wx;c[axis[1]]=wy;core.updateVertex(mesh,selected,c);updateUI();render();});
 function finish(){if(!dragging)return;dragging=false;commit(selected,dragFrom,mesh.vertices[selected]);dragFrom=null;render();}
 canvas.addEventListener('pointerup',finish);canvas.addEventListener('pointercancel',finish);window.addEventListener('resize',render);
+window.RiptideEditor={
+ loadBytes(source,name,edited=null){
+   original=core.parse(source.slice(0));mesh=core.parse((edited||source).slice(0));
+   fileName=name;selected=-1;history=[];future=[];recalc();setEnabled(true);updateUI();render();
+   log('Malha embutida carregada: '+name);
+ },
+ getSnapshot(){return !mesh?null:{name:fileName,bytes:mesh.buffer.slice(0),
+   patch:{resource_name:fileName.replace(/\.bin$/i,''),vertex_count:mesh.vertexCount,
+     triangle_count:mesh.triangleCount,
+     changes:edits.map(v=>({index:v.vertex,before:v.before.slice(),after:v.after.slice()}))}};},
+ moveAll(dx,dy,dz){
+   if(!mesh)throw new Error('Selecione um trecho primeiro');
+   const delta=[dx,dy,dz];if(delta.some(v=>!Number.isFinite(v)||Math.abs(v)>1e5))throw new Error('Deslocamento inválido');
+   const bulk=[];
+   for(let i=0;i<mesh.vertexCount;i++){
+     const old=mesh.vertices[i].slice(),next=old.map((v,k)=>v+delta[k]);
+     if(next.every((v,k)=>v===old[k]))continue;
+     const after=core.updateVertex(mesh,i,next);bulk.push({i,before:old,after});
+   }
+   if(bulk.length){history.push({bulk});future=[];recalc();render();}
+   log('Movidos '+bulk.length+' vértices. APF/APK não alterados.');
+   return bulk.length;
+ }
+};
 setEnabled(false);updateUI();render();
 })();
