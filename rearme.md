@@ -140,3 +140,12 @@ A análise dos blocos APK Signature Scheme v2 dos APKs debug v0.1 e v0.2 mostrou
 - **Testes efetuados:** 12 testes Python, incluindo três sintéticos para modelos visuais; Chromium renderizou 20 modelos visuais de CityA na arena toda, quatro associados a um trecho, e comutou para colisões sem erros de JavaScript. Smoke inicial com um modelo CityA também passou.
 - **Bugs CI observados e corrigidos:** inclusão do JSON `__visuals` exigia tratamento de `JSONException`, além de corrigir quebra de linha literal inserida no primeiro patch; execução final do Actions é a fonte de validação de build.
 - **Limites:** não decodifica texturas/materiais instanciados, nem transforma os modelos visuais em recursos modificados carregáveis no jogo. Falta validação no Poco X8 Pro para importar os novos modelos e fluidez da cena.
+
+
+## 2026-10-12 — M1.9: build Android visual v0.3 concluído
+
+- **Build:** [GitHub Actions #38314935003](https://github.com/Nicky7x/Riptige/actions/runs/38314935003) **success**, incluindo testes unitários Android, `assembleDebug` e upload de artefato.
+- **Arquivo confirmado:** `Riptide_Map_Lab_Android_v0.3_visual_debug.apk` (121288 bytes), SHA-256 `c0a5010ac58847847947ab238402a386cda849a1d3b072239bcdc693c35a87f4`. APK contém `classes.dex`, `AndroidManifest.xml` e `assets/editor_template.html`. Nenhum arquivo proprietário do jogo foi incluído.
+- **Testes da interface:** Chromium com dados da própria amostra do usuário alternou entre física (cinco partes testadas) e visual (vinte modelos), exibindo um único trecho físico ou quatro modelos associados ao trecho escolhido, sem exceções JS.
+- **Necessidade de migração:** o cache criado pela versão Android v0.2 não contém `__visuals`; o usuário deve tocar em **Importar XAPK** novamente uma vez após instalar v0.3 para construir o novo catálogo local.
+- **Limites:** APK compilado mas ainda não testado fisicamente em Android; 3D visual sem texturas ou suporte de escrita no APF de modelos.
