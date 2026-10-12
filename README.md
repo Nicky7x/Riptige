@@ -122,3 +122,12 @@ Novo projeto em [`android/`](android) com workflow de [build do APK](.github/wor
 Para atualizar, baixe o artefato da build Android v0.2 em [GitHub Actions](../../actions/workflows/build-android.yml) quando ela estiver concluída. **Não desinstale a v0.1:** a versão debug v0.2 usa identificador próprio para instalar lado a lado. Importe o XAPK novamente uma vez na v0.2.
 
 **Instalação da v0.2 ao lado da v0.1:** os APKs debug do Actions são assinados com certificados diferentes; a versão v0.2 usa temporariamente o identificador `com.nicky7x.riptidemaplab.v02` para instalar como aplicativo separado. Isso evita desinstalar a v0.1 e perder dados. Na v0.2 será necessário importar sua cópia XAPK mais uma vez. O nome exibido será **Riptide Map Lab v0.2**.
+
+
+## Fase visual — v0.3 alfa (12/10/2026)
+
+A leitura de `VuStaticModelAsset/Level` avançou: **223/248 modelos de nível** foram interpretados na análise local do XAPK original e podem gerar malhas sintéticas de visualização (XYZ + triângulos) **sem redistribuir os assets**. Consulte [docs/VISUAL_MODELS.md](docs/VISUAL_MODELS.md).
+
+No aplicativo, após importar novamente o XAPK original, escolha entre **Geometria visual 3D** (somente leitura, sem materiais ou texturas) e **Colisões (edição)**. As duas vistas são separadas. Há dois modos mutuamente exclusivos: **Arena inteira** ou **Trecho individual**. O modo visual não tem escrita/injeção de modelos no jogo. Atenção: arenas importadas em versões anteriores não têm o catálogo visual; **é preciso reimportar o XAPK uma vez** após atualizar.
+
+Tests: 12 Python sintéticos aprovados, interpretação de 223 modelos reais (25 rejeitados com segurança) e Chromium exibindo 20 modelos de `CityA` em vista global e 4 associados ao trecho selecionado sem erros de JavaScript. O build Android e teste no Poco devem ser considerados etapas independentes.
