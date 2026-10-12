@@ -131,3 +131,10 @@ A leitura de `VuStaticModelAsset/Level` avançou: **223/248 modelos de nível** 
 No aplicativo, após importar novamente o XAPK original, escolha entre **Geometria visual 3D** (somente leitura, sem materiais ou texturas) e **Colisões (edição)**. As duas vistas são separadas. Há dois modos mutuamente exclusivos: **Arena inteira** ou **Trecho individual**. O modo visual não tem escrita/injeção de modelos no jogo. Atenção: arenas importadas em versões anteriores não têm o catálogo visual; **é preciso reimportar o XAPK uma vez** após atualizar.
 
 Tests: 12 Python sintéticos aprovados, interpretação de 223 modelos reais (25 rejeitados com segurança) e Chromium exibindo 20 modelos de `CityA` em vista global e 4 associados ao trecho selecionado sem erros de JavaScript. O build Android e teste no Poco devem ser considerados etapas independentes.
+
+
+### APK Android v0.3 — primeira prévia visual 3D
+
+A build foi aprovada no [GitHub Actions](https://github.com/Nicky7x/Riptige/actions/runs/38314935003). A edição das colisões e a nova prévia dos modelos 3D originais ficam em camadas separadas. **É necessário importar novamente o XAPK original** após a atualização, porque o cache antigo não continha modelos visuais. Ver [formato validado](docs/VISUAL_MODELS.md).
+
+O APK é **debug**, não está na Play Store e sua prévia visual não tem texturas nem escreve os modelos no APF. Ainda depende de teste prático em Android para comprovar performance e correta importação visual.
