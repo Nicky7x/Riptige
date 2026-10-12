@@ -117,3 +117,14 @@ A análise dos blocos APK Signature Scheme v2 dos APKs debug v0.1 e v0.2 mostrou
 - **Build final (#14):** [GitHub Actions](https://github.com/Nicky7x/Riptige/actions/runs/38310193000) completou com **success**; executou `:app:testDebugUnitTest :app:assembleDebug`, publicou o artefato `riptide-map-lab-android-debug` (ID 11774182623), APK **116.368 bytes**, SHA-256 `29831fe0cd4f7b0041147e930ad4162b93b60e0111b1176a88c02ed0e4671d4b`.
 - **Compatibilidade de instalação:** pacote debug v0.2 é `com.nicky7x.riptidemaplab.v02`; a v0.1 permanece `com.nicky7x.riptidemaplab`. Podem coexistir e manter dados separados. Reimportação do XAPK apenas na primeira execução do novo pacote.
 - **Ainda não comprovado:** instalação física da v0.2, insets da barra de status no Poco X8 Pro e desempenho da arena inteira com WebGL real. Interface de navegador/fallback foi validada com Playwright e malhas originais privadas; nenhuma arena modificada foi executada no jogo.
+
+
+## 2026-10-12 — Android v0.2: botões acessíveis e arena unificada (ChatGPT)
+
+**Motivação:** teste físico do Poco X8 Pro confirmou importação de arenas, mas botões "Importar XAPK" e "Abrir editor" ficavam encostados na barra de notificações; usuário pediu ver uma arena inteira, não nove malhas isoladas.
+
+**Alterações:** `MainActivity.java` passou a respeitar uma área mínima superior de 64dp (além dos insets reais do sistema no Android 11+) e margem superior adicional no Android antigo, alinhando os controles num toolbar horizontal centralizado com botões mais altos. O template WebView recebeu o comando **Mover arena completa** e explicita que a visão 3D reúne **todas as malhas de colisão de cada arena**. `web/bundle_loader.js` percorre cada malha da arena escolhida, atualiza suas coordenadas preservando arquivos separados e agrega os patches no manifesto JSON. O renderizador `scene3d.js` já possuía `loadArena(records)` para mostrar todas as malhas juntas; esta interface torna essa visão explícita.
+
+**Método:** transformação de cada recurso via `RiptideCore.parse`/`updateVertex`, comparação com base original e atualização de preview e estado persistente; saída de patch continua incluindo nome de recurso individual para não corromper relações APF. Não se juntam bytes binários dos colliders em um único recurso.
+
+**Limites:** juntamos **visualmente** os trechos em uma mesma cena, não modelos texturizados, e ainda não há prova de que mudanças carregam no jogo. Validação final requer teste no Poco. O novo APK depende do sucesso de GitHub Actions.
