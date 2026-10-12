@@ -159,3 +159,11 @@ A análise dos blocos APK Signature Scheme v2 dos APKs debug v0.1 e v0.2 mostrou
 - **Diagnóstico:** adicionados `WebChromeClient.onConsoleMessage` e `AndroidBridge.reportError()` para exibir mensagens de erro na interface Android, em vez de permanecer indefinidamente na mensagem genérica. O frontend captura exceções de inicialização e mostra a causa na página.
 - **Segurança:** arquivos do jogo e catálogo continuam somente no armazenamento do aplicativo; arquivos proprietários não foram publicados nem enviados para servidor remoto. Mantidas restrições de acesso a arquivos e navegação na WebView.
 - **Teste pendente:** conferir compilação no GitHub Actions e validar o carregamento no Poco. Os ~23 recursos ignorados podem corresponder a variantes de modelos não suportadas e não caracterizam falha da importação por si só.
+
+
+### v0.4 — resultado da compilação e teste da interface (continuação M1.10)
+
+- **Build validada:** [GitHub Actions #38319862832](https://github.com/Nicky7x/Riptige/actions/runs/38319862832) compilou `:app:testDebugUnitTest :app:assembleDebug` e publicou o artefato.
+- **APK:** `Riptide_Map_Lab_Android_v0.4_fix_debug.apk`, 123.152 bytes, SHA-256 `2e9556ee1bc23092ec1a9b6ff635367976d889bead058ba817aed77978e4b11d`. HTML embutido na APK tem ~60 KB com marcador `__EMBEDDED_ASSETS__`; o catálogo grande NÃO é mais concatenado na string HTML.
+- **Smoke test independente:** Chromium headless abriu o `editor_template.html` extraído do APK e um catálogo JSON sintético servido por mock de `fetch()`; 1 arena/1 trecho carregaram, cena 3D apareceu e não houve erros JavaScript. **Não** é teste da interceptação nativa do Android nem do XAPK completo.
+- **Problema adicional detectado:** cada `assembleDebug` do GitHub Actions usa um certificado de assinatura Android debug diferente (runners efêmeros). Os certificados v0.3 e v0.4 foram extraídos do APK e têm SHA-256 diferentes. Portanto, **instalação de atualização direta sobre v0.3 provavelmente será recusada**; para v0.4, desinstalar v0.3 e reimportar o XAPK original. Não apagar o XAPK original. Problema de consistência da assinatura deverá ser resolvido futuramente por uma chave de teste estável, preferencialmente configurada como segredo privado no Actions.
