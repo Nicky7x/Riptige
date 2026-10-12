@@ -1,0 +1,20 @@
+# Não distribuir jogo comercial nem arquivos extraídos
+*.xapk
+*.apk
+*.apks
+*.obb
+*.apf
+*.so
+*.aab
+extracted/
+originals/
+private/
+backups/
+*.assetdump
+*.rawasset
+# Saídas locais e caches
+analysis/
+.tmp/
+__pycache__/
+*.pyc
+.venv/
