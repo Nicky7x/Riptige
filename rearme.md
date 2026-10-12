@@ -83,3 +83,11 @@ Agente / data / issue-PR / hipótese / procedimento / evidência / falhas / test
 **Primeira falha identificada no Actions:** `android-actions/setup-android@v3` tentou instalar pacote removido `tools`, retornando erro antes de compilar. **Correção aplicada:** migrado para `setup-android@v4` com `packages: platform-tools`. Segunda execução disparada para compilar e executar testes JUnit; status de APK depende do resultado.
 
 **Limitações:** APK instalável e compatibilidade no Poco X8 Pro ainda dependem de `assembleDebug` bem-sucedido e teste real. Ainda não existe importação de geometria visual nem suporte a mapas novos dentro do jogo.
+
+
+## 2026-10-12 — M1.7: primeira compilação APK concluída (ChatGPT)
+
+- **Evidência:** [Actions run #11](https://github.com/Nicky7x/Riptige/actions/runs/38308033274) terminou com status **success**, incluindo `:app:testDebugUnitTest :app:assembleDebug` e publicação do artefato.
+- **Resultado físico:** APK `app-debug.apk` de 115296 bytes, SHA-256 `03e2f5bd179acf203c31cb22a4b2fc78689ec06d0011d9033db6694bff5e43e9`, contém `classes.dex`, `AndroidManifest.xml`, `assets/editor_template.html` sem arquivos comerciais; biblioteca LZMA/XZ incorporada no dex.
+- **Mudança que resolveu o CI:** `setup-android@v3` instalava pacote SDK `tools` obsoleto e falhava; atualizado para `android-actions/setup-android@v4` com instalação apenas de `platform-tools`. Gradle 8.13/AGP 8.13.2 com Java17 compilou com sucesso.
+- **Testes efetivos:** testes unitários sintéticos JUnit passaram no CI, Android debug APK compilado e artefato publicado. Editor web também passou smoke test sintético em navegador. **Não** houve teste em emulador, teste de instalação no Poco ou teste real de XAPK na camada Java/Android. Esses resultados ficam pendentes.
