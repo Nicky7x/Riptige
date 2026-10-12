@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Needed for WebSettings.setBlockNetworkLoads(false); all URL requests are intercepted locally. -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <application android:label="Riptide Map Lab v0.5" android:allowBackup="false"
+    <application android:label="Riptide Map Lab v0.6" android:allowBackup="false"
       android:supportsRtl="true" android:theme="@android:style/Theme.Material.Light.NoActionBar"
       android:usesCleartextTraffic="false" android:hardwareAccelerated="true">
         <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="unspecified">
