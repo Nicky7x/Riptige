@@ -86,7 +86,12 @@ public final class MainActivity extends Activity {
         web.setWebViewClient(new WebViewClient(){
             @Override public WebResourceResponse shouldInterceptRequest(WebView view,WebResourceRequest request){
                 Uri u=request.getUrl();
-                if("https".equals(u.getScheme())&&"appassets.androidplatform.net".equals(u.getHost())&&
+                // loadDataWithBaseURL() renders the main HTML using an internal data: URI.
+                // Never turn data:/about:/blob: requests into HTTP 403 responses.
+                String scheme=u.getScheme();
+                if("data".equals(scheme)||"about".equals(scheme)||"blob".equals(scheme))
+                    return null;
+                if("https".equals(scheme)&&"appassets.androidplatform.net".equals(u.getHost())&&
                     "/arenas_bundle.json".equals(u.getPath())){
                     try{
                         File local=new File(getFilesDir(),"arenas_bundle.json");
@@ -105,6 +110,20 @@ public final class MainActivity extends Activity {
                 }
                 return new WebResourceResponse("text/plain","UTF-8",403,"Forbidden",
                     java.util.Collections.emptyMap(),new ByteArrayInputStream(new byte[0]));
+            }
+            @Override public void onReceivedError(WebView view,WebResourceRequest req,WebResourceError err){
+                if(req.isForMainFrame()){
+                    String detail=Build.VERSION.SDK_INT>=23?String.valueOf(err.getDescription()):"WebView";
+                    onUi(()->setStatus("Erro ao abrir a tela: "+detail));
+                }
+            }
+            @Override public void onReceivedHttpError(WebView view,WebResourceRequest req,WebResourceResponse response){
+                if(req.isForMainFrame())
+                    onUi(()->setStatus("Falha HTTP na interface: "+response.getStatusCode()));
+            }
+            @Override public boolean onRenderProcessGone(WebView view,RenderProcessGoneDetail detail){
+                onUi(()->setStatus("Renderizador 3D parou. Feche e reabra o aplicativo."));
+                return true;
             }
             @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest request){
                 // Our editor contains no external resources. Block all navigations outside itself.
