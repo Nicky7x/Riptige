@@ -8,14 +8,14 @@ WARNING: integrity fields and runtime loading are not understood. The output
 may NOT load inside Riptide GP: Renegade (including because of PairIP).
 Do not distribute either APF. Never replace an installed game's files.
 
-  python tools/apply_arena_patch.py --source original/Assets.apf \\
+  python tools/apply_arena_patch.py --source original/game.xapk \\
       --patch riptide-arenas-patch.json --out my-test/Assets.modified.apf
 """
 from __future__ import annotations
 import argparse, hashlib, json, lzma, shutil, struct, zlib
 from pathlib import Path
 from inspect_xapk import parse_apf_index, decompress_payload
-from export_collision import decode_mesh_header
+from export_collision import decode_mesh_header, local_apf
 
 MAGIC='riptide-collision-multi-patch-v1'
 PREFIX='VuCollisionMeshAsset/Level/'
@@ -134,4 +134,5 @@ if __name__=='__main__':
     a.add_argument('--patch',type=Path,required=True)
     a.add_argument('--out',type=Path,required=True)
     args=a.parse_args()
-    print(json.dumps(repack(args.source,args.patch,args.out),indent=2,ensure_ascii=False))
+    with local_apf(args.source) as actual_apf:
+        print(json.dumps(repack(actual_apf,args.patch,args.out),indent=2,ensure_ascii=False))
