@@ -47,6 +47,8 @@ def build(source: Path, out: Path) -> dict:
     base=(ROOT/'web/index.html').read_text(encoding='utf-8')
     core=(ROOT/'web/collision_core.js').read_text(encoding='utf-8')
     app=(ROOT/'web/app.js').read_text(encoding='utf-8')
+    scene=(ROOT/'web/scene3d.js').read_text(encoding='utf-8')
+    scene_fallback=(ROOT/'web/scene3d_fallback.js').read_text(encoding='utf-8')
     if 'window.RiptideEditor=' not in app:
         raise RuntimeError('web/app.js lacks RiptideEditor API')
     panel='''<section class="panel section" id="bundled"><h2>01 · Arenas embutidas</h2>
@@ -66,7 +68,23 @@ def build(source: Path, out: Path) -> dict:
     <div><label for="bulk-z">Mover Z</label><input id="bulk-z" type="number" step="0.1" value="1"></div></div>
     <div class="buttonrow" style="margin-top:11px"><button id="bulk-apply" class="primary">Mover malha inteira</button><button id="bundle-export">Exportar alterações de todas as arenas</button></div>
     <p id="bundle-message" class="muted" style="margin-top:10px">Versão pessoal. Arquivos proprietários não devem ser publicados.</p></section>'''
-    base=base.replace('<aside class="sidebar">','<aside class="sidebar">\n'+panel)
+    # New interactive, hardware-accelerated 3D scene. Visible collision geometry only.
+    scene_markup='''<section class="panel scene3d-panel" style="grid-column:1/-1">
+     <div class="panelhead"><h2>02 · Arena 3D interativa <span style="color:var(--accent)">◉</span></h2>
+      <div class="muted">Geometria real de colisão, sem texturas. Arraste para orbitar; toque em um trecho para selecioná-lo. Dois dedos: mover câmera e ampliar.</div></div>
+     <div class="screen"><div class="view3d"><canvas id="arena3d" aria-label="Visualização de arena 3D" style="height:min(69vh,670px);min-height:350px;touch-action:none"></canvas>
+      <div class="view3d-watermark">COLISÕES · PRÉVIA 3D</div></div>
+      <div class="buttonrow" style="margin-top:12px;flex-wrap:wrap"><button id="scene3d-orbit" class="primary">✥ Orbitar</button>
+       <button id="scene3d-move">↔ Mover trecho</button><button id="scene3d-focus">◎ Focar seleção</button>
+       <button id="scene3d-all">▣ Ver arena</button></div>
+      <div class="buttonrow" style="margin-top:8px"><label class="toggle"><input id="scene3d-wire" type="checkbox" checked> Arestas da seleção</label>
+       <label class="toggle"><input id="scene3d-grid" type="checkbox" checked> Grade</label></div>
+      <p id="scene3d-info" class="muted">Inicializando renderização 3D…</p>
+      <div class="note" style="margin-top:10px">A visualização é 3D, mas representa apenas a <b>malha física invisível</b> do jogo. Mover aqui não desloca os prédios ou as texturas no Renegade e não é uma pista jogável.</div>
+     </div></section>
+     <style>.view3d{position:relative}.view3d-watermark{position:absolute;right:12px;top:12px;background:#08131ddd;color:#8fd9ce;border:1px solid #27505a;padding:5px 9px;border-radius:9px;font-size:10px;font-weight:800;letter-spacing:.1em;pointer-events:none}.scene3d-panel canvas{background:#0a1524}.buttonrow button{min-width:100px}</style>'''
+    base=base.replace('<aside class="sidebar">',scene_markup+'\n<aside class="sidebar">\n'+panel)
+    base=base.replace('<section class="panel">', '<section class="panel" style="display:none" id="legacy-2d">',1)
     # no user uploads requested in the personal variant
     base=base.replace('<div class="panel section"><h2>01 · Abrir malha</h2>', '<div class="panel section" style="display:none"><h2>01 · Abrir malha</h2>')
     base=base.replace('Carregue uma malha .bin local','Selecione uma arena no painel')
@@ -75,7 +93,7 @@ def build(source: Path, out: Path) -> dict:
     base=base.replace('Editor experimental de vértices de colisão · 100% local','Arenas já carregadas · editor experimental de colisões · 100% offline')
     base=base.replace('Nenhum arquivo é enviado à internet.', 'Recursos originais estão embutidos SOMENTE nesta cópia pessoal. Não publique esta página.')
     base=base.replace('<script src="collision_core.js"></script><script src="app.js"></script>',
-        '<script>\n'+core+'\n</script><script>\n'+app+'\n</script>\n'+
+        '<script>\n'+core+'\n</script><script>\n'+app+'\n</script><script>\n'+scene_fallback+'\n</script><script>\n'+scene+'\n</script>\n'+
         '<script id="private-assets" type="application/json">'+json.dumps(bundles,separators=(',',':'))+'</script>\n'+
         '<script>\n'+(ROOT/'web/bundle_loader.js').read_text(encoding='utf-8')+'\n</script>')
     # Hide the file import from this personal build; no remote libraries or scripts
