@@ -175,4 +175,10 @@ if(scene){scene.on({
     }catch(err){notes.textContent='Não foi possível mover: '+err.message;}}
  });}
 populateArenas();populateZones();openZone();openSceneArena();
-})();
+})().catch(err=>{
+  const message='Erro ao carregar editor: '+(err&&err.message||String(err));
+  const output=document.getElementById('arena-summary')||document.getElementById('bundle-message');
+  if(output)output.textContent=message;
+  if(window.AndroidBridge&&window.AndroidBridge.reportError)window.AndroidBridge.reportError(message);
+  console.error(message);
+});
