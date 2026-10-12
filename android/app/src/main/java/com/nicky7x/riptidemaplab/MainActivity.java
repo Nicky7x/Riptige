@@ -188,7 +188,7 @@ public final class MainActivity extends Activity {
                 String html=readAsset(HTML_TEMPLATE);
                 if(!html.contains("__EMBEDDED_ASSETS__"))throw new IOException("Template incompatível");
                 // Keep large arena data on disk. Inject only a tiny marker into the HTML.
-                html=html.replace("__EMBEDDED_ASSETS__","{\\"__external_bundle\\":true}");
+                html=html.replace("__EMBEDDED_ASSETS__","{\"__external_bundle\":true}");
                 final String result=html;
                 onUi(()->{setStatus("Editor 3D · arenas locais · sem upload");
                     web.loadDataWithBaseURL("https://appassets.androidplatform.net/",result,"text/html","UTF-8",null);});
