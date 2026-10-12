@@ -108,3 +108,12 @@ Agente / data / issue-PR / hipótese / procedimento / evidência / falhas / test
 ### Ajuste de assinatura no APK v0.2 (ChatGPT)
 
 A análise dos blocos APK Signature Scheme v2 dos APKs debug v0.1 e v0.2 mostrou **certificados diferentes**: v0.1 SHA256 `208e3d76f48279b15612fdd8d4c5a4a96e5817000025c940b869e074f5362b06`; v0.2 anterior SHA256 `07f3b1f728bd4814e43060070be2c032f80b03bed9dd27bd4f1e6cc6dedf8d7d`. Por isso, instalar v0.2 como atualização seria rejeitado por assinatura incompatível. Solução para testes sem perda de dados: adicionar `applicationIdSuffix '.v02'` no `debug` e exibir o rótulo `Riptide Map Lab v0.2`. A versão v0.1 segue instalada. A importação original de XAPK é necessária uma vez na v0.2 porque os dados são privados por package ID. Para builds de produção futuras, configurar uma chave de assinatura persistente e protegida em GitHub Secrets (ainda não realizado).
+
+
+### Resultado final da v0.2 Android — GitHub Actions #14
+
+- **Código efetivamente compilado:** commit `93a479683d4a70e154335a453ffe53c004a1b184` (inclui correção de sintaxe Gradle e aplicativo debug lado a lado), após editor 3D reunido no commit `b5d224d673a4e4f516838b9e5954c6ca7e196695`.
+- **Primeira tentativa de build independente (#13):** falhou na avaliação do Gradle porque `debug { ... } release { ... }` estavam na mesma linha sem separador. Corrigido com blocos distintos em `android/app/build.gradle`.
+- **Build final (#14):** [GitHub Actions](https://github.com/Nicky7x/Riptige/actions/runs/38310193000) completou com **success**; executou `:app:testDebugUnitTest :app:assembleDebug`, publicou o artefato `riptide-map-lab-android-debug` (ID 11774182623), APK **116.368 bytes**, SHA-256 `29831fe0cd4f7b0041147e930ad4162b93b60e0111b1176a88c02ed0e4671d4b`.
+- **Compatibilidade de instalação:** pacote debug v0.2 é `com.nicky7x.riptidemaplab.v02`; a v0.1 permanece `com.nicky7x.riptidemaplab`. Podem coexistir e manter dados separados. Reimportação do XAPK apenas na primeira execução do novo pacote.
+- **Ainda não comprovado:** instalação física da v0.2, insets da barra de status no Poco X8 Pro e desempenho da arena inteira com WebGL real. Interface de navegador/fallback foi validada com Playwright e malhas originais privadas; nenhuma arena modificada foi executada no jogo.
