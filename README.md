@@ -120,3 +120,5 @@ Novo projeto em [`android/`](android) com workflow de [build do APK](.github/wor
 - [Notas de versão e testes](docs/RELEASE_NOTES_v0.2.md).
 
 Para atualizar, baixe o artefato da build Android v0.2 em [GitHub Actions](../../actions/workflows/build-android.yml) quando ela estiver concluída. Instale **sobre** v0.1 sem desinstalar para manter os dados previamente importados, desde que a assinatura debug seja compatível.
+
+**Instalação da v0.2 ao lado da v0.1:** os APKs debug do Actions são assinados com certificados diferentes; a versão v0.2 usa temporariamente o identificador `com.nicky7x.riptidemaplab.v02` para instalar como aplicativo separado. Isso evita desinstalar a v0.1 e perder dados. Na v0.2 será necessário importar sua cópia XAPK mais uma vez. O nome exibido será **Riptide Map Lab v0.2**.
