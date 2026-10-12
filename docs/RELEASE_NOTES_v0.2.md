@@ -4,7 +4,7 @@
 
 1. **Botões clicáveis e centralizados:** a tela nativa Java passou a respeitar os insets reais de status bar/notificações e navegação no Android 11+ (incluindo Android 15/target 35), com `setDecorFitsSystemWindows(false)` + listener de `WindowInsets`. Nas versões anteriores, usa `fitsSystemWindows`. Os botões Importar XAPK e Abrir editor aparecem lado a lado, com larguras iguais, alinhados ao centro e espaço de segurança superior.
 2. **Arena completa montada:** a visualização 3D passa a carregar **todas as malhas de colisão validadas da arena selecionada ao mesmo tempo**, preservando a posição original de cada peça. Por exemplo, CityA = 9 malhas; CityB = 10. Seletor de trecho continua para edição detalhada; Focar seleção ajusta câmera sem esconder o resto. Checkbox "Arena completa (todas as malhas)" permite alternar entre cena inteira e trecho isolado. Botão Ver arena volta à montagem completa.
-3. Versão atualizada para **0.2.0-alpha**, `versionCode=2`. Dados importados previamente continuam no armazenamento privado do app ao atualizar o APK.
+3. Versão atualizada para **0.2.0-alpha**, `versionCode=2`. A build debug v0.2 usa identificador diferente para coexistir com a v0.1; os dados privados não são compartilhados, portanto a importação inicial precisa ser repetida na v0.2.
 
 ## Escopo e limitações
 
