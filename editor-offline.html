@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1220"><title>Riptide Map Lab — editor</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#141f30;--border:#2a3a4f;--txt:#f1f6fc;--sub:#9dafc5;--accent:#5ee0c5;--amber:#ffc785}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.layout{max-width:1340px;margin:auto;padding:18px;display:grid;gap:16px;grid-template-columns:minmax(0,1.8fr) minmax(300px,1fr)}
+header{grid-column:1/-1;display:flex;align-items:flex-start;gap:12px;justify-content:space-between}
+.logo{display:inline-flex;background:#1c4443;color:var(--accent);width:43px;height:43px;align-items:center;justify-content:center;border-radius:12px;font-size:23px}
+h1{margin:0;font-size:25px;letter-spacing:-.6px}h2{margin:0 0 12px;font-size:17px}p{margin:5px 0 0;color:var(--sub)}
+.eyebrow{text-transform:uppercase;letter-spacing:1.8px;color:var(--accent);font-size:10px;font-weight:800}
+.stamp{border:1px solid var(--border);border-radius:99px;padding:7px 12px;font-size:12px;color:var(--sub)}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.panelhead{padding:16px 18px;border-bottom:1px solid var(--border)}.screen{padding:12px}
+canvas{display:block;width:100%;height:min(62vh,590px);background:#0e1727;border-radius:12px;touch-action:none;cursor:crosshair}
+.muted{color:var(--sub);font-size:12px}.note{padding:12px 15px;background:#252b33;border-left:3px solid var(--amber);border-radius:8px;font-size:12px;color:#f1dabb}
+.sidebar{display:flex;flex-direction:column;gap:15px}.section{padding:16px}
+input[type=file]{width:100%;border:1px dashed #3f6271;padding:14px;border-radius:10px;color:var(--sub);background:#0e1928}
+label{display:block;margin-bottom:6px;font-size:12px;color:var(--sub);font-weight:600}
+input[type=number],select{width:100%;padding:11px;border:1px solid var(--border);border-radius:9px;background:#0b1728;color:var(--txt);font:inherit}
+input:focus,select:focus{outline:2px solid #4ec2af;outline-offset:1px}input:disabled,button:disabled{opacity:.4;cursor:not-allowed}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}.positions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.stat{background:#0b1728;padding:10px;border:1px solid var(--border);border-radius:11px}.stat b{display:block;font-size:18px}
+button{font:inherit;cursor:pointer;border:1px solid var(--border);background:#263b50;color:#e2f2fa;padding:11px 13px;border-radius:10px;font-weight:700;min-height:43px}
+button.primary{background:var(--accent);border-color:var(--accent);color:#083129}button:hover:not(:disabled){filter:brightness(1.12)}
+.buttonrow{display:flex;gap:10px;flex-wrap:wrap}.buttonrow button{flex:1}
+.toggle{display:flex;align-items:center;gap:7px;margin:12px 0;color:var(--sub);font-size:13px}.toggle input{accent-color:var(--accent);width:17px;height:17px}
+#filename{overflow-wrap:anywhere;color:var(--txt);font-weight:700}
+#status{padding:12px;background:#102d2b;color:#80efdb;border-radius:10px;font-size:12px;margin:10px 0 0}
+#status[data-error=yes]{background:#3c1d27;color:#ffadc0}
+.footer{grid-column:1/-1;color:var(--sub);font-size:12px;padding-bottom:25px}a{color:var(--accent)}code{color:#ffdcab}
+@media(max-width:850px){.layout{grid-template-columns:1fr;padding:12px;gap:12px}header{align-items:center}h1{font-size:20px}.stamp{display:none}canvas{height:46vh;min-height:280px}}
+</style>
+</head>
+<body>
+<main class="layout">
+<header><div style="display:flex;gap:12px;align-items:center">
+<span class="logo">≋</span><div><div class="eyebrow">Vector Engine • pesquisa independente</div>
+<h1>Riptide Map Lab <span style="color:var(--accent)">α</span></h1><p>Editor experimental de vértices de colisão · 100% local</p></div></div>
+<span class="stamp">SEM ROOT · OFFLINE</span></header>
+<section class="panel"><div class="panelhead"><h2>Visualização geométrica</h2>
+<div class="muted">Toque em um vértice para selecioná-lo. Ative o arraste para movê-lo no plano.</div></div>
+<div class="screen"><canvas id="stage" aria-label="Visualização de malha de colisão"></canvas>
+<div class="controls" style="margin-top:12px"><div><label for="projection">Projeção</label><select id="projection">
+<option value="0,1">X / Y</option><option value="0,2">X / Z</option><option value="1,2">Y / Z</option></select></div>
+<div><label>Opções</label><label class="toggle"><input id="edges" type="checkbox" checked> Desenhar triângulos</label></div></div>
+<label class="toggle"><input type="checkbox" id="drag"> Permitir arrastar pontos com o dedo</label></div></section>
+<aside class="sidebar">
+<div class="panel section"><h2>01 · Abrir malha</h2>
+<label for="file">Escolha um <code>.bin</code> extraído do seu próprio APF</label>
+<input type="file" id="file" accept=".bin,.dat,application/octet-stream">
+<p style="margin-top:9px">Arquivo: <span id="filename">Nenhum arquivo</span></p>
+<div class="stats"><div class="stat"><span class="muted">Vértices</span><b id="vertices">—</b></div>
+<div class="stat"><span class="muted">Triângulos</span><b id="triangles">—</b></div>
+<div class="stat"><span class="muted">Alterados</span><b id="changed">0</b></div></div>
+<p class="muted">Dados adicionais não interpretados: <b id="unknown">—</b></p></div>
+<div class="panel section"><h2>02 · Editar coordenadas</h2>
+<p id="selection">Nenhum vértice selecionado</p>
+<div class="positions" style="margin-top:14px">
+<div><label for="coord-x">X</label><input type="number" step="any" id="coord-x" data-requires disabled></div>
+<div><label for="coord-y">Y</label><input type="number" step="any" id="coord-y" data-requires disabled></div>
+<div><label for="coord-z">Z</label><input type="number" step="any" id="coord-z" data-requires disabled></div></div>
+<div class="buttonrow" style="margin-top:12px">
+<button id="apply" class="primary" data-requires disabled>Aplicar</button>
+<button id="undo" data-requires disabled>↶ Desfazer</button>
+<button id="redo" data-requires disabled>↷ Refazer</button></div></div>
+<div class="panel section"><h2>03 · Exportar alterações</h2>
+<p>Salve uma cópia local da malha editada ou um manifesto JSON com as diferenças.</p>
+<div class="buttonrow" style="margin-top:12px">
+<button id="savebin" class="primary" data-requires disabled>Salvar .bin</button>
+<button id="savepatch" data-requires disabled>Salvar patch.json</button></div>
+<p id="status" role="status">Aguardando arquivo local.</p></div>
+<div class="note"><strong>Limite atual:</strong> edita vértices em arquivos de colisão decodificados, mas não reconstrói o APF/APK. Outras estruturas da física podem depender desses vértices. Não instale uma versão modificada até validarmos o formato completo.</div>
+</aside>
+<div class="footer">Nenhum arquivo é enviado à internet. Projeto não oficial e não afiliado à Vector Unit.
+<a href="https://github.com/Nicky7x/Riptige/blob/main/docs/EDITOR_ANDROID.md">Documentação</a>.</div>
+</main>
+<script>
+/* Riptide Map Lab — parses and patches local collision mesh files only.
+   No proprietary bytes are distributed and no network is used. */
+(function(root) {
+  'use strict';
+  function parse(buffer) {
+    if (!(buffer instanceof ArrayBuffer)) throw new Error('Escolha um arquivo .bin');
+    const view=new DataView(buffer);
+    if (buffer.byteLength<12) throw new Error('Arquivo pequeno demais');
+    const count=view.getUint32(0,true);
+    if (count<1||count>65536) throw new Error('Quantidade de vértices incompatível: '+count);
+    const offset=4+16*count;
+    if(offset+4>buffer.byteLength) throw new Error('Tabela de vértices truncada');
+    const icount=view.getUint32(offset,true), end=offset+4+2*icount;
+    if(icount>4_000_000 || icount%3 || end>buffer.byteLength) throw new Error('Índices triangulares inválidos');
+    const verts=new Array(count),min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];
+    for(let i=0;i<count;i++){
+      const start=4+i*16,v=[];
+      for(let a=0;a<4;a++)v.push(view.getFloat32(start+a*4,true));
+      if(v.some(x=>!Number.isFinite(x)||Math.abs(x)>1e7))throw new Error('Coordenadas inválidas no vértice '+i);
+      if(v[3]!==0)throw new Error('Quarta coordenada diferente de zero, formato desconhecido');
+      verts[i]=v.slice(0,3);
+      for(let a=0;a<3;a++){min[a]=Math.min(min[a],v[a]);max[a]=Math.max(max[a],v[a]);}
+    }
+    const indexOffset=offset+4;
+    for(let i=0;i<icount;i++)
+      if(view.getUint16(indexOffset+2*i,true)>=count)throw new Error('Índice de triângulo inválido em '+i);
+    return {buffer,view,vertices:verts,vertexCount:count,indexCount:icount,triangleCount:icount/3,
+      indexOffset,knownBytes:end,unknownBytes:buffer.byteLength-end,min,max};
+  }
+  function updateVertex(mesh,i,coords){
+    if(!Number.isInteger(i)||i<0||i>=mesh.vertexCount)throw new Error('Índice de vértice inválido');
+    if(!Array.isArray(coords)||coords.length!==3||coords.some(v=>!Number.isFinite(v)||Math.abs(v)>1e7))
+      throw new Error('Coordenadas inválidas');
+    for(let k=0;k<3;k++)mesh.view.setFloat32(4+i*16+4*k,coords[k],true);
+    mesh.vertices[i]=[0,1,2].map(k=>mesh.view.getFloat32(4+i*16+4*k,true));
+    return mesh.vertices[i].slice();
+  }
+  function getIndex(mesh,i){return mesh.view.getUint16(mesh.indexOffset+2*i,true);}
+  function diff(before,after){
+    if(before.vertexCount!==after.vertexCount)throw new Error('Topologias diferentes');
+    return before.vertices.flatMap((v,i)=>v.some((x,k)=>x!==after.vertices[i][k])?
+      [{vertex:i,before:v.slice(),after:after.vertices[i].slice()}]:[]);
+  }
+  const api={parse,updateVertex,getIndex,diff};
+  if(typeof module!=='undefined'&&module.exports)module.exports=api;
+  if(root)root.RiptideCore=api;
+})(typeof window!=='undefined'?window:null);
+
+</script><script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id),core=window.RiptideCore;
+let original=null,mesh=null,selected=-1,fileName='',edits=[],history=[],future=[];
+let axis=[0,1],viewBox=null,dragging=false,dragFrom=null,showEdges=true;
+const names=['X','Y','Z'],canvas=$('stage'),ctx=canvas.getContext('2d');
+const fmt=n=>Number.isFinite(n)?n.toLocaleString('pt-BR',{maximumFractionDigits:2}):'—';
+function log(msg,err=false){$('status').textContent=msg;$('status').dataset.error=err?'yes':'no';}
+function setEnabled(v){document.querySelectorAll('[data-requires]').forEach(el=>el.disabled=!v);}
+function refreshCanvas(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(r.width*d));canvas.height=Math.max(1,Math.round(r.height*d));ctx.setTransform(d,0,0,d,0,0);}
+function limits(){const {width,height}=canvas.getBoundingClientRect();if(!mesh)return{cx:0,cy:0,scale:1,width,height};
+const xs=mesh.vertices.map(v=>v[axis[0]]),ys=mesh.vertices.map(v=>v[axis[1]]);
+const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+return{cx:(x0+x1)/2,cy:(y0+y1)/2,scale:Math.max(.00001,Math.min((width-44)/Math.max(1,x1-x0),(height-44)/Math.max(1,y1-y0))),width,height};}
+function toPixel(v){const {cx,cy,scale,width,height}=viewBox;return[width/2+(v[axis[0]]-cx)*scale,height/2-(v[axis[1]]-cy)*scale];}
+function toWorld(x,y){const {cx,cy,scale,width,height}=viewBox;return[cx+(x-width/2)/scale,cy-(y-height/2)/scale];}
+function render(){
+refreshCanvas();const{width:w,height:h}=canvas.getBoundingClientRect();
+ctx.fillStyle='#0e1727';ctx.fillRect(0,0,w,h);ctx.strokeStyle='#1e2a3b';ctx.lineWidth=1;
+for(let x=0;x<w;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+for(let y=0;y<h;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+if(!mesh){ctx.fillStyle='#8496b3';ctx.textAlign='center';ctx.font='15px system-ui';ctx.fillText('Carregue uma malha .bin local',w/2,h/2-4);ctx.font='12px system-ui';ctx.fillText('Prévia 2D • sem internet',w/2,h/2+22);return;}
+viewBox=limits();const points=mesh.vertices.map(toPixel);
+if(showEdges){ctx.strokeStyle='rgba(81,171,190,.17)';ctx.lineWidth=.75;ctx.beginPath();
+const step=Math.max(1,Math.ceil(mesh.triangleCount/15000));
+for(let t=0;t<mesh.triangleCount;t+=step){
+const a=points[core.getIndex(mesh,t*3)],b=points[core.getIndex(mesh,t*3+1)],c=points[core.getIndex(mesh,t*3+2)];
+ctx.moveTo(...a);ctx.lineTo(...b);ctx.lineTo(...c);ctx.closePath();}ctx.stroke();}
+ctx.fillStyle='#5ddac2';const stride=Math.max(1,Math.ceil(points.length/12000));
+for(let i=0;i<points.length;i+=stride)ctx.fillRect(points[i][0]-1.4,points[i][1]-1.4,2.8,2.8);
+if(selected>=0){const[x,y]=points[selected];ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.strokeStyle='#ffcc80';ctx.lineWidth=2.2;ctx.stroke();
+ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fillStyle='#ffcc80';ctx.fill();}
+ctx.fillStyle='#a6bed0';ctx.textAlign='left';ctx.font='11px system-ui';ctx.fillText(names[axis[0]]+' →',12,h-13);ctx.fillText(names[axis[1]]+' ↑',65,h-13);
+}
+function updateUI(){
+$('filename').textContent=fileName||'Nenhum arquivo';
+$('vertices').textContent=mesh?fmt(mesh.vertexCount):'—';$('triangles').textContent=mesh?fmt(mesh.triangleCount):'—';
+$('unknown').textContent=mesh?fmt(mesh.unknownBytes)+' bytes':'—';$('changed').textContent=edits.length;
+$('selection').textContent=selected<0?'Nenhum vértice selecionado':'Vértice #'+selected;
+const v=selected>=0?mesh.vertices[selected]:[];
+['coord-x','coord-y','coord-z'].forEach((id,i)=>{$(id).disabled=selected<0;$(id).value=v[i]===undefined?'':v[i];});
+$('apply').disabled=selected<0;$('undo').disabled=!history.length;$('redo').disabled=!future.length;
+}
+function recalc(){edits=mesh&&original?core.diff(original,mesh):[];updateUI();}
+function select(i){selected=i;updateUI();render();}
+function commit(i,before,after){if(before.every((n,k)=>n===after[k]))return;history.push({i,before:[...before],after:[...after]});future=[];recalc();}
+$('file').addEventListener('change',async e=>{
+const f=e.target.files?.[0];if(!f)return;
+try{const b=await f.arrayBuffer();original=core.parse(b.slice(0));mesh=core.parse(b.slice(0));fileName=f.name;selected=-1;history=[];future=[];edits=[];setEnabled(true);updateUI();render();log('Malha validada. Selecione um ponto para editar.');}
+catch(err){mesh=null;original=null;fileName='';selected=-1;edits=[];history=[];future=[];setEnabled(false);updateUI();render();log('Arquivo incompatível: '+err.message,true);}
+});
+$('apply').addEventListener('click',()=>{
+if(selected<0)return;try{
+const c=['coord-x','coord-y','coord-z'].map(id=>Number($(id).value)),before=mesh.vertices[selected].slice();
+const after=core.updateVertex(mesh,selected,c);commit(selected,before,after);render();
+log('Vértice alterado localmente; ainda NÃO modifica o jogo.');}
+catch(e){log(e.message,true);}
+});
+$('projection').addEventListener('change',e=>{axis=e.target.value.split(',').map(Number);render();});
+$('edges').addEventListener('change',e=>{showEdges=e.target.checked;render();});
+$('undo').addEventListener('click',()=>{const h=history.pop();if(!h)return;core.updateVertex(mesh,h.i,h.before);future.push(h);recalc();render();});
+$('redo').addEventListener('click',()=>{const h=future.pop();if(!h)return;core.updateVertex(mesh,h.i,h.after);history.push(h);recalc();render();});
+function download(blob,name){const a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);}
+$('savebin').addEventListener('click',()=>{if(!mesh)return;download(new Blob([mesh.buffer],{type:'application/octet-stream'}),fileName.replace(/\.bin$/i,'')+'.edited.bin');log('Malha .bin exportada; o restante do arquivo não foi modificado. Compatibilidade in-game NÃO testada.');});
+$('savepatch').addEventListener('click',()=>{if(!mesh)return;const patch={format:'riptide-collision-vertex-patch-v1',source_filename:fileName,
+vertex_count:mesh.vertexCount,triangle_count:mesh.triangleCount,
+changes:edits.map(v=>({index:v.vertex,before:v.before,after:v.after})),
+caveat:'Experimental; APF/APK não reconstruídos. Estruturas de física adicionais podem precisar de atualização.'};
+download(new Blob([JSON.stringify(patch,null,2)],{type:'application/json'}),fileName.replace(/\.bin$/i,'')+'.patch.json');log('Patch exportado localmente.');});
+function pos(e){const r=canvas.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top];}
+canvas.addEventListener('pointerdown',e=>{if(!mesh)return;const[x,y]=pos(e);const pts=mesh.vertices.map(toPixel);let best=-1,d=Infinity;
+for(let i=0;i<pts.length;i++){const dx=x-pts[i][0],dy=y-pts[i][1],dist=dx*dx+dy*dy;if(dist<d){d=dist;best=i;}}
+if(best>=0&&d<22*22){select(best);if($('drag').checked){dragging=true;dragFrom=mesh.vertices[best].slice();canvas.setPointerCapture(e.pointerId);}}
+else select(-1);});
+canvas.addEventListener('pointermove',e=>{if(!dragging||selected<0)return;const[x,y]=pos(e),[wx,wy]=toWorld(x,y);
+const c=mesh.vertices[selected].slice();c[axis[0]]=wx;c[axis[1]]=wy;core.updateVertex(mesh,selected,c);updateUI();render();});
+function finish(){if(!dragging)return;dragging=false;commit(selected,dragFrom,mesh.vertices[selected]);dragFrom=null;render();}
+canvas.addEventListener('pointerup',finish);canvas.addEventListener('pointercancel',finish);window.addEventListener('resize',render);
+setEnabled(false);updateUI();render();
+})();
+
+</script>
+</body></html>
