@@ -1,6 +1,7 @@
-(()=>{'use strict';
+(async()=>{'use strict';
 const $=s=>document.getElementById(s);
-const bundle=JSON.parse($('private-assets').textContent);
+let bundle=JSON.parse($('private-assets').textContent);
+if(bundle.__external_bundle){const response=await fetch('/arenas_bundle.json');if(!response.ok)throw Error('Falha ao carregar arenas: '+response.status);bundle=await response.json();}
 const visuals=bundle.__visuals||{};delete bundle.__visuals;
 const editor=window.RiptideEditor;
 const arena=$('arena-select'),zone=$('zone-select'),notes=$('bundle-message');
