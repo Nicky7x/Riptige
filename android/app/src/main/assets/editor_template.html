@@ -58,23 +58,25 @@
 </section>
 <section class="panel scene3d-panel" style="grid-column:1/-1">
      <div class="panelhead"><h2>02 · Arena 3D interativa <span style="color:var(--accent)">◉</span></h2>
-      <div class="muted">Geometria real de colisão, sem texturas. Arraste para orbitar; toque em um trecho para selecioná-lo. Dois dedos: mover câmera e ampliar.</div></div>
+      <div class="muted">Malhas de colisão montadas juntas, sem texturas. Arraste para orbitar; toque em um trecho para selecioná-lo. Dois dedos: mover câmera e ampliar.</div></div>
      <div class="screen"><div class="view3d"><canvas id="arena3d" aria-label="Visualização de arena 3D" style="height:min(69vh,670px);min-height:350px;touch-action:none"></canvas>
       <div class="view3d-watermark">COLISÕES · PRÉVIA 3D</div></div>
       <div class="buttonrow" style="margin-top:12px;flex-wrap:wrap"><button id="scene3d-orbit" class="primary">✥ Orbitar</button>
        <button id="scene3d-move">↔ Mover trecho</button><button id="scene3d-focus">◎ Focar seleção</button>
        <button id="scene3d-all">▣ Ver arena</button></div>
       <div class="buttonrow" style="margin-top:8px"><label class="toggle"><input id="scene3d-wire" type="checkbox" checked> Arestas da seleção</label>
-       <label class="toggle"><input id="scene3d-grid" type="checkbox" checked> Grade</label></div>
+       <label class="toggle"><input id="scene3d-grid" type="checkbox" checked> Grade</label>
+       <label class="toggle"><input id="scene3d-show-all" type="checkbox" checked> Arena completa (todas as malhas)</label></div>
       <p id="scene3d-info" class="muted">Inicializando renderização 3D…</p>
       <div class="note" style="margin-top:10px">A visualização é 3D, mas representa apenas a <b>malha física invisível</b> do jogo. Mover aqui não desloca os prédios ou as texturas no Renegade e não é uma pista jogável.</div>
      </div></section>
      <style>.view3d{position:relative}.view3d-watermark{position:absolute;right:12px;top:12px;background:#08131ddd;color:#8fd9ce;border:1px solid #27505a;padding:5px 9px;border-radius:9px;font-size:10px;font-weight:800;letter-spacing:.1em;pointer-events:none}.scene3d-panel canvas{background:#0a1524}.buttonrow button{min-width:100px}</style>
 <aside class="sidebar">
 <section class="panel section" id="bundled"><h2>01 · Arenas embutidas</h2>
-    <p>Os recursos já vêm incluídos neste arquivo pessoal. Escolha a arena e o trecho; nenhuma seleção de arquivos.</p>
+    <p>Os recursos já vêm incluídos neste arquivo pessoal. Escolha a arena: todos os trechos aparecem montados numa única cena 3D. O seletor de malha serve para editar uma parte.</p>
     <label style="margin-top:12px" for="arena-select">Arena</label>
     <select id="arena-select"></select>
+    <p id="arena-summary" class="muted" style="margin:9px 0">Carregando todos os trechos da arena...</p>
     <label style="margin-top:11px" for="zone-select">Trecho / malha de colisão</label>
     <select id="zone-select"></select>
     <div class="stats"><div class="stat"><span class="muted">Arenas</span><b id="arena-count">—</b></div>
@@ -104,7 +106,7 @@
  </div>
  <div class="note"><strong>Limite atual:</strong> edita vértices em arquivos de colisão decodificados, mas não reconstrói o APF/APK. Outras estruturas internas da física podem depender desses vértices. Não instale uma versão modificada até validarmos o formato completo.</div>
 </aside>
-<div class="footer">Os recursos originais ficam somente no armazenamento privado do aplicativo. O editor não contém dados do jogo. Projeto não oficial e não afiliado à Vector Unit. <a href="../README.md">Documentação do projeto</a>.</div>
+<div class="footer">Recursos originais estão embutidos SOMENTE nesta cópia pessoal. Não publique esta página. O editor não contém dados do jogo. Projeto não oficial e não afiliado à Vector Unit. <a href="../README.md">Documentação do projeto</a>.</div>
 </main>
 <script>
 /* Riptide Map Lab — locally parse/patch experimentally decoded collision meshes.
@@ -315,7 +317,7 @@ setEnabled(false);updateSummary();render();
  root.RiptideSceneFallback=function(canvas){
   const $=id=>document.getElementById(id),ctx=canvas.getContext('2d');
   if(!ctx){$('scene3d-info').textContent='Não foi possível iniciar a visualização 3D.';return;}
-  let meshes=[],map=new Map(),selected='',onlySelected=true,callbacks={},mode='orbit',yaw=-.85,elevation=.64,range=1000,target=[0,0,0],bounds=null;
+  let meshes=[],map=new Map(),selected='',onlySelected=false,callbacks={},mode='orbit',yaw=-.85,elevation=.64,range=1000,target=[0,0,0],bounds=null;
   let facesDrawn=[],pending=false,dirty=true,drag=null;const points=new Map();let prevMulti=null;
   const norm=v=>{const l=Math.hypot(...v)||1;return v.map(x=>x/l);}, dot=(a,b)=>a.reduce((v,n,i)=>v+n*b[i],0),cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
   function camera(){const c=Math.cos(elevation);return[target[0]+range*c*Math.cos(yaw),target[1]+range*c*Math.sin(yaw),target[2]+range*Math.sin(elevation)];}
@@ -377,11 +379,12 @@ setEnabled(false);updateSummary();render();
     select(k){selected=k;updateInfo();},
     update(key,bytes){if(!map.has(key))return;const m=make(key,bytes);const i=meshes.indexOf(map.get(key));meshes[i]=m;map.set(key,m);schedule();},
     setMode(s){mode=s==='move'?'move':'orbit';},
-    focusAll(){focus(true);},focusSelected(){focus(false);},getCount(){return meshes.length;}
+    focusAll(){focus(true);},focusSelected(){focus(false);},getCount(){return meshes.length;},getVisibleCount(){return onlySelected&&map.has(selected)?1:meshes.length;}
   };root.RiptideScene3D=api;
   $('scene3d-orbit').addEventListener('click',()=>{mode='orbit';$('scene3d-orbit').classList.add('primary');$('scene3d-move').classList.remove('primary');});
   $('scene3d-move').addEventListener('click',()=>{mode='move';$('scene3d-move').classList.add('primary');$('scene3d-orbit').classList.remove('primary');});
-  $('scene3d-focus').addEventListener('click',()=>focus(false));$('scene3d-all').addEventListener('click',()=>focus(true));
+  $('scene3d-focus').addEventListener('click',()=>focus(false));$('scene3d-all').addEventListener('click',()=>{onlySelected=false;$('scene3d-show-all').checked=true;focus(true);});
+  $('scene3d-show-all').addEventListener('change',e=>{onlySelected=!e.target.checked;schedule();});
   $('scene3d-wire').addEventListener('change',schedule);$('scene3d-grid').addEventListener('change',schedule);window.addEventListener('resize',schedule);
   updateInfo();schedule();
  };
@@ -409,7 +412,7 @@ setEnabled(false);updateSummary();render();
   function shader(type,src){const x=gl.createShader(type);gl.shaderSource(x,src);gl.compileShader(x);if(!gl.getShaderParameter(x,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(x));return x;}
   function program(v,f){const p=gl.createProgram();gl.attachShader(p,shader(gl.VERTEX_SHADER,v));gl.attachShader(p,shader(gl.FRAGMENT_SHADER,f));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(p));return {program:p,pos:gl.getAttribLocation(p,'pos'),normal:gl.getAttribLocation(p,'normal'),matrix:gl.getUniformLocation(p,'viewProj'),shift:gl.getUniformLocation(p,'shift'),shade:gl.getUniformLocation(p,'shade')};}
   const smooth=program(versus,fs), flat=program(flatV,flatF);
-  let meshes=[],meshByKey=new Map(),selected='',onlySelected=true,pickMeshes=[],callbacks={},mode='orbit',yaw=-.85,elevation=.64,range=1200,target=[0,0,0],bounds=null,drag=null,dirty=true;
+  let meshes=[],meshByKey=new Map(),selected='',onlySelected=false,pickMeshes=[],callbacks={},mode='orbit',yaw=-.85,elevation=.64,range=1200,target=[0,0,0],bounds=null,drag=null,dirty=true;
   let viewproj=new Float32Array(16),grid=null,pickFbo=null,pickTex=null,pickDepth=null,pickW=0,pickH=0;
   const MIN_DIST=2;
   function cross(a,b){return[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
@@ -433,7 +436,7 @@ setEnabled(false);updateSummary();render();
     return {key,positions,normals,indices,lines,min:b,max:hi,shift:[0,0,0],gpu:{positions:uploadBuffer(positions),normals:uploadBuffer(normals),indices:uploadBuffer(indices,2,gl.ELEMENT_ARRAY_BUFFER),lines:uploadBuffer(lines,2,gl.ELEMENT_ARRAY_BUFFER)}};}
   function dispose(g){if(!g)return;for(const val of Object.values(g))gl.deleteBuffer(val);}
   function calcBounds(items){let lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];for(const m of items)for(let k=0;k<3;k++){lo[k]=Math.min(lo[k],m.min[k]);hi[k]=Math.max(hi[k],m.max[k]);}return{lo,hi};}
-  function focus(full=false){onlySelected=!full;const list=full?meshes:(meshByKey.get(selected)?[meshByKey.get(selected)]:meshes);if(!list.length)return;
+  function focus(full=false){const list=full?meshes:(meshByKey.get(selected)?[meshByKey.get(selected)]:meshes);if(!list.length)return;
     const b=calcBounds(list);target=b.lo.map((v,i)=>(v+b.hi[i])/2);const d=Math.hypot(...b.lo.map((v,i)=>b.hi[i]-v));range=Math.max(MIN_DIST,d*Math.max(1.3,1.18/Math.max(.48,canvas.clientWidth/Math.max(1,canvas.clientHeight))));dirty=true;draw();}
   function createGrid(){if(grid)gl.deleteBuffer(grid.buf);if(!bounds)return;
     const lo=bounds.lo,hi=bounds.hi,span=Math.max(30,hi[0]-lo[0],hi[1]-lo[1]),step=Math.pow(10,Math.floor(Math.log10(span/13)));
@@ -510,11 +513,13 @@ setEnabled(false);updateSummary();render();
     update(key,bytes){const prev=meshByKey.get(key);if(!prev)return;const m=makeMesh(key,bytes);m.shift=prev.shift;dispose(prev.gpu);meshes[meshes.indexOf(prev)]=m;meshByKey.set(key,m);dirty=true;draw();},
     focusAll(){focus(true);},focusSelected(){focus(false);},
     setMode(next){mode=next==='move'?'move':'orbit';canvas.style.cursor=mode==='move'?'grab':'crosshair';},
-    getCount(){return meshes.length;}
+    getCount(){return meshes.length;},
+    getVisibleCount(){return onlySelected&&meshByKey.has(selected)?1:meshes.length;}
   };
   $('scene3d-orbit').addEventListener('click',()=>{root.RiptideScene3D.setMode('orbit');$('scene3d-orbit').classList.add('primary');$('scene3d-move').classList.remove('primary');});
   $('scene3d-move').addEventListener('click',()=>{root.RiptideScene3D.setMode('move');$('scene3d-move').classList.add('primary');$('scene3d-orbit').classList.remove('primary');});
-  $('scene3d-focus').addEventListener('click',()=>focus(false));$('scene3d-all').addEventListener('click',()=>focus(true));
+  $('scene3d-focus').addEventListener('click',()=>focus(false));$('scene3d-all').addEventListener('click',()=>{onlySelected=false;$('scene3d-show-all').checked=true;focus(true);});
+  $('scene3d-show-all').addEventListener('change',e=>{onlySelected=!e.target.checked;dirty=true;draw();});
   $('scene3d-wire').addEventListener('change',()=>{dirty=true;draw();});$('scene3d-grid').addEventListener('change',()=>{dirty=true;draw();});
   window.addEventListener('resize',()=>{dirty=true;draw();});dirty=true;draw();
 })(typeof window!=='undefined'?window:null);
@@ -557,7 +562,8 @@ async function openSceneArena(){if(!scene)return;
     records.push({key:segment,data:modified.get(res)?.bytes||b});
   }
   if(token!==arenaToken)return;
-  await scene.loadArena(records);scene.select(zone.value);scene.focusSelected();
+  await scene.loadArena(records);scene.select(zone.value);scene.focusAll();
+  $('arena-summary').textContent='Arena '+ar+': '+records.length+' malhas reunidas na mesma cena 3D. Toque numa delas para editar.';
   }catch(err){$('scene3d-info').textContent='Falha na prévia 3D: '+err.message;}
 }
 function syncScene(){if(!scene)return;const snap=editor.getSnapshot();if(snap&&zone.value)scene.update(zone.value,snap.bytes);}

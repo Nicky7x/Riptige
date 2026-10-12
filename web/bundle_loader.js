@@ -33,7 +33,8 @@ async function openSceneArena(){if(!scene)return;
     records.push({key:segment,data:modified.get(res)?.bytes||b});
   }
   if(token!==arenaToken)return;
-  await scene.loadArena(records);scene.select(zone.value);scene.focusSelected();
+  await scene.loadArena(records);scene.select(zone.value);scene.focusAll();
+  $('arena-summary').textContent='Arena '+ar+': '+records.length+' malhas reunidas na mesma cena 3D. Toque numa delas para editar.';
   }catch(err){$('scene3d-info').textContent='Falha na prévia 3D: '+err.message;}
 }
 function syncScene(){if(!scene)return;const snap=editor.getSnapshot();if(snap&&zone.value)scene.update(zone.value,snap.bytes);}
@@ -59,7 +60,7 @@ $('bulk-apply').addEventListener('click',()=>{
  const delta=['bulk-x','bulk-y','bulk-z'].map(id=>Number($(id).value));
  try{editor.moveAll(...delta);saveCurrent();syncScene();}catch(e){notes.textContent=e.message;}
 });
-function saveFile(text,name){const blob=new Blob([text],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),12000);}
+function saveFile(text,name){if(window.AndroidBridge&&window.AndroidBridge.exportJson){window.AndroidBridge.exportJson(name,text);return;}const blob=new Blob([text],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),12000);}
 $('bundle-export').addEventListener('click',()=>{
  saveCurrent();const changes=[...modified.values()].map(v=>v.patch).filter(p=>p.changes.length);
  const manifest={format:'riptide-collision-multi-patch-v1',created:new Date().toISOString(),

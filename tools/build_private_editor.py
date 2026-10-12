@@ -19,31 +19,33 @@ from inspect_xapk import parse_apf_index, decompress_payload
 ROOT = Path(__file__).resolve().parents[1]
 PREFIX = 'VuCollisionMeshAsset/Level/'
 
-def build(source: Path, out: Path) -> dict:
+def build(source: Path | None, out: Path, *, android_template: bool = False) -> dict:
     bundles: dict[str, dict] = {}
     errors=[]
-    with local_apf(source) as apf:
-        _, rows = parse_apf_index(apf)
-        with apf.open('rb') as stream:
-            for item in rows:
-                if not item['name'].startswith(PREFIX):continue
-                if item['usize'] > 64*1024*1024:
-                    errors.append([item['name'],'too large']);continue
-                try:
-                    stream.seek(item['offset'])
-                    content, _codec, _eof = decompress_payload(stream.read(item['csize']),item['usize'])
-                    layout=decode_mesh_header(content)
-                except Exception as err:
-                    errors.append([item['name'],str(err)])
-                    continue
-                rest=item['name'][len(PREFIX):]
-                arena, _, section=rest.partition('/')
-                if not section:continue
-                # deterministic gzip supports a single HTML under a few megabytes
-                blob=base64.b64encode(gzip.compress(content,compresslevel=9,mtime=0)).decode('ascii')
-                bundles.setdefault(arena,{})[section]={
-                    'blob':blob,'size':len(content),'vertices':layout['vertices'],
-                    'triangles':layout['triangles'],'source':item['name']}
+    if not android_template:
+        assert source is not None
+        with local_apf(source) as apf:
+            _, rows = parse_apf_index(apf)
+            with apf.open('rb') as stream:
+                for item in rows:
+                    if not item['name'].startswith(PREFIX):continue
+                    if item['usize'] > 64*1024*1024:
+                        errors.append([item['name'],'too large']);continue
+                    try:
+                        stream.seek(item['offset'])
+                        content, _codec, _eof = decompress_payload(stream.read(item['csize']),item['usize'])
+                        layout=decode_mesh_header(content)
+                    except Exception as err:
+                        errors.append([item['name'],str(err)])
+                        continue
+                    rest=item['name'][len(PREFIX):]
+                    arena, _, section=rest.partition('/')
+                    if not section:continue
+                    # deterministic gzip supports a single HTML under a few megabytes
+                    blob=base64.b64encode(gzip.compress(content,compresslevel=9,mtime=0)).decode('ascii')
+                    bundles.setdefault(arena,{})[section]={
+                        'blob':blob,'size':len(content),'vertices':layout['vertices'],
+                        'triangles':layout['triangles'],'source':item['name']}
     base=(ROOT/'web/index.html').read_text(encoding='utf-8')
     core=(ROOT/'web/collision_core.js').read_text(encoding='utf-8')
     app=(ROOT/'web/app.js').read_text(encoding='utf-8')
@@ -52,9 +54,10 @@ def build(source: Path, out: Path) -> dict:
     if 'window.RiptideEditor=' not in app:
         raise RuntimeError('web/app.js lacks RiptideEditor API')
     panel='''<section class="panel section" id="bundled"><h2>01 · Arenas embutidas</h2>
-    <p>Os recursos já vêm incluídos neste arquivo pessoal. Escolha a arena e o trecho; nenhuma seleção de arquivos.</p>
+    <p>Os recursos já vêm incluídos neste arquivo pessoal. Escolha a arena: todos os trechos aparecem montados numa única cena 3D. O seletor de malha serve para editar uma parte.</p>
     <label style="margin-top:12px" for="arena-select">Arena</label>
     <select id="arena-select"></select>
+    <p id="arena-summary" class="muted" style="margin:9px 0">Carregando todos os trechos da arena...</p>
     <label style="margin-top:11px" for="zone-select">Trecho / malha de colisão</label>
     <select id="zone-select"></select>
     <div class="stats"><div class="stat"><span class="muted">Arenas</span><b id="arena-count">—</b></div>
@@ -71,14 +74,15 @@ def build(source: Path, out: Path) -> dict:
     # New interactive, hardware-accelerated 3D scene. Visible collision geometry only.
     scene_markup='''<section class="panel scene3d-panel" style="grid-column:1/-1">
      <div class="panelhead"><h2>02 · Arena 3D interativa <span style="color:var(--accent)">◉</span></h2>
-      <div class="muted">Geometria real de colisão, sem texturas. Arraste para orbitar; toque em um trecho para selecioná-lo. Dois dedos: mover câmera e ampliar.</div></div>
+      <div class="muted">Malhas de colisão montadas juntas, sem texturas. Arraste para orbitar; toque em um trecho para selecioná-lo. Dois dedos: mover câmera e ampliar.</div></div>
      <div class="screen"><div class="view3d"><canvas id="arena3d" aria-label="Visualização de arena 3D" style="height:min(69vh,670px);min-height:350px;touch-action:none"></canvas>
       <div class="view3d-watermark">COLISÕES · PRÉVIA 3D</div></div>
       <div class="buttonrow" style="margin-top:12px;flex-wrap:wrap"><button id="scene3d-orbit" class="primary">✥ Orbitar</button>
        <button id="scene3d-move">↔ Mover trecho</button><button id="scene3d-focus">◎ Focar seleção</button>
        <button id="scene3d-all">▣ Ver arena</button></div>
       <div class="buttonrow" style="margin-top:8px"><label class="toggle"><input id="scene3d-wire" type="checkbox" checked> Arestas da seleção</label>
-       <label class="toggle"><input id="scene3d-grid" type="checkbox" checked> Grade</label></div>
+       <label class="toggle"><input id="scene3d-grid" type="checkbox" checked> Grade</label>
+       <label class="toggle"><input id="scene3d-show-all" type="checkbox" checked> Arena completa (todas as malhas)</label></div>
       <p id="scene3d-info" class="muted">Inicializando renderização 3D…</p>
       <div class="note" style="margin-top:10px">A visualização é 3D, mas representa apenas a <b>malha física invisível</b> do jogo. Mover aqui não desloca os prédios ou as texturas no Renegade e não é uma pista jogável.</div>
      </div></section>
@@ -94,7 +98,7 @@ def build(source: Path, out: Path) -> dict:
     base=base.replace('Nenhum arquivo é enviado à internet.', 'Recursos originais estão embutidos SOMENTE nesta cópia pessoal. Não publique esta página.')
     base=base.replace('<script src="collision_core.js"></script><script src="app.js"></script>',
         '<script>\n'+core+'\n</script><script>\n'+app+'\n</script><script>\n'+scene_fallback+'\n</script><script>\n'+scene+'\n</script>\n'+
-        '<script id="private-assets" type="application/json">'+json.dumps(bundles,separators=(',',':'))+'</script>\n'+
+        '<script id="private-assets" type="application/json">'+('__EMBEDDED_ASSETS__' if android_template else json.dumps(bundles,separators=(',',':')) )+'</script>\n'+
         '<script>\n'+(ROOT/'web/bundle_loader.js').read_text(encoding='utf-8')+'\n</script>')
     # Hide the file import from this personal build; no remote libraries or scripts
     if '<script src=' in base:
@@ -106,7 +110,9 @@ def build(source: Path, out: Path) -> dict:
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--source',type=Path,required=True)
+    p.add_argument('--source',type=Path)
+    p.add_argument('--android-template',action='store_true',help='Compile blank native editor template without proprietary resources')
     p.add_argument('--out',type=Path,required=True)
     args=p.parse_args()
-    print(json.dumps(build(args.source,args.out),indent=2,ensure_ascii=False))
+    if not args.android_template and args.source is None:p.error('--source required unless --android-template')
+    print(json.dumps(build(args.source,args.out,android_template=args.android_template),indent=2,ensure_ascii=False))

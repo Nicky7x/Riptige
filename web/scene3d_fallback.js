@@ -5,7 +5,7 @@
  root.RiptideSceneFallback=function(canvas){
   const $=id=>document.getElementById(id),ctx=canvas.getContext('2d');
   if(!ctx){$('scene3d-info').textContent='Não foi possível iniciar a visualização 3D.';return;}
-  let meshes=[],map=new Map(),selected='',onlySelected=true,callbacks={},mode='orbit',yaw=-.85,elevation=.64,range=1000,target=[0,0,0],bounds=null;
+  let meshes=[],map=new Map(),selected='',onlySelected=false,callbacks={},mode='orbit',yaw=-.85,elevation=.64,range=1000,target=[0,0,0],bounds=null;
   let facesDrawn=[],pending=false,dirty=true,drag=null;const points=new Map();let prevMulti=null;
   const norm=v=>{const l=Math.hypot(...v)||1;return v.map(x=>x/l);}, dot=(a,b)=>a.reduce((v,n,i)=>v+n*b[i],0),cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
   function camera(){const c=Math.cos(elevation);return[target[0]+range*c*Math.cos(yaw),target[1]+range*c*Math.sin(yaw),target[2]+range*Math.sin(elevation)];}
@@ -67,11 +67,12 @@
     select(k){selected=k;updateInfo();},
     update(key,bytes){if(!map.has(key))return;const m=make(key,bytes);const i=meshes.indexOf(map.get(key));meshes[i]=m;map.set(key,m);schedule();},
     setMode(s){mode=s==='move'?'move':'orbit';},
-    focusAll(){focus(true);},focusSelected(){focus(false);},getCount(){return meshes.length;}
+    focusAll(){focus(true);},focusSelected(){focus(false);},getCount(){return meshes.length;},getVisibleCount(){return onlySelected&&map.has(selected)?1:meshes.length;}
   };root.RiptideScene3D=api;
   $('scene3d-orbit').addEventListener('click',()=>{mode='orbit';$('scene3d-orbit').classList.add('primary');$('scene3d-move').classList.remove('primary');});
   $('scene3d-move').addEventListener('click',()=>{mode='move';$('scene3d-move').classList.add('primary');$('scene3d-orbit').classList.remove('primary');});
-  $('scene3d-focus').addEventListener('click',()=>focus(false));$('scene3d-all').addEventListener('click',()=>focus(true));
+  $('scene3d-focus').addEventListener('click',()=>focus(false));$('scene3d-all').addEventListener('click',()=>{onlySelected=false;$('scene3d-show-all').checked=true;focus(true);});
+  $('scene3d-show-all').addEventListener('change',e=>{onlySelected=!e.target.checked;schedule();});
   $('scene3d-wire').addEventListener('change',schedule);$('scene3d-grid').addEventListener('change',schedule);window.addEventListener('resize',schedule);
   updateInfo();schedule();
  };

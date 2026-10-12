@@ -34,13 +34,37 @@ public final class MainActivity extends Activity {
     }
 
     private void buildLayout(){
-        LinearLayout page=new LinearLayout(this);page.setOrientation(LinearLayout.VERTICAL);page.setBackgroundColor(Color.rgb(11,18,32));
-        LinearLayout toolbar=new LinearLayout(this);toolbar.setOrientation(LinearLayout.HORIZONTAL);toolbar.setPadding(12,6,12,6);
-        toolbar.setGravity(Gravity.CENTER_VERTICAL);
-        importButton=new Button(this);importButton.setText("Importar XAPK");importButton.setTextSize(12);
-        importButton.setOnClickListener(v->selectXapk());toolbar.addView(importButton);
-        homeButton=new Button(this);homeButton.setText("Abrir editor");homeButton.setTextSize(12);
-        homeButton.setOnClickListener(v->showEditorIfReady());toolbar.addView(homeButton);
+        LinearLayout page=new LinearLayout(this);
+        page.setOrientation(LinearLayout.VERTICAL);
+        page.setBackgroundColor(Color.rgb(11,18,32));
+        // Android 15+ draws behind status/navigation bars with targetSdk 35.
+        // Reserve the real system insets so top controls cannot hide under notifications.
+        if(Build.VERSION.SDK_INT>=30) {
+            getWindow().setDecorFitsSystemWindows(false);
+            page.setOnApplyWindowInsetsListener((view,insets)->{
+                android.graphics.Insets bars=insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+                view.setPadding(bars.left,bars.top,bars.right,bars.bottom);
+                return insets;
+            });
+        } else {
+            page.setFitsSystemWindows(true);
+        }
+        LinearLayout toolbar=new LinearLayout(this);
+        toolbar.setOrientation(LinearLayout.HORIZONTAL);
+        toolbar.setGravity(Gravity.CENTER);
+        toolbar.setPadding(dp(12),dp(14),dp(12),dp(10));
+        importButton=new Button(this);importButton.setText("Importar XAPK");importButton.setTextSize(13);
+        importButton.setAllCaps(false);
+        importButton.setOnClickListener(v->selectXapk());
+        LinearLayout.LayoutParams left=new LinearLayout.LayoutParams(0,dp(52),1f);
+        left.setMargins(dp(4),0,dp(6),0);
+        toolbar.addView(importButton,left);
+        homeButton=new Button(this);homeButton.setText("Abrir editor");homeButton.setTextSize(13);
+        homeButton.setAllCaps(false);
+        homeButton.setOnClickListener(v->showEditorIfReady());
+        LinearLayout.LayoutParams right=new LinearLayout.LayoutParams(0,dp(52),1f);
+        right.setMargins(dp(6),0,dp(4),0);
+        toolbar.addView(homeButton,right);
         page.addView(toolbar,new LinearLayout.LayoutParams(-1,-2));
         status=new TextView(this);status.setTextColor(0xffbed8df);status.setTextSize(12);status.setPadding(18,0,18,9);
         page.addView(status,new LinearLayout.LayoutParams(-1,-2));
@@ -59,6 +83,10 @@ public final class MainActivity extends Activity {
             }
         });
         page.addView(web,new LinearLayout.LayoutParams(-1,0,1));setContentView(page);
+    }
+
+    private int dp(float size) {
+        return Math.round(size*getResources().getDisplayMetrics().density);
     }
 
     private void selectXapk() {

@@ -19,7 +19,7 @@
   function shader(type,src){const x=gl.createShader(type);gl.shaderSource(x,src);gl.compileShader(x);if(!gl.getShaderParameter(x,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(x));return x;}
   function program(v,f){const p=gl.createProgram();gl.attachShader(p,shader(gl.VERTEX_SHADER,v));gl.attachShader(p,shader(gl.FRAGMENT_SHADER,f));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(p));return {program:p,pos:gl.getAttribLocation(p,'pos'),normal:gl.getAttribLocation(p,'normal'),matrix:gl.getUniformLocation(p,'viewProj'),shift:gl.getUniformLocation(p,'shift'),shade:gl.getUniformLocation(p,'shade')};}
   const smooth=program(versus,fs), flat=program(flatV,flatF);
-  let meshes=[],meshByKey=new Map(),selected='',onlySelected=true,pickMeshes=[],callbacks={},mode='orbit',yaw=-.85,elevation=.64,range=1200,target=[0,0,0],bounds=null,drag=null,dirty=true;
+  let meshes=[],meshByKey=new Map(),selected='',onlySelected=false,pickMeshes=[],callbacks={},mode='orbit',yaw=-.85,elevation=.64,range=1200,target=[0,0,0],bounds=null,drag=null,dirty=true;
   let viewproj=new Float32Array(16),grid=null,pickFbo=null,pickTex=null,pickDepth=null,pickW=0,pickH=0;
   const MIN_DIST=2;
   function cross(a,b){return[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
@@ -43,7 +43,7 @@
     return {key,positions,normals,indices,lines,min:b,max:hi,shift:[0,0,0],gpu:{positions:uploadBuffer(positions),normals:uploadBuffer(normals),indices:uploadBuffer(indices,2,gl.ELEMENT_ARRAY_BUFFER),lines:uploadBuffer(lines,2,gl.ELEMENT_ARRAY_BUFFER)}};}
   function dispose(g){if(!g)return;for(const val of Object.values(g))gl.deleteBuffer(val);}
   function calcBounds(items){let lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];for(const m of items)for(let k=0;k<3;k++){lo[k]=Math.min(lo[k],m.min[k]);hi[k]=Math.max(hi[k],m.max[k]);}return{lo,hi};}
-  function focus(full=false){onlySelected=!full;const list=full?meshes:(meshByKey.get(selected)?[meshByKey.get(selected)]:meshes);if(!list.length)return;
+  function focus(full=false){const list=full?meshes:(meshByKey.get(selected)?[meshByKey.get(selected)]:meshes);if(!list.length)return;
     const b=calcBounds(list);target=b.lo.map((v,i)=>(v+b.hi[i])/2);const d=Math.hypot(...b.lo.map((v,i)=>b.hi[i]-v));range=Math.max(MIN_DIST,d*Math.max(1.3,1.18/Math.max(.48,canvas.clientWidth/Math.max(1,canvas.clientHeight))));dirty=true;draw();}
   function createGrid(){if(grid)gl.deleteBuffer(grid.buf);if(!bounds)return;
     const lo=bounds.lo,hi=bounds.hi,span=Math.max(30,hi[0]-lo[0],hi[1]-lo[1]),step=Math.pow(10,Math.floor(Math.log10(span/13)));
@@ -120,11 +120,13 @@
     update(key,bytes){const prev=meshByKey.get(key);if(!prev)return;const m=makeMesh(key,bytes);m.shift=prev.shift;dispose(prev.gpu);meshes[meshes.indexOf(prev)]=m;meshByKey.set(key,m);dirty=true;draw();},
     focusAll(){focus(true);},focusSelected(){focus(false);},
     setMode(next){mode=next==='move'?'move':'orbit';canvas.style.cursor=mode==='move'?'grab':'crosshair';},
-    getCount(){return meshes.length;}
+    getCount(){return meshes.length;},
+    getVisibleCount(){return onlySelected&&meshByKey.has(selected)?1:meshes.length;}
   };
   $('scene3d-orbit').addEventListener('click',()=>{root.RiptideScene3D.setMode('orbit');$('scene3d-orbit').classList.add('primary');$('scene3d-move').classList.remove('primary');});
   $('scene3d-move').addEventListener('click',()=>{root.RiptideScene3D.setMode('move');$('scene3d-move').classList.add('primary');$('scene3d-orbit').classList.remove('primary');});
-  $('scene3d-focus').addEventListener('click',()=>focus(false));$('scene3d-all').addEventListener('click',()=>focus(true));
+  $('scene3d-focus').addEventListener('click',()=>focus(false));$('scene3d-all').addEventListener('click',()=>{onlySelected=false;$('scene3d-show-all').checked=true;focus(true);});
+  $('scene3d-show-all').addEventListener('change',e=>{onlySelected=!e.target.checked;dirty=true;draw();});
   $('scene3d-wire').addEventListener('change',()=>{dirty=true;draw();});$('scene3d-grid').addEventListener('change',()=>{dirty=true;draw();});
   window.addEventListener('resize',()=>{dirty=true;draw();});dirty=true;draw();
 })(typeof window!=='undefined'?window:null);
