@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <meta name="theme-color" content="#0b1220"/>
+  <title>Riptide Map Lab — editor de colisões</title>
+  <style>
+    :root {color-scheme:dark;--bg:#0b1220;--panel:#141f30;--border:#2a3a4f;--txt:#f1f6fc;--sub:#9dafc5;--accent:#5ee0c5;--amber:#ffc785}
+    * {box-sizing:border-box}
+    body {margin:0;background:var(--bg);color:var(--txt);font:14px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    .layout {max-width:1340px;margin:auto;padding:18px;display:grid;gap:16px;grid-template-columns:minmax(0,1.8fr) minmax(300px,1fr)}
+    header {grid-column:1/-1;display:flex;align-items:flex-start;gap:12px;justify-content:space-between}
+    .logo {display:inline-flex;background:#1c4443;color:var(--accent);width:43px;height:43px;align-items:center;justify-content:center;border-radius:12px;font-size:23px}
+    h1 {margin:0;font-size:25px;letter-spacing:-.6px} h2{margin:0 0 12px;font-size:17px} p{margin:5px 0 0;color:var(--sub)}
+    .eyebrow{text-transform:uppercase;letter-spacing:1.8px;color:var(--accent);font-size:10px;font-weight:800}
+    .stamp{border:1px solid var(--border);border-radius:99px;padding:7px 12px;font-size:12px;color:var(--sub);white-space:nowrap}
+    .panel {background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+    .panelhead {padding:16px 18px;border-bottom:1px solid var(--border)}
+    .screen {padding:12px;}
+    canvas {display:block;width:100%;height:min(62vh,590px);background:#0e1727;border-radius:12px;touch-action:none;cursor:crosshair}
+    .muted{color:var(--sub);font-size:12px}.note{padding:12px 15px;background:#252b33;border-left:3px solid var(--amber);border-radius:8px;font-size:12px;color:#f1dabb}
+    .sidebar {display:flex;flex-direction:column;gap:15px}
+    .section {padding:16px}
+    input[type=file]{width:100%;border:1px dashed #3f6271;padding:14px;border-radius:10px;color:var(--sub);background:#0e1928}
+    label{display:block;margin-bottom:6px;font-size:12px;color:var(--sub);font-weight:600}
+    input[type=number],select{width:100%;padding:11px;border:1px solid var(--border);border-radius:9px;background:#0b1728;color:var(--txt);font:inherit}
+    input:focus,select:focus{outline:2px solid #4ec2af;outline-offset:1px}
+    input:disabled,button:disabled{opacity:.4;cursor:not-allowed}
+    .controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .positions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+    .stat{background:#0b1728;padding:10px;border:1px solid var(--border);border-radius:11px}.stat b{display:block;font-size:18px}
+    button{font:inherit;cursor:pointer;border:1px solid var(--border);background:#263b50;color:#e2f2fa;padding:11px 13px;border-radius:10px;font-weight:700;min-height:43px}
+    button.primary{background:var(--accent);border-color:var(--accent);color:#083129}
+    button:hover:not(:disabled){filter:brightness(1.12)}
+    .buttonrow{display:flex;gap:10px;flex-wrap:wrap}.buttonrow button{flex:1}
+    .toggle{display:flex;align-items:center;gap:7px;margin:12px 0;color:var(--sub);font-size:13px}.toggle input{accent-color:var(--accent);width:17px;height:17px}
+    #filename {overflow-wrap:anywhere;color:var(--txt);font-weight:700}#status{padding:12px;background:#102d2b;color:#80efdb;border-radius:10px;font-size:12px;margin:10px 0 0}
+    #status[data-error=yes]{background:#3c1d27;color:#ffadc0}
+    .footer {grid-column:1/-1;color:var(--sub);font-size:12px;padding-bottom:25px}
+    a{color:var(--accent)} code{color:#ffdcab}
+    @media(max-width:850px){.layout{grid-template-columns:1fr;padding:12px;gap:12px}header{align-items:center}h1{font-size:20px}.stamp{display:none}canvas{height:46vh;min-height:280px}.stats{grid-template-columns:repeat(3,1fr)}}
+  </style>
+</head>
+<body>
+<main class="layout">
+<header>
+  <div style="display:flex;gap:12px;align-items:center"><span class="logo">≋</span><div><div class="eyebrow">Vector Engine • pesquisa independente</div><h1>Riptide Map Lab Pessoal <span style="color:var(--accent)">α</span></h1><p>Arenas já carregadas · editor experimental de colisões · 100% offline</p></div></div>
+  <span class="stamp">SEM ROOT · OFFLINE</span>
+</header>
+<section class="panel" style="display:none" id="legacy-2d">
+ <div class="panelhead"><h2>Visualização geométrica</h2><div class="muted">Toque em um vértice para selecioná-lo. Ative o arraste para movê-lo no plano.</div></div>
+ <div class="screen"><canvas id="stage" aria-label="Visualização de malha de colisão"></canvas>
+ <div class="controls" style="margin-top:12px"><div><label for="projection">Projeção</label><select id="projection"><option value="0,1">X / Y</option><option value="0,2">X / Z</option><option value="1,2">Y / Z</option></select></div><div><label>Opções</label><label class="toggle"><input id="edges" type="checkbox" checked/> Desenhar triângulos</label></div></div>
+ <label class="toggle"><input type="checkbox" id="drag"/> Permitir arrastar pontos com o dedo</label>
+ </div>
+</section>
+<section class="panel scene3d-panel" style="grid-column:1/-1">
+     <div class="panelhead"><h2>02 · Arena 3D interativa <span style="color:var(--accent)">◉</span></h2>
+      <div class="muted">Geometria real de colisão, sem texturas. Arraste para orbitar; toque em um trecho para selecioná-lo. Dois dedos: mover câmera e ampliar.</div></div>
+     <div class="screen"><div class="view3d"><canvas id="arena3d" aria-label="Visualização de arena 3D" style="height:min(69vh,670px);min-height:350px;touch-action:none"></canvas>
+      <div class="view3d-watermark">COLISÕES · PRÉVIA 3D</div></div>
+      <div class="buttonrow" style="margin-top:12px;flex-wrap:wrap"><button id="scene3d-orbit" class="primary">✥ Orbitar</button>
+       <button id="scene3d-move">↔ Mover trecho</button><button id="scene3d-focus">◎ Focar seleção</button>
+       <button id="scene3d-all">▣ Ver arena</button></div>
+      <div class="buttonrow" style="margin-top:8px"><label class="toggle"><input id="scene3d-wire" type="checkbox" checked> Arestas da seleção</label>
+       <label class="toggle"><input id="scene3d-grid" type="checkbox" checked> Grade</label></div>
+      <p id="scene3d-info" class="muted">Inicializando renderização 3D…</p>
+      <div class="note" style="margin-top:10px">A visualização é 3D, mas representa apenas a <b>malha física invisível</b> do jogo. Mover aqui não desloca os prédios ou as texturas no Renegade e não é uma pista jogável.</div>
+     </div></section>
+     <style>.view3d{position:relative}.view3d-watermark{position:absolute;right:12px;top:12px;background:#08131ddd;color:#8fd9ce;border:1px solid #27505a;padding:5px 9px;border-radius:9px;font-size:10px;font-weight:800;letter-spacing:.1em;pointer-events:none}.scene3d-panel canvas{background:#0a1524}.buttonrow button{min-width:100px}</style>
+<aside class="sidebar">
+<section class="panel section" id="bundled"><h2>01 · Arenas embutidas</h2>
+    <p>Os recursos já vêm incluídos neste arquivo pessoal. Escolha a arena e o trecho; nenhuma seleção de arquivos.</p>
+    <label style="margin-top:12px" for="arena-select">Arena</label>
+    <select id="arena-select"></select>
+    <label style="margin-top:11px" for="zone-select">Trecho / malha de colisão</label>
+    <select id="zone-select"></select>
+    <div class="stats"><div class="stat"><span class="muted">Arenas</span><b id="arena-count">—</b></div>
+    <div class="stat"><span class="muted">Malhas</span><b id="mesh-count">—</b></div>
+    <div class="stat"><span class="muted">Trechos alterados</span><b id="patch-count">0</b></div></div>
+    <h2 style="margin-top:16px">Deslocamento rápido</h2>
+    <p>Move todos os vértices da <strong>malha selecionada</strong>. Não altera texturas nem os pontos da IA.</p>
+    <div class="positions" style="margin-top:10px">
+    <div><label for="bulk-x">Mover X</label><input id="bulk-x" type="number" step="0.1" value="0"></div>
+    <div><label for="bulk-y">Mover Y</label><input id="bulk-y" type="number" step="0.1" value="0"></div>
+    <div><label for="bulk-z">Mover Z</label><input id="bulk-z" type="number" step="0.1" value="1"></div></div>
+    <div class="buttonrow" style="margin-top:11px"><button id="bulk-apply" class="primary">Mover malha inteira</button><button id="bundle-export">Exportar alterações de todas as arenas</button></div>
+    <p id="bundle-message" class="muted" style="margin-top:10px">Versão pessoal. Arquivos proprietários não devem ser publicados.</p></section>
+ <div class="panel section" style="display:none"><h2>01 · Abrir malha</h2>
+  <label for="file">Os dados estão incorporados nesta versão pessoal</label><input type="file" id="file" accept=".bin,.dat,application/octet-stream"/>
+  <p style="margin-top:9px">Arquivo: <span id="filename">Nenhum arquivo</span></p>
+  <div class="stats"><div class="stat"><span class="muted">Vértices</span><b id="vertices">—</b></div><div class="stat"><span class="muted">Triângulos</span><b id="triangles">—</b></div><div class="stat"><span class="muted">Alterados</span><b id="changed">0</b></div></div>
+  <p class="muted">Dados adicionais não interpretados: <b id="unknown">—</b></p>
+ </div>
+ <div class="panel section"><h2>02 · Editar coordenadas</h2><p id="selection">Nenhum vértice selecionado</p>
+  <div class="positions" style="margin-top:14px"><div><label for="coord-x">X</label><input type="number" step="any" id="coord-x" data-requires disabled/></div><div><label for="coord-y">Y</label><input type="number" step="any" id="coord-y" data-requires disabled/></div><div><label for="coord-z">Z</label><input type="number" step="any" id="coord-z" data-requires disabled/></div></div>
+  <div class="buttonrow" style="margin-top:12px"><button id="apply" class="primary" data-requires disabled>Aplicar</button><button id="undo" data-requires disabled>↶ Desfazer</button><button id="redo" data-requires disabled>↷ Refazer</button></div>
+ </div>
+ <div class="panel section"><h2>03 · Exportar alterações</h2><p>Salve uma cópia local da malha editada ou um manifesto JSON com as diferenças.</p>
+  <div class="buttonrow" style="margin-top:12px"><button id="savebin" class="primary" data-requires disabled>Salvar .bin</button><button id="savepatch" data-requires disabled>Salvar patch.json</button></div>
+  <p id="status" role="status">Aguardando arquivo local.</p>
+ </div>
+ <div class="note"><strong>Limite atual:</strong> edita vértices em arquivos de colisão decodificados, mas não reconstrói o APF/APK. Outras estruturas internas da física podem depender desses vértices. Não instale uma versão modificada até validarmos o formato completo.</div>
+</aside>
+<div class="footer">Os recursos originais ficam somente no armazenamento privado do aplicativo. O editor não contém dados do jogo. Projeto não oficial e não afiliado à Vector Unit. <a href="../README.md">Documentação do projeto</a>.</div>
+</main>
+<script>
+/* Riptide Map Lab — locally parse/patch experimentally decoded collision meshes.
+   No network and no proprietary resources embedded. */
+(function(root) {
+  'use strict';
+  const LIMIT_VERTS=65536, LIMIT_INDICES=4_000_000;
+  const axisNames=['X','Y','Z'];
+  function parse(buffer) {
+    if (!(buffer instanceof ArrayBuffer)) throw new Error('Escolha um arquivo binário .bin');
+    const view=new DataView(buffer);
+    if (buffer.byteLength<12) throw new Error('Arquivo pequeno demais');
+    const count=view.getUint32(0,true);
+    if (count<1||count>LIMIT_VERTS) throw new Error('Quantidade de vértices incompatível: '+count);
+    const offset=4+16*count;
+    if(offset+4>buffer.byteLength) throw new Error('Tabela de vértices truncada');
+    const icount=view.getUint32(offset,true);
+    const end=offset+4+2*icount;
+    if(icount>LIMIT_INDICES || icount%3 || end>buffer.byteLength) throw new Error('Índices triangulares inválidos');
+    const verts=new Array(count), min=[Infinity,Infinity,Infinity], max=[-Infinity,-Infinity,-Infinity];
+    for(let i=0;i<count;i++){
+      const start=4+i*16, v=[];
+      for(let a=0;a<4;a++) v.push(view.getFloat32(start+a*4,true));
+      if(v.some(x=>!Number.isFinite(x)||Math.abs(x)>1e7)) throw new Error('Coordenadas não finitas no vértice '+i);
+      if(v[3]!==0) throw new Error('Componente W desconhecida no vértice '+i);
+      verts[i]=v.slice(0,3);
+      for(let a=0;a<3;a++) {min[a]=Math.min(min[a],v[a]); max[a]=Math.max(max[a],v[a]);}
+    }
+    const indexOffset=offset+4;
+    for(let i=0;i<icount;i++) if(view.getUint16(indexOffset+i*2,true)>=count)
+      throw new Error('Índice fora dos limites em '+i);
+    return {buffer,view,vertices:verts,vertexCount:count,indexCount:icount,triangleCount:icount/3,
+      indexOffset,knownBytes:end,unknownBytes:buffer.byteLength-end,min,max,axisNames};
+  }
+  function updateVertex(mesh,i,coords) {
+    if(!Number.isInteger(i)||i<0||i>=mesh.vertexCount) throw new Error('Índice de vértice inválido');
+    if(!Array.isArray(coords)||coords.length!==3||coords.some(v=>!Number.isFinite(v)||Math.abs(v)>1e7))
+      throw new Error('Coordenadas inválidas');
+    for(let k=0;k<3;k++) mesh.view.setFloat32(4+i*16+4*k,coords[k],true);
+    mesh.vertices[i]=[0,1,2].map(k=>mesh.view.getFloat32(4+i*16+4*k,true));
+    return mesh.vertices[i].slice();
+  }
+  function getIndex(mesh,at) {return mesh.view.getUint16(mesh.indexOffset+2*at,true);}
+  function diff(original,modified){
+    if(original.vertexCount!==modified.vertexCount) throw new Error('Topologias diferentes');
+    return original.vertices.flatMap((v,i)=>v.some((num,a)=>num!==modified.vertices[i][a])?
+       [{vertex:i,before:v.slice(),after:modified.vertices[i].slice()}]:[]);
+  }
+  const api={parse,updateVertex,getIndex,diff};
+  if(typeof module!=='undefined' && module.exports)module.exports=api;
+  if(root)root.RiptideCore=api;
+})(typeof window!=='undefined'?window:null);
+
+</script><script>
+(() => {
+'use strict';
+const $=id=>document.getElementById(id), core=window.RiptideCore;
+let original=null, mesh=null, selected=-1, fileName='', edits=[], history=[], future=[];
+let axis=[0,1], viewBox=null, dragging=false, dragFrom=null, showEdges=true;
+const canvas=$('stage'),ctx=canvas.getContext('2d');
+const axisLabels=['X','Y','Z'];
+const fmt=(v)=>Number.isFinite(v)?v.toLocaleString('pt-BR',{maximumFractionDigits:2}):'—';
+function log(msg,isError=false){$('status').textContent=msg;$('status').dataset.error=isError?'yes':'no';}
+function setEnabled(yes){document.querySelectorAll('[data-requires]').forEach(n=>n.disabled=!yes);}
+function resetCanvas(){ const rect=canvas.getBoundingClientRect();const dpr=Math.min(devicePixelRatio||1,2);
+  canvas.width=Math.max(1,Math.round(rect.width*dpr));canvas.height=Math.max(1,Math.round(rect.height*dpr));
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+function limits(){ const width=canvas.getBoundingClientRect().width,height=canvas.getBoundingClientRect().height;
+ if(!mesh) return {cx:0,cy:0,scale:1,width,height};
+ const xs=mesh.vertices.map(v=>v[axis[0]]),ys=mesh.vertices.map(v=>v[axis[1]]);
+ const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+ const cx=(x0+x1)/2,cy=(y0+y1)/2;
+ const scale=Math.min((width-44)/Math.max(1,x1-x0),(height-44)/Math.max(1,y1-y0));
+ return {cx,cy,scale:Math.max(.00001,scale),width,height};
+}
+function worldToCanvas(p){const {cx,cy,scale,width,height}=viewBox;
+ return [width/2+(p[axis[0]]-cx)*scale,height/2-(p[axis[1]]-cy)*scale];}
+function canvasToWorld(x,y){const {cx,cy,scale,width,height}=viewBox;
+ return [cx+(x-width/2)/scale,cy-(y-height/2)/scale];}
+function render(){
+ resetCanvas(); const {width:w,height:h}=canvas.getBoundingClientRect();
+ ctx.fillStyle='#0e1727';ctx.fillRect(0,0,w,h);
+ ctx.strokeStyle='#1e2a3b';ctx.lineWidth=1;
+ for(let i=0;i<w;i+=40){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,h);ctx.stroke();}
+ for(let i=0;i<h;i+=40){ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(w,i);ctx.stroke();}
+ if(!mesh){ ctx.fillStyle='#8496b3';ctx.textAlign='center';ctx.font='15px system-ui';
+  ctx.fillText('Carregue uma malha .bin local',w/2,h/2-4);
+  ctx.font='12px system-ui';ctx.fillText('Prévia 2D • sem internet',w/2,h/2+22);return; }
+ viewBox=limits();
+ const verts=mesh.vertices,pts=verts.map(worldToCanvas);
+ if(showEdges){ctx.strokeStyle='rgba(81,171,190,.17)';ctx.lineWidth=.75;ctx.beginPath();
+  const step=Math.max(1,Math.ceil(mesh.triangleCount/15000));
+  for(let t=0;t<mesh.triangleCount;t+=step){
+   const a=pts[core.getIndex(mesh,3*t)],b=pts[core.getIndex(mesh,3*t+1)],c=pts[core.getIndex(mesh,3*t+2)];
+   ctx.moveTo(...a);ctx.lineTo(...b);ctx.lineTo(...c);ctx.closePath();
+  }ctx.stroke();}
+ const stride=Math.max(1,Math.ceil(pts.length/12000));
+ ctx.fillStyle='#5ddac2';
+ for(let i=0;i<pts.length;i+=stride){ctx.fillRect(pts[i][0]-1.4,pts[i][1]-1.4,2.8,2.8);}
+ if(selected>=0){let [x,y]=pts[selected];ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.strokeStyle='#ffcc80';ctx.lineWidth=2.2;ctx.stroke();
+  ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fillStyle='#ffcc80';ctx.fill();}
+ ctx.font='11px system-ui';ctx.textAlign='left';ctx.fillStyle='#a6bed0';
+ ctx.fillText(axisLabels[axis[0]]+' →',12,h-13);ctx.fillText(axisLabels[axis[1]]+' ↑',65,h-13);
+}
+function updateSummary(){
+ $('filename').textContent=fileName||'Nenhum arquivo';
+ $('vertices').textContent=mesh?fmt(mesh.vertexCount):'—';
+ $('triangles').textContent=mesh?fmt(mesh.triangleCount):'—';
+ $('unknown').textContent=mesh?fmt(mesh.unknownBytes)+' bytes':'—';
+ $('changed').textContent=edits.length;
+ $('selection').textContent=selected<0?'Nenhum vértice selecionado':'Vértice #'+selected;
+ const values=selected>=0?mesh.vertices[selected]:[];
+ ['coord-x','coord-y','coord-z'].forEach((id,i)=>{ $(id).disabled=selected<0;$(id).value=values[i]===undefined?'':values[i]; });
+ $('undo').disabled=history.length===0;
+ $('redo').disabled=future.length===0;
+}
+function refreshDiff(){ edits=mesh&&original?core.diff(original,mesh):[]; updateSummary(); }
+function select(i){selected=i;updateSummary();render();}
+function pushChange(i,before,after){
+ if(before.every((v,a)=>v===after[a]))return;
+ history.push({i,before:before.slice(),after:after.slice()});future=[];refreshDiff();
+}
+function applyCoords(i,coords){ const before=mesh.vertices[i].slice(),after=core.updateVertex(mesh,i,coords);
+ pushChange(i,before,after);render(); log('Alteração local aplicada ao vértice #'+i+'. Ainda NÃO modifica o APK.'); }
+function coordinatesEvent(){ if(selected<0)return;
+ const coords=['coord-x','coord-y','coord-z'].map(id=>Number($(id).value));
+ if(coords.some(v=>!Number.isFinite(v))){log('Coordenadas inválidas',true);return;}
+ try{applyCoords(selected,coords)}catch(e){log(e.message,true);} }
+$('apply').addEventListener('click',coordinatesEvent);
+$('file').addEventListener('change',async ev=>{
+ const input=ev.target.files?.[0]; if(!input)return;
+ try{
+  const bytes=await input.arrayBuffer();original=core.parse(bytes.slice(0));mesh=core.parse(bytes.slice(0));
+  fileName=input.name;selected=-1;history=[];future=[];edits=[];
+  setEnabled(true);updateSummary();render();
+  log('Malha validada. Selecione um ponto para alterar suas coordenadas.');
+ }catch(e){mesh=null;original=null;fileName='';selected=-1;edits=[];history=[];future=[];setEnabled(false);updateSummary();render();log('Arquivo incompatível: '+e.message,true);}
+});
+$('projection').addEventListener('change',e=>{axis=e.target.value.split(',').map(Number);render();});
+$('edges').addEventListener('change',e=>{showEdges=e.target.checked;render();});
+$('undo').addEventListener('click',()=>{const h=history.pop();if(!h)return;if(h.bulk){for(const v of h.bulk)core.updateVertex(mesh,v.i,v.before);}else core.updateVertex(mesh,h.i,h.before);future.push(h);refreshDiff();render();});
+$('redo').addEventListener('click',()=>{const h=future.pop();if(!h)return;if(h.bulk){for(const v of h.bulk)core.updateVertex(mesh,v.i,v.after);}else core.updateVertex(mesh,h.i,h.after);history.push(h);refreshDiff();render();});
+function download(blob,name){const link=document.createElement('a');const url=URL.createObjectURL(blob);link.href=url;link.download=name;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);}
+$('savebin').addEventListener('click',()=>{if(!mesh)return;
+ download(new Blob([mesh.buffer],{type:'application/octet-stream'}),fileName.replace(/\.bin$/i,'')+'.edited.bin');
+ log('Malha editada exportada. O restante do arquivo permanece byte-a-byte inalterado; isso NÃO garante compatibilidade com o jogo.'); });
+$('savepatch').addEventListener('click',()=>{if(!mesh)return;
+ const manifest={format:'riptide-collision-vertex-patch-v1',source_filename:fileName,
+   vertex_count:mesh.vertexCount,triangle_count:mesh.triangleCount,changes:edits.map(e=>({index:e.vertex,before:e.before,after:e.after})),
+   caveat:'Patch experimental local. Nenhum APF/APK reconstruído; estruturas de colisão adicionais podem exigir atualização.'};
+ download(new Blob([JSON.stringify(manifest,null,2)],{type:'application/json'}),fileName.replace(/\.bin$/i,'')+'.patch.json');
+ log('Manifesto de mudanças exportado localmente.'); });
+function pointerPos(e){const r=canvas.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top];}
+canvas.addEventListener('pointerdown',e=>{
+ if(!mesh)return;const [x,y]=pointerPos(e);const positions=mesh.vertices.map(worldToCanvas);
+ let best=-1,dist=Infinity;
+ for(let i=0;i<positions.length;i++) {let dx=x-positions[i][0],dy=y-positions[i][1],d=dx*dx+dy*dy;
+   if(d<dist){best=i;dist=d;}}
+ if(best>=0 && dist<22*22){select(best);if($('drag').checked){dragging=true;dragFrom=mesh.vertices[best].slice();canvas.setPointerCapture(e.pointerId);}}
+ else select(-1);
+});
+canvas.addEventListener('pointermove',e=>{
+ if(!dragging||selected<0)return;
+ const [x,y]=pointerPos(e),[wx,wy]=canvasToWorld(x,y);
+ const coords=mesh.vertices[selected].slice();coords[axis[0]]=wx;coords[axis[1]]=wy;
+ core.updateVertex(mesh,selected,coords);updateSummary();render();
+});
+function stopDrag(){if(!dragging)return;dragging=false;
+ pushChange(selected,dragFrom,mesh.vertices[selected]);dragFrom=null;render();}
+canvas.addEventListener('pointerup',stopDrag);canvas.addEventListener('pointercancel',stopDrag);
+window.RiptideEditor={
+ loadBytes(source,name,edited=null){
+  // Source is always immutable original, while edited is a separate copy.
+  original=core.parse(source.slice(0));mesh=core.parse((edited||source).slice(0));
+  fileName=name;selected=-1;history=[];future=[];refreshDiff();
+  setEnabled(true);updateSummary();render();
+  log('Malha pré-carregada: '+name+'. Dados embutidos somente nesta cópia pessoal.');
+ },
+ getSnapshot(){return !mesh?null:{name:fileName,bytes:mesh.buffer.slice(0),
+   patch:{resource_name:fileName.replace(/\.bin$/i,''),
+     vertex_count:mesh.vertexCount,triangle_count:mesh.triangleCount,
+     changes:edits.map(v=>({index:v.vertex,before:v.before.slice(),after:v.after.slice()}))}};},
+ moveAll(dx,dy,dz){
+  if(!mesh)throw new Error('Selecione um trecho primeiro');
+  const delta=[dx,dy,dz];if(delta.some(v=>!Number.isFinite(v)||Math.abs(v)>1e5))throw new Error('Deslocamento inválido');
+  const bulk=[];
+  for(let i=0;i<mesh.vertexCount;i++){
+   const old=mesh.vertices[i].slice(),next=old.map((v,k)=>v+delta[k]);
+   if(next.every((v,k)=>v===old[k]))continue;
+   const rounded=core.updateVertex(mesh,i,next);
+   bulk.push({i,before:old,after:rounded});
+  }
+  if(bulk.length){history.push({bulk});future=[];refreshDiff();render();}
+  log('Deslocados '+bulk.length+' vértices da malha. Compatibilidade com o jogo NÃO validada.');
+  return bulk.length;
+ }
+};
+window.addEventListener('resize',render);
+setEnabled(false);updateSummary();render();
+})();
+
+</script><script>
+/* Riptide Map Lab — CPU Canvas 3D fallback for browsers without WebGL.
+   Renders actual collision geometry using perspective projection & depth ordering.
+   Deliberately caps rendered triangles for mobile performance. */
+(function(root){'use strict';
+ root.RiptideSceneFallback=function(canvas){
+  const $=id=>document.getElementById(id),ctx=canvas.getContext('2d');
+  if(!ctx){$('scene3d-info').textContent='Não foi possível iniciar a visualização 3D.';return;}
+  let meshes=[],map=new Map(),selected='',onlySelected=true,callbacks={},mode='orbit',yaw=-.85,elevation=.64,range=1000,target=[0,0,0],bounds=null;
+  let facesDrawn=[],pending=false,dirty=true,drag=null;const points=new Map();let prevMulti=null;
+  const norm=v=>{const l=Math.hypot(...v)||1;return v.map(x=>x/l);}, dot=(a,b)=>a.reduce((v,n,i)=>v+n*b[i],0),cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+  function camera(){const c=Math.cos(elevation);return[target[0]+range*c*Math.cos(yaw),target[1]+range*c*Math.sin(yaw),target[2]+range*Math.sin(elevation)];}
+  function basis(){const eye=camera(),forward=norm(target.map((x,i)=>x-eye[i])),right=norm(cross(forward,[0,0,1])),up=cross(right,forward);return{eye,forward,right,up};}
+  function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,1.6),w=Math.max(1,Math.round(r.width*d)),h=Math.max(1,Math.round(r.height*d));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}ctx.setTransform(d,0,0,d,0,0);return[r.width,r.height];}
+  function project(v,b,w,h){const rel=v.map((x,i)=>x-b.eye[i]),depth=dot(rel,b.forward);if(depth<.02)return null;const f=h*.95;return[w*.5+dot(rel,b.right)*f/depth,h*.5-dot(rel,b.up)*f/depth,depth];}
+  function worldBounds(items){const lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];for(const mesh of items){for(let k=0;k<3;k++){lo[k]=Math.min(lo[k],mesh.min[k]);hi[k]=Math.max(hi[k],mesh.max[k]);}}return{lo,hi};}
+  function schedule(){dirty=true;if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;if(dirty)render();});}
+  function make(key,source){const bin=root.RiptideCore.parse(source),verts=bin.vertices.map(v=>v.slice()),tri=[];
+    for(let i=0;i<bin.indexCount;i+=3){const a=root.RiptideCore.getIndex(bin,i),b=root.RiptideCore.getIndex(bin,i+1),c=root.RiptideCore.getIndex(bin,i+2);tri.push([a,b,c]);}
+    return{key,verts,tri,min:bin.min,max:bin.max,shift:[0,0,0]};}
+  function focus(full){const arr=full?meshes:(map.has(selected)?[map.get(selected)]:meshes);if(!arr.length)return;const b=worldBounds(arr);
+    target=b.lo.map((x,i)=>(x+b.hi[i])/2);range=Math.max(3,Math.hypot(...b.hi.map((v,i)=>v-b.lo[i]))*Math.max(1.3,1.18/Math.max(.48,canvas.clientWidth/Math.max(1,canvas.clientHeight))));schedule();}
+  function drawLine(a,b,col){if(!a||!b)return;ctx.strokeStyle=col;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
+  function render(){dirty=false;const[w,h]=resize();ctx.fillStyle='#0c1828';ctx.fillRect(0,0,w,h);
+    const b=basis();if(!meshes.length){ctx.fillStyle='#a0bbce';ctx.textAlign='center';ctx.font='13px sans-serif';ctx.fillText('Selecione uma arena',w/2,h/2);return;}
+    if($('scene3d-grid').checked && bounds){ctx.lineWidth=.8;const stride=Math.pow(10,Math.floor(Math.log10(Math.max(20,bounds.hi[1]-bounds.lo[1])/12))),z=bounds.lo[2]-3;
+      for(let x=Math.floor(bounds.lo[0]/stride)*stride;x<=bounds.hi[0]+stride;x+=stride)drawLine(project([x,bounds.lo[1],z],b,w,h),project([x,bounds.hi[1],z],b,w,h),'#243f53');
+      for(let y=Math.floor(bounds.lo[1]/stride)*stride;y<=bounds.hi[1]+stride;y+=stride)drawLine(project([bounds.lo[0],y,z],b,w,h),project([bounds.hi[0],y,z],b,w,h),'#243f53');}
+    facesDrawn=[];const visible=onlySelected&&map.has(selected)?[map.get(selected)]:meshes;const total=visible.reduce((n,m)=>n+m.tri.length,0),step=Math.max(1,Math.ceil(total/9000));
+    for(const mesh of visible){const vertices=mesh.verts.map(v=>project(v.map((x,i)=>x+mesh.shift[i]),b,w,h));
+      for(let i=0;i<mesh.tri.length;i+=step){const p=mesh.tri[i],q=vertices[p[0]],r=vertices[p[1]],s=vertices[p[2]];if(!q||!r||!s)continue;
+        const cr=(r[0]-q[0])*(s[1]-q[1])-(r[1]-q[1])*(s[0]-q[0]);if(Math.abs(cr)<.15)continue;
+        const depth=(q[2]+r[2]+s[2])/3,shade=.55+.45*Math.abs(cr)/Math.max(1,Math.hypot(r[0]-q[0],r[1]-q[1])*Math.hypot(s[0]-q[0],s[1]-q[1]));
+        facesDrawn.push({key:mesh.key,pts:[q,r,s],depth,shade});
+      }}
+    facesDrawn.sort((a,b)=>b.depth-a.depth);
+    ctx.lineWidth=.6;
+    for(const f of facesDrawn){ctx.beginPath();ctx.moveTo(f.pts[0][0],f.pts[0][1]);ctx.lineTo(f.pts[1][0],f.pts[1][1]);ctx.lineTo(f.pts[2][0],f.pts[2][1]);ctx.closePath();
+      const s=f.shade;ctx.fillStyle=f.key===selected?`rgba(${Math.round(20*s)},${Math.round(212*s)},${Math.round(176*s)},.90)`:`rgba(${Math.round(39*s)},${Math.round(125*s)},${Math.round(159*s)},.90)`;ctx.fill();
+      if(f.key===selected&&$('scene3d-wire').checked){ctx.strokeStyle='#b3eced';ctx.stroke();}
+    }
+    ctx.textAlign='left';ctx.fillStyle='#9bb3c8';ctx.font='11px system-ui';ctx.fillText('Visualização 3D em modo compatível · '+facesDrawn.length+' triângulos exibidos',10,h-10);
+  }
+  function pick(x,y){for(let i=facesDrawn.length-1;i>=0;i--){const f=facesDrawn[i],p=f.pts,a=p[0],b=p[1],c=p[2];const d=(b[1]-c[1])*(a[0]-c[0])+(c[0]-b[0])*(a[1]-c[1]);if(!d)continue;
+      const u=((b[1]-c[1])*(x-c[0])+(c[0]-b[0])*(y-c[1]))/d,v=((c[1]-a[1])*(x-c[0])+(a[0]-c[0])*(y-c[1]))/d;
+      if(u>=0&&v>=0&&u+v<=1)return f.key;
+    }return null;}
+  function translate(dx,dy){const h=canvas.getBoundingClientRect().height||1,scale=2*range*Math.tan(Math.PI/6)/h;
+    return[-Math.sin(yaw)*dx*scale+Math.cos(yaw)*dy*scale,Math.cos(yaw)*dx*scale+Math.sin(yaw)*dy*scale,0];}
+  function xy(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
+  function multi(){const a=[...points.values()];if(a.length<2)return null;return{cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2,dist:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)};}
+  canvas.addEventListener('pointerdown',e=>{e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=xy(e);points.set(e.pointerId,{...p,travel:0});prevMulti=multi();
+    if(points.size>1){drag=null;return;}if(mode==='move'&&selected&&pick(p.x,p.y)===selected)drag={key:selected,delta:[0,0,0],x:p.x,y:p.y};});
+  canvas.addEventListener('pointermove',e=>{const old=points.get(e.pointerId);if(!old)return;e.preventDefault();const p=xy(e);p.travel=old.travel+Math.hypot(p.x-old.x,p.y-old.y);points.set(e.pointerId,p);
+    if(points.size>1){const m=multi();if(prevMulti){range=Math.max(3,range*prevMulti.dist/Math.max(1,m.dist));const d=translate(prevMulti.cx-m.cx,m.cy-prevMulti.cy);target=target.map((x,i)=>x+d[i]);}prevMulti=m;drag=null;
+    }else if(drag){const d=translate(p.x-drag.x,drag.y-p.y);drag.x=p.x;drag.y=p.y;drag.delta=drag.delta.map((x,i)=>x+d[i]);map.get(selected).shift=drag.delta.slice();
+    }else{yaw+=(p.x-old.x)*.008;elevation=Math.min(1.45,Math.max(-1.42,elevation+(p.y-old.y)*.008));}schedule();});
+  function done(e){const state=points.get(e.pointerId);if(!state)return;points.delete(e.pointerId);prevMulti=multi();
+    if(drag){const ob=map.get(drag.key),delta=drag.delta;ob.shift=[0,0,0];drag=null;if(Math.hypot(...delta)>0.0001)callbacks.onMove?.(ob.key,delta);
+    }else if(state.travel<9&&mode==='orbit'){const hit=pick(...Object.values(xy(e)));if(hit){selected=hit;updateInfo();callbacks.onSelect?.(hit);}}schedule();}
+  canvas.addEventListener('pointerup',done);canvas.addEventListener('pointercancel',done);
+  canvas.addEventListener('wheel',e=>{e.preventDefault();range=Math.max(3,range*Math.exp(e.deltaY*.001));schedule();},{passive:false});
+  function updateInfo(){const m=map.get(selected);$('scene3d-info').textContent=m?'Selecionado: '+m.key+' · '+m.verts.length+' vértices de colisão.':'Toque em uma estrutura para selecionar um trecho.';schedule();}
+  const api={
+    on(cb){callbacks=cb||{};},
+    async loadArena(records){meshes=[];map.clear();const bad=[];for(const x of records){try{const v=make(x.key,x.data);meshes.push(v);map.set(x.key,v);}catch(e){bad.push(x.key+': '+e.message);}}
+      bounds=meshes.length?worldBounds(meshes):null;if(meshes.length)focus(true);selected='';updateInfo();return bad;},
+    select(k){selected=k;updateInfo();},
+    update(key,bytes){if(!map.has(key))return;const m=make(key,bytes);const i=meshes.indexOf(map.get(key));meshes[i]=m;map.set(key,m);schedule();},
+    setMode(s){mode=s==='move'?'move':'orbit';},
+    focusAll(){focus(true);},focusSelected(){focus(false);},getCount(){return meshes.length;}
+  };root.RiptideScene3D=api;
+  $('scene3d-orbit').addEventListener('click',()=>{mode='orbit';$('scene3d-orbit').classList.add('primary');$('scene3d-move').classList.remove('primary');});
+  $('scene3d-move').addEventListener('click',()=>{mode='move';$('scene3d-move').classList.add('primary');$('scene3d-orbit').classList.remove('primary');});
+  $('scene3d-focus').addEventListener('click',()=>focus(false));$('scene3d-all').addEventListener('click',()=>focus(true));
+  $('scene3d-wire').addEventListener('change',schedule);$('scene3d-grid').addEventListener('change',schedule);window.addEventListener('resize',schedule);
+  updateInfo();schedule();
+ };
+})(typeof window!=='undefined'?window:null);
+
+</script><script>
+/* Riptide Map Lab / Scene 3D alpha. WebGL1, no external libraries.
+ * Displays actual collision geometry, not textured visual assets.
+ * Touch: orbit (one finger), pan (two fingers), pinch zoom, select by tapping.
+ * Move mode translates whole collision meshes on XY, preserving the source BIN.
+ */
+(function (root) {
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const canvas=$('arena3d');
+  if(!canvas)return;
+  const info=$('scene3d-info');
+  const gl=canvas.getContext('webgl',{alpha:false,antialias:true,depth:true,preserveDrawingBuffer:false});
+  if(!gl){if(root.RiptideSceneFallback)root.RiptideSceneFallback(canvas);else info.textContent='WebGL indisponível.';return;}
+  const C={bg:[.039,.078,.133,1],other:[.19,.38,.50,1],chosen:[.14,.91,.77,1],wire:[.76,.94,.94,1]};
+  const versus=`attribute vec3 pos;attribute vec3 normal;uniform mat4 viewProj;uniform vec3 shift;varying float diffuse;void main(){vec3 n=normalize(normal);diffuse=max(0.25,abs(dot(n,normalize(vec3(.4,-.3,.85)))));gl_Position=viewProj*vec4(pos+shift,1.);}`;
+  const fs=`precision mediump float;uniform vec4 shade;varying float diffuse;void main(){gl_FragColor=vec4(shade.rgb*diffuse,shade.a);}`;
+  const flatV=`attribute vec3 pos;uniform mat4 viewProj;uniform vec3 shift;void main(){gl_Position=viewProj*vec4(pos+shift,1.);}`;
+  const flatF=`precision mediump float;uniform vec4 shade;void main(){gl_FragColor=shade;}`;
+  function shader(type,src){const x=gl.createShader(type);gl.shaderSource(x,src);gl.compileShader(x);if(!gl.getShaderParameter(x,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(x));return x;}
+  function program(v,f){const p=gl.createProgram();gl.attachShader(p,shader(gl.VERTEX_SHADER,v));gl.attachShader(p,shader(gl.FRAGMENT_SHADER,f));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(p));return {program:p,pos:gl.getAttribLocation(p,'pos'),normal:gl.getAttribLocation(p,'normal'),matrix:gl.getUniformLocation(p,'viewProj'),shift:gl.getUniformLocation(p,'shift'),shade:gl.getUniformLocation(p,'shade')};}
+  const smooth=program(versus,fs), flat=program(flatV,flatF);
+  let meshes=[],meshByKey=new Map(),selected='',onlySelected=true,pickMeshes=[],callbacks={},mode='orbit',yaw=-.85,elevation=.64,range=1200,target=[0,0,0],bounds=null,drag=null,dirty=true;
+  let viewproj=new Float32Array(16),grid=null,pickFbo=null,pickTex=null,pickDepth=null,pickW=0,pickH=0;
+  const MIN_DIST=2;
+  function cross(a,b){return[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
+  function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];}
+  function unit(v){const d=Math.hypot(...v)||1;return v.map(x=>x/d);}
+  function look(eye,at){const z=unit(eye.map((v,i)=>v-at[i])),x=unit(cross([0,0,1],z)),y=cross(z,x);return new Float32Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-dot(x,eye),-dot(y,eye),-dot(z,eye),1]);}
+  function perspective(aspect){const f=1/Math.tan(Math.PI/6),near=Math.max(.05,range/3000),far=Math.max(100,range*25);return new Float32Array([f/aspect,0,0,0,0,f,0,0,0,0,(far+near)/(near-far),-1,0,0,2*far*near/(near-far),0]);}
+  function mul(a,b){const o=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)for(let k=0;k<4;k++)o[c*4+r]+=a[k*4+r]*b[c*4+k];return o;}
+  function camera(){const ce=Math.cos(elevation);return[target[0]+range*ce*Math.cos(yaw),target[1]+range*ce*Math.sin(yaw),target[2]+range*Math.sin(elevation)];}
+  function uploadBuffer(data,itemSize,targetType=gl.ARRAY_BUFFER){const buf=gl.createBuffer();gl.bindBuffer(targetType,buf);gl.bufferData(targetType,data,gl.STATIC_DRAW);return buf;}
+  function makeMesh(key,array){const m=root.RiptideCore.parse(array);const positions=new Float32Array(m.vertexCount*3),normals=new Float32Array(m.vertexCount*3),indices=new Uint16Array(m.indexCount);
+    for(let i=0;i<m.vertexCount;i++)for(let k=0;k<3;k++)positions[i*3+k]=m.vertices[i][k];
+    for(let i=0;i<m.indexCount;i++)indices[i]=root.RiptideCore.getIndex(m,i);
+    for(let i=0;i<indices.length;i+=3){const a=indices[i]*3,b=indices[i+1]*3,c=indices[i+2]*3;
+      const u=[positions[b]-positions[a],positions[b+1]-positions[a+1],positions[b+2]-positions[a+2]],v=[positions[c]-positions[a],positions[c+1]-positions[a+1],positions[c+2]-positions[a+2]];
+      const n=cross(u,v);for(const j of [a,b,c])for(let k=0;k<3;k++)normals[j+k]+=n[k];}
+    for(let i=0;i<normals.length;i+=3){const n=unit([normals[i],normals[i+1],normals[i+2]]);normals.set(n,i);}
+    const lines=new Uint16Array(indices.length*2);
+    for(let i=0;i<indices.length;i+=3){const p=i*2;lines.set([indices[i],indices[i+1],indices[i+1],indices[i+2],indices[i+2],indices[i]],p);}
+    const b=m.min,hi=m.max;
+    return {key,positions,normals,indices,lines,min:b,max:hi,shift:[0,0,0],gpu:{positions:uploadBuffer(positions),normals:uploadBuffer(normals),indices:uploadBuffer(indices,2,gl.ELEMENT_ARRAY_BUFFER),lines:uploadBuffer(lines,2,gl.ELEMENT_ARRAY_BUFFER)}};}
+  function dispose(g){if(!g)return;for(const val of Object.values(g))gl.deleteBuffer(val);}
+  function calcBounds(items){let lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];for(const m of items)for(let k=0;k<3;k++){lo[k]=Math.min(lo[k],m.min[k]);hi[k]=Math.max(hi[k],m.max[k]);}return{lo,hi};}
+  function focus(full=false){onlySelected=!full;const list=full?meshes:(meshByKey.get(selected)?[meshByKey.get(selected)]:meshes);if(!list.length)return;
+    const b=calcBounds(list);target=b.lo.map((v,i)=>(v+b.hi[i])/2);const d=Math.hypot(...b.lo.map((v,i)=>b.hi[i]-v));range=Math.max(MIN_DIST,d*Math.max(1.3,1.18/Math.max(.48,canvas.clientWidth/Math.max(1,canvas.clientHeight))));dirty=true;draw();}
+  function createGrid(){if(grid)gl.deleteBuffer(grid.buf);if(!bounds)return;
+    const lo=bounds.lo,hi=bounds.hi,span=Math.max(30,hi[0]-lo[0],hi[1]-lo[1]),step=Math.pow(10,Math.floor(Math.log10(span/13)));
+    const stride=span/step>45?step*5:step;
+    const z=lo[2]-Math.max(.5,span*.002),pts=[];
+    for(let x=Math.floor(lo[0]/stride)*stride;x<=hi[0]+stride;x+=stride)pts.push(x,lo[1],z,x,hi[1],z);
+    for(let y=Math.floor(lo[1]/stride)*stride;y<=hi[1]+stride;y+=stride)pts.push(lo[0],y,z,hi[0],y,z);
+    grid={buf:uploadBuffer(new Float32Array(pts)),count:pts.length/3};}
+  function resize(){const d=Math.min(window.devicePixelRatio||1,1.8),rect=canvas.getBoundingClientRect();const w=Math.max(1,Math.floor(rect.width*d)),h=Math.max(1,Math.floor(rect.height*d));
+    if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;pickW=0;dirty=true;}
+    return[w,h];}
+  function use(p){gl.useProgram(p.program);gl.uniformMatrix4fv(p.matrix,false,viewproj);if(p.pos>=0)gl.enableVertexAttribArray(p.pos);if(p.normal>=0)gl.enableVertexAttribArray(p.normal);}
+  function drawMesh(m,p,color,kind){gl.uniform3fv(p.shift,m.shift);gl.uniform4fv(p.shade,color);
+    gl.bindBuffer(gl.ARRAY_BUFFER,m.gpu.positions);gl.vertexAttribPointer(p.pos,3,gl.FLOAT,false,0,0);
+    if(p.normal>=0){gl.bindBuffer(gl.ARRAY_BUFFER,m.gpu.normals);gl.vertexAttribPointer(p.normal,3,gl.FLOAT,false,0,0);}
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,kind===gl.LINES?m.gpu.lines:m.gpu.indices);
+    gl.drawElements(kind,kind===gl.LINES?m.lines.length:m.indices.length,gl.UNSIGNED_SHORT,0);}
+  function render(picking=false){const[w,h]=resize();gl.viewport(0,0,w,h);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);gl.clearColor(...C.bg);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+    viewproj=mul(perspective(w/h),look(camera(),target));
+    if(!meshes.length)return;
+    if(!picking&&grid&&$('scene3d-grid').checked){use(flat);gl.uniform3fv(flat.shift,[0,0,0]);gl.uniform4fv(flat.shade,[.21,.34,.44,.55]);gl.bindBuffer(gl.ARRAY_BUFFER,grid.buf);gl.vertexAttribPointer(flat.pos,3,gl.FLOAT,false,0,0);gl.drawArrays(gl.LINES,0,grid.count);}
+    use(picking?flat:smooth);
+    gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(1,1);
+    const visible=onlySelected&&meshByKey.has(selected)?[meshByKey.get(selected)]:meshes;pickMeshes=visible;
+    visible.forEach((m,i)=>{const c=picking?[(i+1&255)/255,((i+1)>>8&255)/255,((i+1)>>16&255)/255,1]:m.key===selected?C.chosen:C.other;drawMesh(m,picking?flat:smooth,c,gl.TRIANGLES);});
+    gl.disable(gl.POLYGON_OFFSET_FILL);
+    if(!picking&&$('scene3d-wire').checked){use(flat);visible.forEach(m=>{if(m.key===selected)drawMesh(m,flat,C.wire,gl.LINES);});}
+  }
+  function draw(){if(!dirty)return;dirty=false;render();}
+  function picker(){const [w,h]=resize();if(pickFbo&&pickW===w&&pickH===h)return;
+    if(pickFbo){gl.deleteFramebuffer(pickFbo);gl.deleteTexture(pickTex);gl.deleteRenderbuffer(pickDepth);}
+    pickW=w;pickH=h;pickFbo=gl.createFramebuffer();pickTex=gl.createTexture();pickDepth=gl.createRenderbuffer();
+    gl.bindTexture(gl.TEXTURE_2D,pickTex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,w,h,0,gl.RGBA,gl.UNSIGNED_BYTE,null);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
+    gl.bindRenderbuffer(gl.RENDERBUFFER,pickDepth);gl.renderbufferStorage(gl.RENDERBUFFER,gl.DEPTH_COMPONENT16,w,h);
+    gl.bindFramebuffer(gl.FRAMEBUFFER,pickFbo);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,pickTex,0);gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.RENDERBUFFER,pickDepth);gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+  }
+  function pick(x,y){if(!meshes.length)return null;picker();gl.bindFramebuffer(gl.FRAMEBUFFER,pickFbo);render(true);
+    const rect=canvas.getBoundingClientRect(),px=Math.min(canvas.width-1,Math.max(0,Math.floor(x*canvas.width/rect.width))),py=Math.min(canvas.height-1,Math.max(0,Math.floor((rect.height-y)*canvas.height/rect.height)));
+    const pixel=new Uint8Array(4);gl.readPixels(px,py,1,1,gl.RGBA,gl.UNSIGNED_BYTE,pixel);gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+    const idx=(pixel[0]|pixel[1]<<8|pixel[2]<<16)-1;dirty=true;draw();return pickMeshes[idx]||null;}
+  function selectedKey(key){selected=key;const m=meshByKey.get(key);info.textContent=m?('Selecionado: '+key+' · '+m.positions.length/3+' vértices. Visualização física, sem texturas.'):'Toque em uma estrutura para selecioná-la.';dirty=true;draw();}
+  const pointers=new Map();let prevGesture=null;
+  function coords(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
+  function moveTo(dx,dy){const height=canvas.getBoundingClientRect().height,scale=2*range*Math.tan(Math.PI/6)/Math.max(1,height);const right=unit([-Math.sin(yaw),Math.cos(yaw),0]);
+    const forward=[Math.cos(yaw),Math.sin(yaw),0];return[right[0]*dx*scale+forward[0]*dy*scale,right[1]*dx*scale+forward[1]*dy*scale,0];}
+  function gesture(){const pts=[...pointers.values()];if(pts.length<2)return null;return {dist:Math.hypot(pts[1].x-pts[0].x,pts[1].y-pts[0].y),cx:(pts[0].x+pts[1].x)/2,cy:(pts[0].y+pts[1].y)/2};}
+  canvas.addEventListener('pointerdown',e=>{e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=coords(e);pointers.set(e.pointerId,{...p,startX:p.x,startY:p.y,travel:0});prevGesture=gesture();
+    if(pointers.size!==1){drag=null;return;}
+    const match=pick(p.x,p.y);
+    if(mode==='move'&&match&&match.key===selected){drag={key:selected,delta:[0,0,0],x:p.x,y:p.y};}
+  });
+  canvas.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;e.preventDefault();const p=coords(e),old=pointers.get(e.pointerId);p.startX=old.startX;p.startY=old.startY;p.travel=old.travel+Math.hypot(p.x-old.x,p.y-old.y);pointers.set(e.pointerId,p);
+    if(pointers.size>1){const g=gesture();if(prevGesture){range=Math.max(MIN_DIST,range*Math.exp((prevGesture.dist-g.dist)/Math.max(100,range*.05)));const delta=moveTo(prevGesture.cx-g.cx,g.cy-prevGesture.cy);target=target.map((x,i)=>x+delta[i]);}prevGesture=g;drag=null;
+    }else if(drag){const d=moveTo(p.x-drag.x,drag.y-p.y);drag.x=p.x;drag.y=p.y;drag.delta=drag.delta.map((v,i)=>v+d[i]);meshByKey.get(drag.key).shift=drag.delta.slice();
+    }else{yaw+=(p.x-old.x)*.008;elevation=Math.min(1.5,Math.max(-1.45,elevation+(p.y-old.y)*.008));}
+    dirty=true;draw();
+  });
+  function release(e){const p=pointers.get(e.pointerId);if(!p)return;const current=coords(e);pointers.delete(e.pointerId);prevGesture=gesture();
+    if(drag){const move=drag,ob=meshByKey.get(move.key);ob.shift=[0,0,0];drag=null;
+      if(Math.hypot(...move.delta)>0.0001 && callbacks.onMove)callbacks.onMove(move.key,move.delta);
+    }else if(p.travel<9&&mode==='orbit'){const hit=pick(current.x,current.y);if(hit){selectedKey(hit.key);callbacks.onSelect?.(hit.key);}}
+    dirty=true;draw();}
+  canvas.addEventListener('pointerup',release);canvas.addEventListener('pointercancel',release);
+  canvas.addEventListener('wheel',e=>{e.preventDefault();range=Math.max(MIN_DIST,range*Math.exp(e.deltaY*.001));dirty=true;draw();},{passive:false});
+  root.RiptideScene3D={
+    on(cb){callbacks=cb||{};},
+    async loadArena(records){meshes.forEach(m=>dispose(m.gpu));meshes=[];meshByKey.clear();
+      const bad=[];for(const {key,data} of records){try{const m=makeMesh(key,data);meshes.push(m);meshByKey.set(key,m);}catch(e){bad.push(key+': '+e.message);}}
+      bounds=meshes.length?calcBounds(meshes):null;createGrid();if(meshes.length)focus(true);selectedKey('');
+      info.textContent=meshes.length+' trechos físicos carregados'+(bad.length?' · '+bad.length+' ignorados':'')+' · arraste para orbitar.';
+      return bad;
+    },
+    select:selectedKey,
+    update(key,bytes){const prev=meshByKey.get(key);if(!prev)return;const m=makeMesh(key,bytes);m.shift=prev.shift;dispose(prev.gpu);meshes[meshes.indexOf(prev)]=m;meshByKey.set(key,m);dirty=true;draw();},
+    focusAll(){focus(true);},focusSelected(){focus(false);},
+    setMode(next){mode=next==='move'?'move':'orbit';canvas.style.cursor=mode==='move'?'grab':'crosshair';},
+    getCount(){return meshes.length;}
+  };
+  $('scene3d-orbit').addEventListener('click',()=>{root.RiptideScene3D.setMode('orbit');$('scene3d-orbit').classList.add('primary');$('scene3d-move').classList.remove('primary');});
+  $('scene3d-move').addEventListener('click',()=>{root.RiptideScene3D.setMode('move');$('scene3d-move').classList.add('primary');$('scene3d-orbit').classList.remove('primary');});
+  $('scene3d-focus').addEventListener('click',()=>focus(false));$('scene3d-all').addEventListener('click',()=>focus(true));
+  $('scene3d-wire').addEventListener('change',()=>{dirty=true;draw();});$('scene3d-grid').addEventListener('change',()=>{dirty=true;draw();});
+  window.addEventListener('resize',()=>{dirty=true;draw();});dirty=true;draw();
+})(typeof window!=='undefined'?window:null);
+
+</script>
+<script id="private-assets" type="application/json">__EMBEDDED_ASSETS__</script>
+<script>
+(()=>{'use strict';
+const $=s=>document.getElementById(s);
+const bundle=JSON.parse($('private-assets').textContent);
+const editor=window.RiptideEditor;
+const arena=$('arena-select'),zone=$('zone-select'),notes=$('bundle-message');
+const cache=new Map(),modified=new Map(),scene=window.RiptideScene3D||null;
+let arenaToken=0;
+$('arena-count').textContent=Object.keys(bundle).length;
+$('mesh-count').textContent=Object.values(bundle).reduce((s,v)=>s+Object.keys(v).length,0);
+const key=()=>arena.value+'/'+zone.value;
+function saveCurrent(){const data=editor.getSnapshot();if(data?.name){modified.set(data.name,{bytes:data.bytes,patch:data.patch});}
+  $('patch-count').textContent=Array.from(modified.values()).filter(x=>x.patch.changes.length).length;
+}
+function b64ToBytes(encoded){const bin=atob(encoded),bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);return bytes;}
+async function inflate(payload){
+  if(!('DecompressionStream' in window))throw new Error('Chrome desatualizado: falta suporte DecompressionStream');
+  const stream=new Blob([b64ToBytes(payload)]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return await new Response(stream).arrayBuffer();
+}
+function populateArenas(){const options=Object.keys(bundle).sort().map(x=>new Option(x,x));arena.replaceChildren(...options);}
+function populateZones(){const options=Object.keys(bundle[arena.value]).sort((a,b)=>(a==='Zone01_col'?-1:b==='Zone01_col'?1:a.localeCompare(b))).map(x=>new Option(x,x));zone.replaceChildren(...options);}
+async function getOriginal(ar,segment){const key=ar+'/'+segment,asset=bundle[ar][segment];
+  if(cache.has(key))return cache.get(key);
+  const b=await inflate(asset.blob);
+  if(b.byteLength!==asset.size)throw Error('Tamanho incorreto '+key);
+  cache.set(key,b);return b;}
+async function openSceneArena(){if(!scene)return;
+  const token=++arenaToken,ar=arena.value,records=[];
+  $('scene3d-info').textContent='Montando a arena 3D '+ar+'…';
+  try{for(const segment of Object.keys(bundle[ar]).sort()){
+    const b=await getOriginal(ar,segment);if(token!==arenaToken)return;
+    const res=bundle[ar][segment].source+'.bin';
+    records.push({key:segment,data:modified.get(res)?.bytes||b});
+  }
+  if(token!==arenaToken)return;
+  await scene.loadArena(records);scene.select(zone.value);scene.focusSelected();
+  }catch(err){$('scene3d-info').textContent='Falha na prévia 3D: '+err.message;}
+}
+function syncScene(){if(!scene)return;const snap=editor.getSnapshot();if(snap&&zone.value)scene.update(zone.value,snap.bytes);}
+
+let loading=0;
+async function openZone(){const token=++loading;
+  notes.textContent='Abrindo '+key()+'…';
+  try{
+    const id=key(),asset=bundle[arena.value][zone.value];
+    if(!asset)return;
+    const base=await getOriginal(arena.value,zone.value);
+    if(token!==loading)return;
+    if(base.byteLength!==asset.size)throw new Error('Tamanho do recurso não confere');
+    cache.set(id,base);
+    const edited=modified.get(asset.source+'.bin')?.bytes||null;
+    editor.loadBytes(base,asset.source+'.bin',edited);scene?.select(zone.value);
+    notes.textContent='Trecho '+id+' · '+asset.vertices.toLocaleString('pt-BR')+' vértices. Colisão apenas; não altera visual do jogo.';
+  }catch(e){notes.textContent='Falha ao abrir recurso: '+e.message;}
+}
+arena.addEventListener('change',()=>{saveCurrent();populateZones();openZone();openSceneArena();});
+zone.addEventListener('change',()=>{saveCurrent();openZone();});
+$('bulk-apply').addEventListener('click',()=>{
+ const delta=['bulk-x','bulk-y','bulk-z'].map(id=>Number($(id).value));
+ try{editor.moveAll(...delta);saveCurrent();syncScene();}catch(e){notes.textContent=e.message;}
+});
+function saveFile(text,name){if(window.AndroidBridge&&window.AndroidBridge.exportJson){window.AndroidBridge.exportJson(name,text);return;}const blob=new Blob([text],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),12000);}
+$('bundle-export').addEventListener('click',()=>{
+ saveCurrent();const changes=[...modified.values()].map(v=>v.patch).filter(p=>p.changes.length);
+ const manifest={format:'riptide-collision-multi-patch-v1',created:new Date().toISOString(),
+  arenas_included:Object.keys(bundle),changes,
+  warning:'APF/APK NÃO modificado. Apenas geometria física experimental; sem atualização dos dados desconhecidos de colisão. Não é pista jogável.'};
+ saveFile(JSON.stringify(manifest,null,2),'riptide-arenas-patch.json');
+ notes.textContent='Patch único exportado: '+changes.length+' malhas modificadas.';
+});
+// Keep the selector on the same mesh state even if user exports individual BIN.
+['apply','undo','redo'].forEach(id=>$(id).addEventListener('click',()=>queueMicrotask(()=>{saveCurrent();syncScene();})));
+$('stage').addEventListener('pointerup',()=>queueMicrotask(()=>{saveCurrent();syncScene();}));
+if(scene){scene.on({
+  onSelect(section){if(zone.value===section)return;zone.value=section;zone.dispatchEvent(new Event('change'));},
+  onMove(section,delta){if(zone.value!==section)return;
+    try{editor.moveAll(...delta);saveCurrent();syncScene();
+      notes.textContent='Trecho '+section+' deslocado em 3D. '+editor.getSnapshot().patch.changes.length+' vértices alterados.';
+    }catch(err){notes.textContent='Não foi possível mover: '+err.message;}}
+ });}
+populateArenas();populateZones();openZone();openSceneArena();
+})();
+
+</script>
+</body></html>
