@@ -41,9 +41,9 @@ No editor pessoal: escolha a arena e o trecho, edite a malha e toque em **Export
 Para testar somente a estrutura do APF sem instalar nada:
 
 ```sh
-# Requer uma cópia local do Assets.apf extraída pelo proprietário.
+# Usa diretamente a cópia XAPK original; não precisa extrair o APF manualmente.
 python tools/apply_arena_patch.py \
-  --source "$HOME/Assets.apf" \
+  --source "$HOME/storage/downloads/SEU_ARQUIVO.xapk" \
   --patch "$HOME/storage/downloads/riptide-arenas-patch.json" \
   --out "$HOME/Assets.modified.experimental.apf"
 ```
