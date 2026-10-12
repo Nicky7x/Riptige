@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1220"><title>Riptide Map Lab — editor</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#141f30;--border:#2a3a4f;--txt:#f1f6fc;--sub:#9dafc5;--accent:#5ee0c5;--amber:#ffc785}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.layout{max-width:1340px;margin:auto;padding:18px;display:grid;gap:16px;grid-template-columns:minmax(0,1.8fr) minmax(300px,1fr)}
+header{grid-column:1/-1;display:flex;align-items:flex-start;gap:12px;justify-content:space-between}
+.logo{display:inline-flex;background:#1c4443;color:var(--accent);width:43px;height:43px;align-items:center;justify-content:center;border-radius:12px;font-size:23px}
+h1{margin:0;font-size:25px;letter-spacing:-.6px}h2{margin:0 0 12px;font-size:17px}p{margin:5px 0 0;color:var(--sub)}
+.eyebrow{text-transform:uppercase;letter-spacing:1.8px;color:var(--accent);font-size:10px;font-weight:800}
+.stamp{border:1px solid var(--border);border-radius:99px;padding:7px 12px;font-size:12px;color:var(--sub)}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.panelhead{padding:16px 18px;border-bottom:1px solid var(--border)}.screen{padding:12px}
+canvas{display:block;width:100%;height:min(62vh,590px);background:#0e1727;border-radius:12px;touch-action:none;cursor:crosshair}
+.muted{color:var(--sub);font-size:12px}.note{padding:12px 15px;background:#252b33;border-left:3px solid var(--amber);border-radius:8px;font-size:12px;color:#f1dabb}
+.sidebar{display:flex;flex-direction:column;gap:15px}.section{padding:16px}
+input[type=file]{width:100%;border:1px dashed #3f6271;padding:14px;border-radius:10px;color:var(--sub);background:#0e1928}
+label{display:block;margin-bottom:6px;font-size:12px;color:var(--sub);font-weight:600}
+input[type=number],select{width:100%;padding:11px;border:1px solid var(--border);border-radius:9px;background:#0b1728;color:var(--txt);font:inherit}
+input:focus,select:focus{outline:2px solid #4ec2af;outline-offset:1px}input:disabled,button:disabled{opacity:.4;cursor:not-allowed}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}.positions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.stat{background:#0b1728;padding:10px;border:1px solid var(--border);border-radius:11px}.stat b{display:block;font-size:18px}
+button{font:inherit;cursor:pointer;border:1px solid var(--border);background:#263b50;color:#e2f2fa;padding:11px 13px;border-radius:10px;font-weight:700;min-height:43px}
+button.primary{background:var(--accent);border-color:var(--accent);color:#083129}button:hover:not(:disabled){filter:brightness(1.12)}
+.buttonrow{display:flex;gap:10px;flex-wrap:wrap}.buttonrow button{flex:1}
+.toggle{display:flex;align-items:center;gap:7px;margin:12px 0;color:var(--sub);font-size:13px}.toggle input{accent-color:var(--accent);width:17px;height:17px}
+#filename{overflow-wrap:anywhere;color:var(--txt);font-weight:700}
+#status{padding:12px;background:#102d2b;color:#80efdb;border-radius:10px;font-size:12px;margin:10px 0 0}
+#status[data-error=yes]{background:#3c1d27;color:#ffadc0}
+.footer{grid-column:1/-1;color:var(--sub);font-size:12px;padding-bottom:25px}a{color:var(--accent)}code{color:#ffdcab}
+@media(max-width:850px){.layout{grid-template-columns:1fr;padding:12px;gap:12px}header{align-items:center}h1{font-size:20px}.stamp{display:none}canvas{height:46vh;min-height:280px}}
+</style>
+</head>
+<body>
+<main class="layout">
+<header><div style="display:flex;gap:12px;align-items:center">
+<span class="logo">≋</span><div><div class="eyebrow">Vector Engine • pesquisa independente</div>
+<h1>Riptide Map Lab <span style="color:var(--accent)">α</span></h1><p>Editor experimental de vértices de colisão · 100% local</p></div></div>
+<span class="stamp">SEM ROOT · OFFLINE</span></header>
+<section class="panel"><div class="panelhead"><h2>Visualização geométrica</h2>
+<div class="muted">Toque em um vértice para selecioná-lo. Ative o arraste para movê-lo no plano.</div></div>
+<div class="screen"><canvas id="stage" aria-label="Visualização de malha de colisão"></canvas>
+<div class="controls" style="margin-top:12px"><div><label for="projection">Projeção</label><select id="projection">
+<option value="0,1">X / Y</option><option value="0,2">X / Z</option><option value="1,2">Y / Z</option></select></div>
+<div><label>Opções</label><label class="toggle"><input id="edges" type="checkbox" checked> Desenhar triângulos</label></div></div>
+<label class="toggle"><input type="checkbox" id="drag"> Permitir arrastar pontos com o dedo</label></div></section>
+<aside class="sidebar">
+<div class="panel section"><h2>01 · Abrir malha</h2>
+<label for="file">Escolha um <code>.bin</code> extraído do seu próprio APF</label>
+<input type="file" id="file" accept=".bin,.dat,application/octet-stream">
+<p style="margin-top:9px">Arquivo: <span id="filename">Nenhum arquivo</span></p>
+<div class="stats"><div class="stat"><span class="muted">Vértices</span><b id="vertices">—</b></div>
+<div class="stat"><span class="muted">Triângulos</span><b id="triangles">—</b></div>
+<div class="stat"><span class="muted">Alterados</span><b id="changed">0</b></div></div>
+<p class="muted">Dados adicionais não interpretados: <b id="unknown">—</b></p></div>
+<div class="panel section"><h2>02 · Editar coordenadas</h2>
+<p id="selection">Nenhum vértice selecionado</p>
+<div class="positions" style="margin-top:14px">
+<div><label for="coord-x">X</label><input type="number" step="any" id="coord-x" data-requires disabled></div>
+<div><label for="coord-y">Y</label><input type="number" step="any" id="coord-y" data-requires disabled></div>
+<div><label for="coord-z">Z</label><input type="number" step="any" id="coord-z" data-requires disabled></div></div>
+<div class="buttonrow" style="margin-top:12px">
+<button id="apply" class="primary" data-requires disabled>Aplicar</button>
+<button id="undo" data-requires disabled>↶ Desfazer</button>
+<button id="redo" data-requires disabled>↷ Refazer</button></div></div>
+<div class="panel section"><h2>03 · Exportar alterações</h2>
+<p>Salve uma cópia local da malha editada ou um manifesto JSON com as diferenças.</p>
+<div class="buttonrow" style="margin-top:12px">
+<button id="savebin" class="primary" data-requires disabled>Salvar .bin</button>
+<button id="savepatch" data-requires disabled>Salvar patch.json</button></div>
+<p id="status" role="status">Aguardando arquivo local.</p></div>
+<div class="note"><strong>Limite atual:</strong> edita vértices em arquivos de colisão decodificados, mas não reconstrói o APF/APK. Outras estruturas da física podem depender desses vértices. Não instale uma versão modificada até validarmos o formato completo.</div>
+</aside>
+<div class="footer">Nenhum arquivo é enviado à internet. Projeto não oficial e não afiliado à Vector Unit.
+<a href="https://github.com/Nicky7x/Riptige/blob/main/docs/EDITOR_ANDROID.md">Documentação</a>.</div>
+</main>
+<script src="collision_core.js"></script><script src="app.js"></script>
+</body></html>
