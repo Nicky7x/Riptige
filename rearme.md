@@ -149,3 +149,13 @@ A análise dos blocos APK Signature Scheme v2 dos APKs debug v0.1 e v0.2 mostrou
 - **Testes da interface:** Chromium com dados da própria amostra do usuário alternou entre física (cinco partes testadas) e visual (vinte modelos), exibindo um único trecho físico ou quatro modelos associados ao trecho escolhido, sem exceções JS.
 - **Necessidade de migração:** o cache criado pela versão Android v0.2 não contém `__visuals`; o usuário deve tocar em **Importar XAPK** novamente uma vez após instalar v0.3 para construir o novo catálogo local.
 - **Limites:** APK compilado mas ainda não testado fisicamente em Android; 3D visual sem texturas ou suporte de escrita no APF de modelos.
+
+
+## 2026-10-12 — M1.10: v0.4, corrigir tela do editor em branco após reimportar (ChatGPT)
+
+- **Relato do proprietário (Poco X8 Pro):** a v0.3 importava XAPK, mostrava cerca de 23 recursos ignorados e a mensagem "Editor 3D · arenas locais · sem upload", mas o WebView ficava sem a interface visível. A versão v0.2 importava e mostrava o editor normalmente.
+- **Diagnóstico de código:** `MainActivity.showEditorIfReady()` montava uma string HTML única com **todo** o JSON de colisões + modelos visuais inline, e chamava `web.loadDataWithBaseURL`. O aumento da biblioteca visual após v0.3 pode ter ultrapassado limites práticos de memória/IPC/WebView. Ainda **não há logcat** do aparelho, portanto esta causa é plausível, não confirmada.
+- **Correção estrutural:** carregar somente `editor_template.html` (~60 KB), injetando `{"__external_bundle":true}`, em vez do JSON completo. O Java serve `arenas_bundle.json` diretamente de armazenamento privado por `WebViewClient.shouldInterceptRequest` em `https://appassets.androidplatform.net/arenas_bundle.json`. Nenhum pedido externo é atendido; URLs desconhecidas recebem 403. O frontend `web/bundle_loader.js` usa `fetch('/arenas_bundle.json')` e inicia assíncronamente.
+- **Diagnóstico:** adicionados `WebChromeClient.onConsoleMessage` e `AndroidBridge.reportError()` para exibir mensagens de erro na interface Android, em vez de permanecer indefinidamente na mensagem genérica. O frontend captura exceções de inicialização e mostra a causa na página.
+- **Segurança:** arquivos do jogo e catálogo continuam somente no armazenamento do aplicativo; arquivos proprietários não foram publicados nem enviados para servidor remoto. Mantidas restrições de acesso a arquivos e navegação na WebView.
+- **Teste pendente:** conferir compilação no GitHub Actions e validar o carregamento no Poco. Os ~23 recursos ignorados podem corresponder a variantes de modelos não suportadas e não caracterizam falha da importação por si só.
