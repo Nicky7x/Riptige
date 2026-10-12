@@ -89,10 +89,9 @@ public final class MainActivity extends Activity {
                 // loadDataWithBaseURL() renders the main HTML using an internal data: URI.
                 // Never turn data:/about:/blob: requests into HTTP 403 responses.
                 String scheme=u.getScheme();
-                if("data".equals(scheme)||"about".equals(scheme)||"blob".equals(scheme))
+                if(WebRequestPolicy.browserHandled(scheme))
                     return null;
-                if("https".equals(scheme)&&"appassets.androidplatform.net".equals(u.getHost())&&
-                    "/arenas_bundle.json".equals(u.getPath())){
+                if(WebRequestPolicy.isLocalLibrary(scheme,u.getHost(),u.getPath())){
                     try{
                         File local=new File(getFilesDir(),"arenas_bundle.json");
                         if(!local.isFile())throw new FileNotFoundException("Arenas não importadas");
