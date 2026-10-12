@@ -68,3 +68,26 @@ Este repacker preserva todos os recursos não alterados e anexa os payloads modi
 - [Issue de colaboração ChatGPT ↔ Claude](../../issues/1).
 
 **Próximo marco para uma pista jogável:** decodificar serialização de modelos 3D, templates e vínculos de física/IA e encontrar forma autorizada de carregar recursos modificados, validando in-game.
+
+
+## Editor 3D no Android — atualização de 12/10/2026
+
+O **gerador pessoal** `tools/build_private_editor.py` agora produz um HTML único e offline com interface tridimensional para as malhas de colisão incorporadas. **Os assets não estão no GitHub.**
+
+- Renderização 3D com WebGL1 e fallback Canvas 2D com projeção 3D (sem bibliotecas externas).
+- Seleção de uma das 9 arenas e 75 malhas de colisão validadas, com abertura do trecho preferencial `Zone01_col`.
+- Câmera orbital controlada por toque, zoom por gesto de pinça, panorama com dois dedos e botão para enquadrar trecho ou arena inteira.
+- Selecionar malha tocando nela, alternar para **Mover trecho** e arrastar a geometria de colisão no plano horizontal (XY).
+- Manter alterações ao mudar de trecho/arena e exportar `riptide-arenas-patch.json`.
+
+### Gerar sua versão 3D pessoal
+
+```bash
+python tools/build_private_editor.py --source /sdcard/Download/SEU_JOGO.xapk --out /sdcard/Download/Riptide_Map_Lab_3D_Pessoal.html
+```
+
+Abra o HTML diretamente no navegador Android, sem instalar APK ou depender de servidor. Para usuários com navegadores sem WebGL, o programa muda para renderização 3D simplificada via Canvas automaticamente.
+
+**Verificações:** o editor com 9 arenas foi aberto em Chromium headless em modo celular; em ambiente sem WebGL o fallback mostrou a malha real; órbita, seleção, alternância de arenas e exportação de mudanças em **951 vértices** foram exercitadas sem erros JS. **Não é teste feito no Poco físico** nem demonstra carregamento da pista no jogo.
+
+**Escopo e limitação:** o visor 3D exibe exclusivamente malhas de colisão originais, não geometria visual/texturizada. Deslocamentos XY têm efeito apenas na cópia binária editada; o APF experimental permanece separado. Adicionar modelos, rampas visuais, água, checkpoints ou IA exige decodificação adicional.
