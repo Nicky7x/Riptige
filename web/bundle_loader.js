@@ -56,6 +56,42 @@ async function openZone(){const token=++loading;
 }
 arena.addEventListener('change',()=>{saveCurrent();populateZones();openZone();openSceneArena();});
 zone.addEventListener('change',()=>{saveCurrent();openZone();});
+
+async function moveEntireArena(){
+  const delta=['bulk-x','bulk-y','bulk-z'].map(id=>Number($(id).value));
+  if(delta.some(n=>!Number.isFinite(n)||Math.abs(n)>100000)){notes.textContent='Deslocamento inválido';return;}
+  if(delta.every(n=>n===0)){notes.textContent='Defina um deslocamento diferente de zero.';return;}
+  saveCurrent();
+  const ar=arena.value;
+  const segments=Object.keys(bundle[ar]);
+  $('bulk-arena').disabled=true;
+  notes.textContent='Movendo a arena '+ar+' inteira…';
+  try{
+    let count=0;
+    for(const segment of segments){
+      const asset=bundle[ar][segment],base=await getOriginal(ar,segment);
+      const resource=asset.source+'.bin';
+      const state=modified.get(resource);
+      const current=(state?state.bytes:base).slice(0),parsed=window.RiptideCore.parse(current);
+      for(let i=0;i<parsed.vertexCount;i++){
+        const next=parsed.vertices[i].map((v,k)=>v+delta[k]);
+        window.RiptideCore.updateVertex(parsed,i,next);
+      }
+      const original=window.RiptideCore.parse(base.slice(0));
+      const changes=window.RiptideCore.diff(original,parsed).map(v=>({index:v.vertex,before:v.before,after:v.after}));
+      modified.set(resource,{bytes:parsed.buffer,patch:{resource_name:resource.replace(/\\.bin$/i,''),vertex_count:parsed.vertexCount,triangle_count:parsed.triangleCount,changes}});
+      scene?.update(segment,parsed.buffer);
+      count++;
+      if(count%2===0)await new Promise(resolve=>setTimeout(resolve,0));
+    }
+    await openZone();scene?.focusAll();
+    $('patch-count').textContent=Array.from(modified.values()).filter(x=>x.patch.changes.length).length;
+    notes.textContent='Arena '+ar+' inteira deslocada: '+count+' trechos. Exporte o patch para salvar.';
+  }catch(e){notes.textContent='Falha ao mover arena: '+e.message;}
+  finally{$('bulk-arena').disabled=false;}
+}
+$('bulk-arena')?.addEventListener('click',moveEntireArena);
+
 $('bulk-apply').addEventListener('click',()=>{
  const delta=['bulk-x','bulk-y','bulk-z'].map(id=>Number($(id).value));
  try{editor.moveAll(...delta);saveCurrent();syncScene();}catch(e){notes.textContent=e.message;}
