@@ -8,6 +8,7 @@ on:
       - 'web/**'
       - 'tests-js/mobile-v07.test.cjs'
       - 'tests-js/texture-v08.test.cjs'
+      - 'tests-js/world-v09.test.cjs'
   pull_request:
     paths:
       - 'android/**'
@@ -15,6 +16,7 @@ on:
       - 'web/**'
       - 'tests-js/mobile-v07.test.cjs'
       - 'tests-js/texture-v08.test.cjs'
+      - 'tests-js/world-v09.test.cjs'
 permissions:
   contents: read
 jobs:
@@ -37,6 +39,8 @@ jobs:
         run: node tests-js/mobile-v07.test.cjs
       - name: Validate material and UV rendering integration
         run: node tests-js/texture-v08.test.cjs
+      - name: Validate offline GLB scene parser and document chooser
+        run: node tests-js/world-v09.test.cjs
       - name: Compile Android debug APK
         run: gradle -p android --no-daemon :app:testDebugUnitTest :app:assembleDebug
       - name: Publish test APK
