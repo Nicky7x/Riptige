@@ -14,6 +14,8 @@ import android.util.Base64;
 public final class ApfImporter {
     private static final String PREFIX = "VuCollisionMeshAsset/Level/";
     private static final String STATIC_PREFIX = "VuStaticModelAsset/Level/";
+    private static final String MAT_PREFIX = "VuMaterialAsset/";
+    private static final String TEX_PREFIX = "VuTextureAsset/";
     private static final int MAX_RESOURCE = 64 * 1024 * 1024;
     private static final int MAX_INDEX = 100 * 1024 * 1024;
     private ApfImporter() {}
@@ -57,6 +59,10 @@ public final class ApfImporter {
     public static Result importApf(File apf) throws IOException {
         JSONObject arenas=new JSONObject();
         JSONObject visuals=new JSONObject();
+        JSONObject materials=new JSONObject(),textures=new JSONObject();
+        Map<String,String> materialDiffuse=new HashMap<>();
+        Map<String,Entry> textureEntries=new HashMap<>();
+        Set<String> usedMaterials=new LinkedHashSet<>();
         int skipped=0,meshes=0;
         try(RandomAccessFile file=new RandomAccessFile(apf,"r")) {
             if(file.length()<60)throw new IOException("APF muito curto");
@@ -82,7 +88,8 @@ public final class ApfImporter {
                 long csize=Integer.toUnsignedLong(ib.getInt(p+8));
                 int flags=ib.getInt(p+16); p+=20;
                 if(off<60||csize>indexPos-off)throw new IOException("Entrada fora do APF: "+name);
-                if(name.startsWith(PREFIX) || name.startsWith(STATIC_PREFIX)) {
+                if(name.startsWith(PREFIX) || name.startsWith(STATIC_PREFIX) ||
+                   name.startsWith(MAT_PREFIX) || name.startsWith(TEX_PREFIX)) {
                     if(usize>MAX_RESOURCE||csize>MAX_RESOURCE){skipped++;continue;}
                     entries.add(new Entry(name,off,(int)usize,(int)csize,flags));
                 }
@@ -90,10 +97,21 @@ public final class ApfImporter {
             if(p!=idx.length)throw new IOException("Bytes desconhecidos no índice APF");
             for(Entry e:entries) {
                 try {
+                    if(e.name.startsWith(TEX_PREFIX)){
+                        textureEntries.put(e.name.substring(TEX_PREFIX.length()),e);
+                        continue; // only decode textures actually referenced by valid geometry
+                    }
                     byte[] raw=new byte[e.csize];file.seek(e.offset);file.readFully(raw);
                     byte[] mesh=unpack(raw,e.usize,e.flags);
+                    if(e.name.startsWith(MAT_PREFIX)){
+                        String ref=TexturePreview.diffuseReference(mesh);
+                        if(ref!=null)materialDiffuse.put(e.name.substring(MAT_PREFIX.length()),ref);
+                        continue;
+                    }
                     if(e.name.startsWith(STATIC_PREFIX)) {
                         byte[] preview=makeVisualPreview(mesh);
+                        VisualPreviewMeta.Result meta=VisualPreviewMeta.parse(mesh);
+                        usedMaterials.addAll(meta.used);
                         String suffix=e.name.substring(STATIC_PREFIX.length());
                         int slash=suffix.indexOf('/');
                         if(slash<1||slash==suffix.length()-1)throw new IOException("Nome de modelo inválido");
@@ -103,6 +121,8 @@ public final class ApfImporter {
                         JSONObject rec=new JSONObject();
                         rec.put("blob",gzipBase64(preview));rec.put("size",preview.length);
                         rec.put("source",e.name);
+                        rec.put("uvblob",gzipBase64(meta.uv));rec.put("uvsize",meta.uv.length);
+                        rec.put("groups",meta.groups);
                         group.put(model,rec);
                         continue;
                     }
@@ -118,10 +138,36 @@ public final class ApfImporter {
                     zones.put(section,rec);meshes++;
                 } catch(Exception err) { skipped++; }
             }
+            // Convert a conservative subset of ORIGINAL diffuse images entirely on-device.
+            // Referenced texture names and UVs remain local, never included in public APK.
+            Set<String> seenTextures=new HashSet<>();int decodedTextures=0;
+            for(String material:usedMaterials){
+                String tex=materialDiffuse.get(material);
+                if(tex==null)continue;
+                JSONObject mat=new JSONObject();
+                mat.put("diffuse",tex);
+                materials.put(material,mat);
+                if(!seenTextures.add(tex)||decodedTextures>=160)continue;
+                Entry t=textureEntries.get(tex);
+                if(t==null||t.usize>24*1024*1024)continue;
+                try{
+                    byte[] raw=new byte[t.csize];file.seek(t.offset);file.readFully(raw);
+                    byte[] decompressed=unpack(raw,t.usize,t.flags);
+                    TexturePreview.Header h=TexturePreview.header(decompressed);
+                    if(h.width>1024||h.height>1024)continue;
+                    byte[] png=TexturePreview.png(decompressed);
+                    JSONObject texRecord=new JSONObject();
+                    texRecord.put("data",Base64.encodeToString(png,Base64.NO_WRAP));
+                    texRecord.put("w",h.width);texRecord.put("h",h.height);
+                    texRecord.put("format","PNG");
+                    textures.put(tex,texRecord);decodedTextures++;
+                }catch(Exception ignored){/* unsupported material/image variant: shaded fallback */}
+            }
         }
         if(meshes==0)throw new IOException("Não encontrei malhas compatíveis nesse XAPK");
         int arenaCount=arenas.length();
-        try { arenas.put("__visuals",visuals); }
+        try { arenas.put("__visuals",visuals);
+              arenas.put("__materials",materials);arenas.put("__textures",textures); }
         catch(org.json.JSONException e) { throw new IOException("Catálogo visual inválido",e); }
         return new Result(arenas.toString(),arenaCount,meshes,skipped);
     }
