@@ -8,6 +8,10 @@ Usage: python tools/scene_dependencies.py /path/to/Assets.apf --out scene-audit.
 """
 from __future__ import annotations
 import argparse
+import contextlib
+import shutil
+import tempfile
+import zipfile
 import json
 import lzma
 import pathlib
@@ -136,12 +140,38 @@ def scan_scene(f,entries):
             'Resource paths referenced indirectly by prefab templates are not covered by this top-level scene scan.',
             'No resource contents from the game are included in this JSON, only references and metadata.']}
 
+@contextlib.contextmanager
+def local_apf(source):
+    """Read a local APF or XAPK, extracting to temporary files only.
+
+    No user data goes to GitHub or to a server. Temporary copies are deleted.
+    """
+    if source.suffix.lower()=='.apf':
+        with source.open('rb') as stream:yield stream
+        return
+    if source.suffix.lower() not in ('.xapk','.apk'):
+        raise ValueError('Selecione arquivo .apf, .apk ou .xapk')
+    with tempfile.TemporaryDirectory(prefix='riptide-scene-') as temp:
+        archive=source
+        if source.suffix.lower()=='.xapk':
+            with zipfile.ZipFile(source) as xapk:
+                if 'base.apk' not in xapk.namelist():raise ValueError('base.apk não encontrado no XAPK')
+                archive=pathlib.Path(temp)/'base.apk'
+                with xapk.open('base.apk') as inp,archive.open('wb') as out:
+                    shutil.copyfileobj(inp,out)
+        with zipfile.ZipFile(archive) as apk:
+            if 'assets/Assets.apf' not in apk.namelist():raise ValueError('Assets.apf não encontrado no APK')
+            apf=pathlib.Path(temp)/'Assets.apf'
+            with apk.open('assets/Assets.apf') as inp,apf.open('wb') as out:
+                shutil.copyfileobj(inp,out)
+        with apf.open('rb') as stream:yield stream
+
 def main():
     cli=argparse.ArgumentParser(description=__doc__)
-    cli.add_argument('apf',type=pathlib.Path)
+    cli.add_argument('apf',type=pathlib.Path,help='Seu Assets.apf, base.apk ou XAPK original')
     cli.add_argument('--out',type=pathlib.Path)
     args=cli.parse_args()
-    with args.apf.open('rb') as stream: audit=scan_scene(stream,index_apf(stream))
+    with local_apf(args.apf) as stream: audit=scan_scene(stream,index_apf(stream))
     output=json.dumps(audit,indent=2,ensure_ascii=False)
     if args.out:args.out.write_text(output+'\n',encoding='utf-8')
     else:print(output)
