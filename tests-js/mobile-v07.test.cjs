@@ -22,7 +22,15 @@ for(const expr of ['v07-stick','data-action="player"','v07-arena','v07-hint','pi
 assert.ok(css.includes('#v07-viewport #arena3d'));
 assert.ok(html.includes('await openSceneArena()'));
 assert.ok(html.includes('AndroidBridge.editorReady'));
-const scripts=[...html.matchAll(/<script(?:\s+[^>]*)?>([\s\S]*?)<\\/script>/g)];
+const scripts=[];
+for(let start=0;;){
+ const open=html.indexOf('<script',start);
+ if(open<0)break;
+ const body=html.indexOf('>',open),end=html.indexOf('</script>',body);
+ if(body<0||end<0)throw Error('Invalid embedded script tags');
+ scripts.push([null,html.slice(body+1,end)]);
+ start=end+9;
+}
 assert.ok(scripts.length>=7,'Embedded scripts missing');
 let validated=0;
 for(const item of scripts){
