@@ -73,6 +73,34 @@ def payload(f,entry,max_bytes=15_000_000):
     return out
 
 
+def water_map_header(f, entry):
+    """Read only the first 70 decompressed bytes, even for very large maps.
+
+    VuWaterMapAsset uses a different image header from VuTextureAsset.
+    Width/height/format are at offsets 20,24,32 respectively.
+    """
+    if entry.decoded_size<70:raise ValueError('Cabeçalho de mapa truncado')
+    f.seek(entry.offset)
+    kind=entry.flags>>16
+    if kind==0:
+        data=f.read(70)
+    else:
+        raw=f.read(min(entry.stored_size,262144))
+        if kind==1:
+            data=zlib.decompressobj().decompress(raw,70)
+        elif kind==2:
+            if len(raw)<5:raise ValueError('LZMA curto')
+            prop=raw[0]; dic=struct.unpack_from('<I',raw,1)[0]
+            if not 4096<=dic<=134217728:raise ValueError('Dicionário LZMA inválido')
+            filters=[dict(id=lzma.FILTER_LZMA1,dict_size=dic,lc=prop%9,lp=(prop//9)%5,pb=prop//45)]
+            data=lzma.LZMADecompressor(format=lzma.FORMAT_RAW,filters=filters).decompress(raw[5:],max_length=70)
+        else:raise ValueError('Compressão desconhecida')
+    if len(data)<70:raise ValueError('Cabeçalho incompleto')
+    w,h=struct.unpack_from('<II',data,20)
+    fmt=struct.unpack_from('<I',data,32)[0]
+    if not (1<=w<=16384 and 1<=h<=16384):raise ValueError('Dimensões inválidas')
+    return {'width':w,'height':h,'format':GL_FORMATS.get(fmt,hex(fmt))}
+
 def scan_scene(f,entries):
     arenas=[]
     for arena in LEVELS:
@@ -87,10 +115,7 @@ def scan_scene(f,entries):
             # Strings in template asset are null terminated. Exact match prevents false positives.
             if b'\x00'+ref.encode()+b'\x00' in data:matched.append(ref)
             try:
-                header=payload(f,e,max_bytes=1_000_000)
-                if len(header)<70:raise ValueError('mapa curto')
-                w,h,format_code=struct.unpack_from('<III',header,21)[0:2]+(struct.unpack_from('<I',header,33)[0],)
-                formats[ref]={'width':w,'height':h,'format':GL_FORMATS.get(format_code,hex(format_code))}
+                formats[ref]=water_map_header(f,e)
             except Exception as ex:unreadable.append({'resource':ref,'reason':str(ex)})
         classes=[cls.decode() for cls in TYPES if b'\x00'+cls+b'\x00' in data]
         arenas.append({'arena':arena,'scene_asset':level,'scene_bytes':len(data),
