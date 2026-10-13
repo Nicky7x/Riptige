@@ -21,6 +21,8 @@ public final class MainActivity extends Activity {
     private WebView web;
     private TextView status;
     private Button importButton,homeButton;
+    private LinearLayout rootPage,rootToolbar;
+    private boolean editorImmersive=false;
     private String pendingExport="";
     private String pendingName="riptide-arenas-patch.json";
     private final String HTML_TEMPLATE="editor_template.html";
@@ -34,7 +36,8 @@ public final class MainActivity extends Activity {
     }
 
     private void buildLayout(){
-        LinearLayout page=new LinearLayout(this);
+        rootPage=new LinearLayout(this);
+        LinearLayout page=rootPage;
         page.setOrientation(LinearLayout.VERTICAL);
         page.setBackgroundColor(Color.rgb(11,18,32));
         // Android 15+ draws behind status/navigation bars with targetSdk 35.
@@ -43,14 +46,16 @@ public final class MainActivity extends Activity {
             getWindow().setDecorFitsSystemWindows(false);
             page.setOnApplyWindowInsetsListener((view,insets)->{
                 android.graphics.Insets bars=insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
-                view.setPadding(bars.left,Math.max(bars.top,dp(64)),bars.right,bars.bottom);
+                view.setPadding(editorImmersive?0:bars.left,editorImmersive?0:Math.max(bars.top,dp(64)),
+                    editorImmersive?0:bars.right,editorImmersive?0:bars.bottom);
                 return insets;
             });
         } else {
             page.setFitsSystemWindows(true);
             page.setPadding(0,dp(48),0,0);
         }
-        LinearLayout toolbar=new LinearLayout(this);
+        rootToolbar=new LinearLayout(this);
+        LinearLayout toolbar=rootToolbar;
         toolbar.setOrientation(LinearLayout.HORIZONTAL);
         toolbar.setGravity(Gravity.CENTER);
         toolbar.setPadding(dp(18),dp(22),dp(18),dp(18));
@@ -135,6 +140,39 @@ public final class MainActivity extends Activity {
 
     private int dp(float size) {
         return Math.round(size*getResources().getDisplayMetrics().density);
+    }
+
+    /** Fullscreen editor after assets finish loading; import controls stay available in WebView drawer. */
+    private void enterImmersiveEditor(){
+        editorImmersive=true;
+        if(rootToolbar!=null)rootToolbar.setVisibility(View.GONE);
+        if(status!=null)status.setVisibility(View.GONE);
+        if(Build.VERSION.SDK_INT>=30){
+            getWindow().setDecorFitsSystemWindows(false);
+            android.view.WindowInsetsController ctrl=getWindow().getInsetsController();
+            if(ctrl!=null){
+                ctrl.hide(WindowInsets.Type.systemBars());
+                ctrl.setSystemBarsBehavior(android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            }
+        }else{
+            rootPage.setFitsSystemWindows(false);
+            getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|
+                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+        }
+        rootPage.setPadding(0,0,0,0);
+        rootPage.requestApplyInsets();
+    }
+    private void leaveImmersiveEditor(){
+        editorImmersive=false;
+        if(rootToolbar!=null)rootToolbar.setVisibility(View.VISIBLE);
+        if(status!=null)status.setVisibility(View.VISIBLE);
+        if(Build.VERSION.SDK_INT>=30){
+            android.view.WindowInsetsController ctrl=getWindow().getInsetsController();
+            if(ctrl!=null)ctrl.show(WindowInsets.Type.systemBars());
+        }else getWindow().getDecorView().setSystemUiVisibility(0);
+        rootPage.requestApplyInsets();
     }
 
     private void selectXapk() {
@@ -232,7 +270,10 @@ public final class MainActivity extends Activity {
             onUi(()->setStatus(message!=null&&message.length()<500?message:"Falha ao iniciar editor"));
         }
         @JavascriptInterface public void editorReady(int count){
-            onUi(()->setStatus("Editor 3D pronto · "+count+" arenas locais · sem upload"));
+            onUi(()->{setStatus("Editor 3D pronto · "+count+" arenas locais · sem upload");enterImmersiveEditor();});
+        }
+        @JavascriptInterface public void pickXapk(){
+            onUi(()->{leaveImmersiveEditor();selectXapk();});
         }
         @JavascriptInterface public void exportJson(String filename,String contents){
             if(contents==null||contents.length()>12_000_000)return;
