@@ -1,0 +1,39 @@
+/* v0.7 — touchscreen landscape cockpit. Visual layer remains read-only. */
+#v07-shell{position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;background:#081321;color:#e9f8ff;font:12px/1.25 system-ui,-apple-system,Segoe UI,sans-serif;overflow:hidden}
+#v07-shell *{box-sizing:border-box}
+#v07-shell button,#v07-shell select{font:inherit;color:#e9f8ff}
+#v07-top{height:46px;flex-shrink:0;background:linear-gradient(90deg,#122737,#112033);border-bottom:1px solid #274258;display:flex;align-items:center;gap:11px;padding:4px 10px}
+#v07-brand{font-weight:900;letter-spacing:.06em;color:#65ead6;white-space:nowrap;font-size:12px}
+#v07-top label{display:flex;align-items:center;gap:5px;margin:0;font-size:11px;font-weight:700;color:#b7ced8;white-space:nowrap}
+#v07-top select{min-width:70px;max-width:145px;padding:5px 7px;height:34px;background:#122f41;border:1px solid #365870;border-radius:9px;font-size:12px}
+#v07-mode{margin-left:auto;white-space:nowrap;border:1px solid #2d615e;color:#80e5d4;border-radius:99px;padding:7px 10px;background:#11302f;font-weight:700}
+#v07-main{flex:1;min-height:0;display:flex;gap:0}
+.v07-rail{flex:0 0 66px;min-width:66px;max-height:100%;display:flex;flex-direction:column;gap:6px;padding:7px 5px;background:#101f30;overflow-y:auto;scrollbar-width:none}
+.v07-rail::-webkit-scrollbar{display:none}
+.v07-tool{border:1px solid #30516a!important;border-radius:11px!important;background:#1b3248!important;min-height:49px!important;padding:4px 2px!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex:0 0 auto;font-weight:750!important;touch-action:manipulation}
+.v07-tool .v07-icon{font-size:19px;line-height:20px}.v07-tool small{font-size:9px;line-height:10px;white-space:nowrap}
+.v07-tool[aria-pressed=true]{background:#176f67!important;border-color:#65e6d6!important;color:#fff!important}
+.v07-tool:disabled{opacity:.45!important}
+#v07-viewport{flex:1;min-width:0;position:relative;background:#0a1725;overflow:hidden}
+#v07-viewport>.view3d{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
+#v07-viewport #arena3d{width:100%!important;height:100%!important;min-height:0!important;border-radius:0!important;display:block!important}
+#v07-viewport .view3d-watermark{top:7px;right:7px;opacity:.65;font-size:9px}
+#v07-hint{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);max-width:calc(100% - 14px);width:max-content;display:flex;flex-direction:column;align-items:center;gap:1px;text-align:center;padding:6px 11px;border:1px solid #426176;background:#071b2bef;border-radius:12px;pointer-events:none;color:#d5e4ef;font-size:10px;z-index:2}
+#v07-hint b{color:#72e7d6;font-size:11px}
+#v07-player-label{position:absolute;top:9px;left:9px;display:none;pointer-events:none;background:#0b2737cc;border-radius:9px;padding:6px 9px;color:#7eebd9;font-weight:800;font-size:11px}
+#v07-shell.player #v07-player-label{display:block}
+#v07-stick{display:none;position:absolute;left:16px;bottom:54px;width:102px;height:102px;border:2px solid #66e0cf77;border-radius:100%;background:#163b4499;touch-action:none;z-index:5;user-select:none;-webkit-user-select:none}
+#v07-stick-knob{position:absolute;left:32px;top:32px;width:34px;height:34px;border-radius:100%;background:#6de2d1;border:3px solid #fff9;box-shadow:0 2px 18px #59efcf44;pointer-events:none}
+#v07-shell.player #v07-stick{display:block}
+#v07-shell.player #v07-hint{left:auto;right:8px;transform:none;bottom:8px}
+#v07-drawer{position:absolute;right:72px;top:52px;bottom:7px;width:min(345px,calc(100vw - 150px));overflow-y:auto;z-index:8;background:#0f2235f5;border:1px solid #4a6b7b;border-radius:13px;padding:10px;box-shadow:0 12px 40px #0009}
+#v07-drawer[hidden]{display:none}
+#v07-drawer .sidebar{display:flex!important;width:100%}
+#v07-drawer .section{padding:10px}#v07-drawer .panel{border-radius:9px}
+#v07-drawer .note{font-size:11px}#v07-drawer .positions{gap:4px}#v07-drawer input{min-width:0}
+#v07-drawer-top{display:flex;gap:7px;align-items:center;justify-content:space-between;margin:0 0 10px}#v07-drawer-top button{padding:7px 13px;min-height:30px}
+#v07-joystick-desc{position:absolute;left:12px;bottom:164px;color:#c7f2ea;font-size:10px;display:none}#v07-shell.player #v07-joystick-desc{display:block}
+#v07-shell:not(.player) #v07-player-label{display:none}
+body.v07-active{overflow:hidden}body.v07-active>.layout{display:none!important}
+@media(max-height:360px){#v07-top{height:37px}#v07-brand{font-size:10px}.v07-rail{padding:4px;gap:3px;flex-basis:60px;min-width:60px}.v07-tool{min-height:43px!important}.v07-tool .v07-icon{font-size:16px}#v07-stick{width:80px;height:80px;bottom:42px}#v07-stick-knob{left:24px;top:24px;width:30px;height:30px}}
+@media(max-width:650px){#v07-brand{font-size:10px}#v07-top{gap:6px;padding:4px 6px}#v07-top select{max-width:103px}#v07-mode{font-size:10px;padding:5px}.v07-rail{min-width:57px;flex-basis:57px}.v07-tool small{font-size:8px}}
