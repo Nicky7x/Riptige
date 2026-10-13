@@ -326,3 +326,25 @@ Portar um subconjunto comprovado do parser para o importador Android, com cache 
 - **Duas metas distintas:** (A) **criar/carregar/visualizar** uma arena inédita no editor; (B) exportar/aplicar essa arena ao jogo real. B requer investigação de serialização, assets, colisões, IA/checkpoints/física e não deve bloquear A.
 - **Prioridade técnica atual:** integrar as instâncias reais já resolvidas em M1.18 ao visualizador Android usando cache privado e GPU instancing ou agrupamento, preservando geometria/texturas atuais; depois incluir água e demais sistemas originais. Evitar gastar tempo priorizando efeitos que não afetam a edição.
 - **Status:** este marco registra clarificação do escopo, **não representa APK novo nem arena completa entregue**.
+
+
+## 2026-10-13 — M1.20: v0.9 Android GLB instancing e cenas JSON editáveis por IA
+
+**Objetivo:** acelerar o ciclo "ver arenas reconstruídas → editar estruturas → permitir que IA gere alterações", mantendo v0.8 importação/visualização texturizada separada e funcional.
+
+### Recursos realmente implementados
+- `web/world_scene.js` é um visualizador independente dentro do HUD landscape que importa arquivo **GLB 2.0 local** via `<input type=file>` e Chrome/WebView; `MainActivity` passou a implementar `onShowFileChooser` com Android Storage Access Framework sem acesso indiscriminado ao armazenamento.
+- A UI cria **Mais → Abrir cena 3D (GLB)**, tela 3D isolada, órbita e zoom, seleção aproximada pelo pivô projetado, busca pelo caminho/nome do objeto e nome do modelo, deslocamento de translação X/Y ↑/Z, duplicação, ocultação, exportação JSON e importação JSON da IA. **Voltar ✕** retorna à visualização v0.8, sem modificar o jogo.
+- O GLB parser valida chunks GLB 2.0, accessors VEC3 FLOAT + índices, hierarquia glTF, matrizes 4×4 e limites; rejeita assets incompletos, índices de posição inválidos, matrizes não finitas, tipos não suportados. WebGL1 usa extensão ANGLE_instanced_arrays, compartilhando buffers por geometria em vez de redesenhar assets decodificados repetidas vezes. Fallback sem instancing é limitado e pode ter performance reduzida.
+- JSON `riptide-world-edit-v1` versionado e legível por agentes contém `entities: [{id,name,mesh,meshIndex,matrix,hidden}]`, unidades glTF Y-up e referências a geometria do GLB privado. Permite alterar/criar instâncias de **meshes existentes**; não representa ainda geometria feita do zero e não produz pista jogável.
+- `tools/export_world_glb.py` preserva agora nomes de nó `<index>:<caminho-original-de-entidade>` para facilitar busca/edição em CityB. Novo **GLB pessoal nomeado** `/RiptideMapLab/CityB_world_named_v09.glb` (5.185.752 bytes) foi salvo na Biblioteca do usuário, mas **não no GitHub**.
+- `android/app/src/main/assets/editor_template.html` contém scripts v0.8 intactos e script v0.9 extra. `android/app/build.gradle` atualizado para v0.9.0-alpha, build 9.
+
+### Testes e limites
+- `tests-js/world-v09.test.cjs`: GLB sintético, leitura de hierarquia e nomes, exportação JSON, simulação de IA movendo uma instância e adicionando outra, importação sem perda, rejeição de matriz inválida, SAF em Android.
+- Inspeção real no Chromium do **novo** GLB: **2.658 nós, 86 geometrias distintas e caminhos originais presentes**, sem `pageerror` na leitura; WebGL está indisponível no ambiente de testes, portanto **renderização real e fluidez aguardam teste físico no Poco**.
+- Ainda **faltam 160 instâncias estáticas da CityB** para cobrir os 2.818 objetos identificados, e nenhuma das 14 entidades de água está desenhada no GLB. O modo GLB desta versão é cinza/sem materiais, enquanto a visualização v0.8 preserva texturas dos modelos Level.
+- **Integração automática XAPK → cena inteira no Android ainda é futura**: por enquanto o usuário baixa o GLB pessoal exportado separadamente e o seleciona no app.
+- Critério de avanço: v0.9 é uma entrega **funcional de interface e parser**, com build Android testado em CI; não é arena visualmente integral e não promete física ou execução dentro do Renegade. Para próximos passos: importador de templates/prefabs Java, texturas por instância, água original, geometria editável/novos primitives.
+
+**Artefatos:** documentação `docs/AI_SCENE_V09.md`, código `web/world_scene.js`, teste `tests-js/world-v09.test.cjs`, GLB privado. A última build ainda deve ser confirmada pelo GitHub Actions antes do APK ser entregue.
