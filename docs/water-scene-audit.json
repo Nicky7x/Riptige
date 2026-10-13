@@ -15,129 +15,137 @@
       ],
       "map_formats": {
         "CityA/WR01": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 16,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "CityA/WR02": {
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "CityA/WR03": {
+          "width": 256,
+          "height": 32,
+          "format": "DXT1"
         },
         "CityA/WR04": {
-          "width": 536870912,
-          "height": 134217728,
-          "format": "0xff00008d"
+          "width": 128,
+          "height": 32,
+          "format": "ETC1"
         },
         "CityA/WR05": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "CityA/WR06": {
+          "width": 64,
+          "height": 64,
+          "format": "DXT1"
         },
         "CityA/WR07": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "CityA/WR08": {
+          "width": 16,
+          "height": 64,
+          "format": "DXT1"
         },
         "CityA/WS01": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "CityA/WS02": {
+          "width": 32,
+          "height": 256,
+          "format": "DXT1"
         },
         "CityA/WS03": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 64,
+          "format": "DXT1"
         },
         "CityA/WS04": {
-          "width": 2147483648,
-          "height": 134217728,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 128,
+          "format": "DXT1"
+        },
+        "CityA/WS05": {
+          "width": 64,
+          "height": 256,
+          "format": "DXT1"
         },
         "CityA/WS06": {
-          "width": 0,
-          "height": 167772162,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 512,
+          "format": "DXT1"
         },
         "CityA/WS07": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 16,
+          "height": 64,
+          "format": "DXT1"
         },
         "CityA/WS08": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
         },
         "CityA/WS09": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "CityA/WS10": {
+          "width": 256,
+          "height": 512,
+          "format": "DXT1"
         },
         "CityA/WS11": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 16,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "CityA/WS12": {
+          "width": 16,
+          "height": 64,
+          "format": "ETC1"
         },
         "CityA/WS13": {
-          "width": 2147483648,
-          "height": 134217728,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 128,
+          "format": "DXT1"
         },
         "CityA/WS14": {
-          "width": 2147483648,
-          "height": 134217728,
-          "format": "0xff000083"
+          "width": 16,
+          "height": 128,
+          "format": "DXT1"
         },
         "CityA/WS15": {
-          "width": 2,
-          "height": 167772162,
-          "format": "0xff000083"
+          "width": 512,
+          "height": 512,
+          "format": "DXT1"
         },
         "CityA/WS16": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "CityA/WS17": {
+          "width": 32,
+          "height": 128,
+          "format": "DXT1"
         },
         "CityA/WS18": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
         }
       },
-      "unreadable": [
-        {
-          "resource": "CityA/WR02",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WR02"
-        },
-        {
-          "resource": "CityA/WR03",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WR03"
-        },
-        {
-          "resource": "CityA/WR06",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WR06"
-        },
-        {
-          "resource": "CityA/WR08",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WR08"
-        },
-        {
-          "resource": "CityA/WS02",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WS02"
-        },
-        {
-          "resource": "CityA/WS05",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WS05"
-        },
-        {
-          "resource": "CityA/WS10",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WS10"
-        },
-        {
-          "resource": "CityA/WS12",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WS12"
-        },
-        {
-          "resource": "CityA/WS17",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WS17"
-        }
-      ],
+      "unreadable": [],
       "render_status": "requires original water entity transforms and surface topology"
     },
     {
@@ -155,70 +163,72 @@
       ],
       "map_formats": {
         "CityB/WR01": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "CityB/WR02": {
+          "width": 128,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "CityB/WS01": {
+          "width": 256,
+          "height": 256,
+          "format": "DXT1"
         },
         "CityB/WS02": {
-          "width": 0,
-          "height": 150994945,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 256,
+          "format": "DXT1"
         },
         "CityB/WS03": {
-          "width": 1073741825,
-          "height": 150994944,
-          "format": "0xff000083"
+          "width": 256,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "CityB/WS04": {
+          "width": 64,
+          "height": 128,
+          "format": "DXT1"
         },
         "CityB/WS05": {
-          "width": 1,
-          "height": 167772162,
-          "format": "0xff000083"
+          "width": 256,
+          "height": 512,
+          "format": "DXT1"
         },
         "CityB/WS06": {
-          "width": 2147483648,
-          "height": 134217728,
-          "format": "0xff000083"
+          "width": 16,
+          "height": 128,
+          "format": "DXT1"
         },
         "CityB/WS07": {
-          "width": 2147483648,
-          "height": 134217728,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 128,
+          "format": "DXT1"
         },
         "CityB/WS08": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 64,
+          "format": "DXT1"
         },
         "CityB/WS09": {
-          "width": 2147483648,
-          "height": 134217728,
-          "format": "0xff000083"
+          "width": 16,
+          "height": 128,
+          "format": "DXT1"
         },
         "CityB/WS10": {
-          "width": 268435456,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 16,
+          "format": "DXT1"
         },
         "CityB/WS12": {
-          "width": 268435456,
-          "height": 83886080,
-          "format": "0xff000083"
+          "width": 16,
+          "height": 16,
+          "format": "DXT1"
         }
       },
-      "unreadable": [
-        {
-          "resource": "CityB/WR02",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityB/WR02"
-        },
-        {
-          "resource": "CityB/WS01",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityB/WS01"
-        },
-        {
-          "resource": "CityB/WS04",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityB/WS04"
-        }
-      ],
+      "unreadable": [],
       "render_status": "requires original water entity transforms and surface topology"
     },
     {
@@ -234,116 +244,122 @@
       ],
       "map_formats": {
         "FactoryA/Zone1_WS01": {
-          "width": 0,
-          "height": 150994945,
-          "format": "0xff000083"
+          "width": 128,
+          "height": 256,
+          "format": "DXT1"
         },
         "FactoryA/Zone2_WS02": {
-          "width": 536870912,
-          "height": 100663296,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 32,
+          "format": "DXT1"
+        },
+        "FactoryA/Zone2_WS04": {
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
         },
         "FactoryA/Zone2_WS042": {
-          "width": 536870912,
-          "height": 100663296,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 32,
+          "format": "DXT1"
+        },
+        "FactoryA/Zone2_WS12": {
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
         },
         "FactoryA/Zone3_WS01": {
-          "width": 1,
-          "height": 184549380,
-          "format": "0xff000083"
+          "width": 256,
+          "height": 1024,
+          "format": "DXT1"
+        },
+        "FactoryA/Zone3_WS02": {
+          "width": 512,
+          "height": 1024,
+          "format": "DXT1"
         },
         "FactoryA/Zone4_WS01": {
-          "width": 1,
-          "height": 150994945,
-          "format": "0xff000083"
+          "width": 256,
+          "height": 256,
+          "format": "DXT1"
         },
         "FactoryA/Zone4_WS04": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 16,
+          "height": 64,
+          "format": "DXT1"
         },
         "FactoryA/Zone4_WS05": {
-          "width": 134217728,
-          "height": 83886080,
-          "format": "0xff000083"
+          "width": 16,
+          "height": 8,
+          "format": "DXT1"
         },
         "FactoryA/Zone4_WS06": {
-          "width": 1,
-          "height": 150994945,
-          "format": "0xff000083"
+          "width": 256,
+          "height": 256,
+          "format": "DXT1"
         },
         "FactoryA/Zone4_WS08": {
-          "width": 536870912,
-          "height": 100663296,
-          "format": "0xff000083"
+          "width": 8,
+          "height": 32,
+          "format": "DXT1"
         },
         "FactoryA/Zone4_WS09": {
-          "width": 536870912,
-          "height": 100663296,
-          "format": "0xff000083"
+          "width": 8,
+          "height": 32,
+          "format": "DXT1"
+        },
+        "FactoryA/Zone5_WR01": {
+          "width": 128,
+          "height": 64,
+          "format": "DXT1"
         },
         "FactoryA/Zone5_WS01": {
-          "width": 2147483648,
-          "height": 134217728,
-          "format": "0xff000083"
+          "width": 128,
+          "height": 128,
+          "format": "DXT1"
         },
         "FactoryA/Zone5_WS02": {
-          "width": 536870912,
-          "height": 100663296,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 32,
+          "format": "DXT1"
         },
         "FactoryA/Zone5_WS03": {
-          "width": 2147483648,
-          "height": 134217728,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 128,
+          "format": "DXT1"
         },
         "FactoryA/Zone5_WS04": {
-          "width": 536870912,
-          "height": 100663296,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 32,
+          "format": "DXT1"
+        },
+        "FactoryA/Zone5_WS05": {
+          "width": 32,
+          "height": 128,
+          "format": "DXT1"
+        },
+        "FactoryA/Zone5_WS11": {
+          "width": 64,
+          "height": 128,
+          "format": "DXT1"
         },
         "FactoryA/Zone7_WS01": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
         },
         "FactoryA/Zone7_WS02": {
-          "width": 2147483648,
-          "height": 134217728,
-          "format": "0xff000083"
+          "width": 128,
+          "height": 128,
+          "format": "DXT1"
+        },
+        "FactoryA/Zone7_WS04": {
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
         }
       },
-      "unreadable": [
-        {
-          "resource": "FactoryA/Zone2_WS04",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryA/Zone2_WS04"
-        },
-        {
-          "resource": "FactoryA/Zone2_WS12",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryA/Zone2_WS12"
-        },
-        {
-          "resource": "FactoryA/Zone3_WS02",
-          "reason": "Recurso excedeu limite: VuWaterMapAsset/FactoryA/Zone3_WS02"
-        },
-        {
-          "resource": "FactoryA/Zone5_WR01",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryA/Zone5_WR01"
-        },
-        {
-          "resource": "FactoryA/Zone5_WS05",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryA/Zone5_WS05"
-        },
-        {
-          "resource": "FactoryA/Zone5_WS11",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryA/Zone5_WS11"
-        },
-        {
-          "resource": "FactoryA/Zone7_WS04",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryA/Zone7_WS04"
-        }
-      ],
+      "unreadable": [],
       "render_status": "requires original water entity transforms and surface topology"
     },
     {
@@ -358,46 +374,48 @@
         "VuInfiniteOceanWaveEntity"
       ],
       "map_formats": {
+        "FactoryB/WPlat01": {
+          "width": 8,
+          "height": 32,
+          "format": "ETC1"
+        },
         "FactoryB/WPlat02": {
-          "width": 536870912,
-          "height": 100663296,
-          "format": "0xff00008d"
+          "width": 8,
+          "height": 32,
+          "format": "ETC1"
+        },
+        "FactoryB/WS01": {
+          "width": 256,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "FactoryB/WS02": {
+          "width": 64,
+          "height": 256,
+          "format": "DXT1"
         },
         "FactoryB/WS03": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 64,
+          "format": "DXT1"
         },
         "FactoryB/WS04": {
-          "width": 1073741825,
-          "height": 150994944,
-          "format": "0xff000083"
+          "width": 256,
+          "height": 64,
+          "format": "DXT1"
         },
         "FactoryB/WS05": {
-          "width": 0,
-          "height": 150994945,
-          "format": "0xff000083"
+          "width": 128,
+          "height": 256,
+          "format": "DXT1"
         },
         "FactoryB/WS06": {
-          "width": 1073741824,
-          "height": 134217728,
-          "format": "0xff000083"
+          "width": 128,
+          "height": 64,
+          "format": "DXT1"
         }
       },
-      "unreadable": [
-        {
-          "resource": "FactoryB/WPlat01",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryB/WPlat01"
-        },
-        {
-          "resource": "FactoryB/WS01",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryB/WS01"
-        },
-        {
-          "resource": "FactoryB/WS02",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryB/WS02"
-        }
-      ],
+      "unreadable": [],
       "render_status": "requires original water entity transforms and surface topology"
     },
     {
@@ -413,26 +431,27 @@
       ],
       "map_formats": {
         "MilitaryA/WS01": {
-          "width": 1,
-          "height": 167772162,
-          "format": "0xff000083"
+          "width": 256,
+          "height": 512,
+          "format": "DXT1"
         },
         "MilitaryA/WS02": {
-          "width": 2,
-          "height": 167772162,
-          "format": "0xff000083"
+          "width": 512,
+          "height": 512,
+          "format": "DXT1"
+        },
+        "MilitaryA/WS03": {
+          "width": 128,
+          "height": 512,
+          "format": "DXT1"
+        },
+        "MilitaryA/WS04": {
+          "width": 256,
+          "height": 128,
+          "format": "DXT1"
         }
       },
-      "unreadable": [
-        {
-          "resource": "MilitaryA/WS03",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/MilitaryA/WS03"
-        },
-        {
-          "resource": "MilitaryA/WS04",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/MilitaryA/WS04"
-        }
-      ],
+      "unreadable": [],
       "render_status": "requires original water entity transforms and surface topology"
     },
     {
@@ -446,13 +465,14 @@
         "VuWaterSurfaceEntity",
         "VuInfiniteOceanWaveEntity"
       ],
-      "map_formats": {},
-      "unreadable": [
-        {
-          "resource": "OldCityA/WS01_v2",
-          "reason": "Recurso excedeu limite: VuWaterMapAsset/OldCityA/WS01_v2"
+      "map_formats": {
+        "OldCityA/WS01_v2": {
+          "width": 1024,
+          "height": 1024,
+          "format": "DXT1"
         }
-      ],
+      },
+      "unreadable": [],
       "render_status": "requires original water entity transforms and surface topology"
     },
     {
@@ -468,188 +488,198 @@
         "VuInfiniteOceanWaveEntity"
       ],
       "map_formats": {
+        "ParkA/WR01": {
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
+        },
         "ParkA/WR02": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
         },
         "ParkA/WR03": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "ParkA/WR04": {
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
         },
         "ParkA/WS01": {
-          "width": 536870912,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 32,
+          "format": "DXT1"
         },
         "ParkA/WS02": {
-          "width": 1,
-          "height": 150994945,
-          "format": "0xff000083"
+          "width": 256,
+          "height": 256,
+          "format": "DXT1"
+        },
+        "ParkA/WS03": {
+          "width": 128,
+          "height": 64,
+          "format": "DXT1"
         },
         "ParkA/WS04": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 16,
+          "height": 64,
+          "format": "DXT1"
         },
         "ParkA/WS05": {
-          "width": 268435456,
-          "height": 83886080,
-          "format": "0xff000083"
+          "width": 16,
+          "height": 16,
+          "format": "DXT1"
         },
         "ParkA/WS06": {
-          "width": 134217728,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 8,
+          "format": "DXT1"
+        },
+        "ParkA/WS07": {
+          "width": 64,
+          "height": 4,
+          "format": "DXT1"
         },
         "ParkA/WS08": {
-          "width": 1073741824,
-          "height": 134217728,
-          "format": "0xff000083"
+          "width": 128,
+          "height": 64,
+          "format": "DXT1"
         },
         "ParkA/WS09": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
         },
         "ParkA/WS10": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
         },
         "ParkA/WS11": {
-          "width": 536870912,
-          "height": 100663296,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 32,
+          "format": "DXT1"
         },
         "ParkA/WS12": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 64,
+          "format": "DXT1"
         },
         "ParkA/WS13": {
-          "width": 536870912,
-          "height": 100663296,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 32,
+          "format": "DXT1"
         },
         "ParkA/WS14": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 16,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "ParkA/WS15": {
+          "width": 128,
+          "height": 128,
+          "format": "DXT1"
         },
         "ParkA/WS16": {
-          "width": 536870912,
-          "height": 100663296,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 32,
+          "format": "DXT1"
+        },
+        "ParkA/WS17": {
+          "width": 256,
+          "height": 64,
+          "format": "DXT1"
         },
         "ParkA/WS18": {
-          "width": 536870912,
-          "height": 100663296,
-          "format": "0xff00008d"
+          "width": 16,
+          "height": 32,
+          "format": "ETC1"
         },
         "ParkA/WS19": {
-          "width": 1073741824,
-          "height": 134217728,
-          "format": "0xff000083"
+          "width": 128,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "ParkA/WS20": {
+          "width": 128,
+          "height": 64,
+          "format": "DXT1"
         },
         "ParkA/WS21": {
-          "width": 536870912,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 32,
+          "format": "DXT1"
         },
         "ParkA/WS22": {
-          "width": 536870912,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 32,
+          "format": "DXT1"
         },
         "ParkA/WS23": {
-          "width": 268435456,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 16,
+          "format": "DXT1"
         },
         "ParkA/WS24": {
-          "width": 536870912,
-          "height": 100663296,
-          "format": "0xff00008d"
+          "width": 16,
+          "height": 32,
+          "format": "ETC1"
+        },
+        "ParkA/WS25": {
+          "width": 256,
+          "height": 128,
+          "format": "DXT1"
+        },
+        "ParkA/WS26": {
+          "width": 32,
+          "height": 256,
+          "format": "DXT1"
         },
         "ParkA/WS27": {
-          "width": 268435456,
-          "height": 83886080,
-          "format": "0xff000083"
+          "width": 16,
+          "height": 16,
+          "format": "DXT1"
+        },
+        "ParkA/WS28": {
+          "width": 128,
+          "height": 128,
+          "format": "DXT1"
         },
         "ParkA/WS29": {
-          "width": 536870912,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 32,
+          "format": "DXT1"
         },
         "ParkA/WS30": {
-          "width": 536870912,
-          "height": 100663296,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 32,
+          "format": "DXT1"
         },
         "ParkA/WS31": {
-          "width": 536870912,
-          "height": 100663296,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 32,
+          "format": "DXT1"
         },
         "ParkA/WS32": {
-          "width": 536870912,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 32,
+          "format": "DXT1"
+        },
+        "ParkA/WS33": {
+          "width": 32,
+          "height": 32,
+          "format": "DXT1"
         },
         "ParkA/WS34": {
-          "width": 2,
-          "height": 167772162,
-          "format": "0xff000083"
+          "width": 512,
+          "height": 512,
+          "format": "DXT1"
         }
       },
-      "unreadable": [
-        {
-          "resource": "ParkA/WR01",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WR01"
-        },
-        {
-          "resource": "ParkA/WR04",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WR04"
-        },
-        {
-          "resource": "ParkA/WS03",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS03"
-        },
-        {
-          "resource": "ParkA/WS07",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS07"
-        },
-        {
-          "resource": "ParkA/WS15",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS15"
-        },
-        {
-          "resource": "ParkA/WS17",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS17"
-        },
-        {
-          "resource": "ParkA/WS20",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS20"
-        },
-        {
-          "resource": "ParkA/WS25",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS25"
-        },
-        {
-          "resource": "ParkA/WS26",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS26"
-        },
-        {
-          "resource": "ParkA/WS28",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS28"
-        },
-        {
-          "resource": "ParkA/WS33",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS33"
-        }
-      ],
+      "unreadable": [],
       "render_status": "requires original water entity transforms and surface topology"
     },
     {
@@ -666,95 +696,103 @@
         "VuWaterTextureSettingsEntity"
       ],
       "map_formats": {
+        "ParkB/WR01": {
+          "width": 128,
+          "height": 128,
+          "format": "DXT1"
+        },
+        "ParkB/WR02": {
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
+        },
         "ParkB/WR03": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "ParkB/WR04": {
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "ParkB/WR05": {
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
         },
         "ParkB/WR06": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 64,
+          "format": "DXT1"
         },
         "ParkB/WS01": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "ParkB/WS02": {
+          "width": 256,
+          "height": 256,
+          "format": "DXT1"
+        },
+        "ParkB/WS03": {
+          "width": 128,
+          "height": 256,
+          "format": "DXT1"
         },
         "ParkB/WS04": {
-          "width": 1,
-          "height": 150994945,
-          "format": "0xff000083"
+          "width": 256,
+          "height": 256,
+          "format": "DXT1"
         },
         "ParkB/WS05": {
-          "width": 536870912,
-          "height": 100663296,
-          "format": "0xff000083"
+          "width": 32,
+          "height": 32,
+          "format": "DXT1"
         },
         "ParkB/WS06": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "ParkB/WS07": {
+          "width": 64,
+          "height": 128,
+          "format": "DXT1"
         },
         "ParkB/WS08": {
-          "width": 2147483648,
-          "height": 134217728,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 128,
+          "format": "DXT1"
         },
         "ParkB/WS09": {
-          "width": 1,
-          "height": 150994945,
-          "format": "0xff000083"
+          "width": 256,
+          "height": 256,
+          "format": "DXT1"
+        },
+        "ParkB/WS10": {
+          "width": 128,
+          "height": 512,
+          "format": "DXT1"
         },
         "ParkB/WS11": {
-          "width": 0,
-          "height": 150994945,
-          "format": "0xff000083"
+          "width": 128,
+          "height": 256,
+          "format": "DXT1"
         },
         "ParkB/WS12": {
-          "width": 1,
-          "height": 150994945,
-          "format": "0xff000083"
+          "width": 256,
+          "height": 256,
+          "format": "DXT1"
+        },
+        "ParkB/WS13": {
+          "width": 128,
+          "height": 256,
+          "format": "DXT1"
         }
       },
-      "unreadable": [
-        {
-          "resource": "ParkB/WR01",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WR01"
-        },
-        {
-          "resource": "ParkB/WR02",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WR02"
-        },
-        {
-          "resource": "ParkB/WR04",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WR04"
-        },
-        {
-          "resource": "ParkB/WR05",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WR05"
-        },
-        {
-          "resource": "ParkB/WS02",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WS02"
-        },
-        {
-          "resource": "ParkB/WS03",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WS03"
-        },
-        {
-          "resource": "ParkB/WS07",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WS07"
-        },
-        {
-          "resource": "ParkB/WS10",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WS10"
-        },
-        {
-          "resource": "ParkB/WS13",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WS13"
-        }
-      ],
+      "unreadable": [],
       "render_status": "requires original water entity transforms and surface topology"
     },
     {
@@ -770,51 +808,53 @@
         "VuWaterTextureSettingsEntity"
       ],
       "map_formats": {
+        "SpaceportA/WS01": {
+          "width": 128,
+          "height": 64,
+          "format": "DXT1"
+        },
         "SpaceportA/WS02": {
-          "width": 1073741824,
-          "height": 117440512,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 64,
+          "format": "DXT1"
         },
         "SpaceportA/WS03": {
-          "width": 1073741825,
-          "height": 150994944,
-          "format": "0xff000083"
+          "width": 256,
+          "height": 64,
+          "format": "DXT1"
+        },
+        "SpaceportA/WS04": {
+          "width": 64,
+          "height": 256,
+          "format": "DXT1"
         },
         "SpaceportA/WS05": {
-          "width": 1073741826,
-          "height": 167772160,
-          "format": "0xff000083"
+          "width": 512,
+          "height": 64,
+          "format": "DXT1"
         },
         "SpaceportA/WS06": {
-          "width": 2147483648,
-          "height": 134217728,
-          "format": "0xff000083"
+          "width": 64,
+          "height": 128,
+          "format": "DXT1"
+        },
+        "SpaceportA/WS07": {
+          "width": 256,
+          "height": 128,
+          "format": "DXT1"
         },
         "SpaceportA/WS08": {
-          "width": 1,
-          "height": 150994945,
-          "format": "0xff000083"
+          "width": 256,
+          "height": 256,
+          "format": "DXT1"
         },
         "SpaceportA/WS09": {
-          "width": 2147483649,
-          "height": 150994944,
-          "format": "0xff000083"
+          "width": 256,
+          "height": 128,
+          "format": "DXT1"
         }
       },
-      "unreadable": [
-        {
-          "resource": "SpaceportA/WS01",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/SpaceportA/WS01"
-        },
-        {
-          "resource": "SpaceportA/WS04",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/SpaceportA/WS04"
-        },
-        {
-          "resource": "SpaceportA/WS07",
-          "reason": "Tamanho do recurso divergente VuWaterMapAsset/SpaceportA/WS07"
-        }
-      ],
+      "unreadable": [],
       "render_status": "requires original water entity transforms and surface topology"
     }
   ],
