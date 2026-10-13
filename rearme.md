@@ -293,3 +293,23 @@ Portar um subconjunto comprovado do parser para o importador Android, com cache 
 - **Arquivos:** `tools/resolve_scene_prefabs.py`, `tests/test_resolve_scene_prefabs.py`, `docs/PREFAB_GRAPH.md`, `docs/prefab-coverage-summary.json`. Todos usam o XAPK original do proprietário localmente sem publicar assets. A lista detalhada de links originais foi salva no pacote privado `/RiptideMapLab/Riptide_Original_Scene_Graph_Private_v2.zip`, junto com as transformações locais das nove arenas, não no GitHub.
 - **Validação:** 5 testes sintéticos de grafos, 4 de recursos de cena, 2 de prefab e [CI GitHub Actions](https://github.com/Nicky7x/Riptige/actions/runs/38337561805) concluído **success**.
 - **Bloqueio atual:** falta expansão completa da hierarquia (prefab dentro de prefab), multiplicação de transforms pai/filho (rotações/pivôs/escala) e inclusão dos modelos instanciados, elementos aquáticos e materiais na WebView Android. **Nenhum novo APK** foi compilado neste marco; v0.8 continua a versão funcional entregue ao usuário. Não alegar reconstrução visual completa.
+
+
+## 2026-10-13 — M1.18: composição de transformações e primeira exportação GLB da CityB (ChatGPT)
+
+**Pedido:** avançar sem pausas até obter um resultado significativo, atualizando o proprietário durante o trabalho. Meta: reconstrução fiel de objetos originais, sem inventar recursos.
+
+**Implementação em `tools/resolve_world_instances.py`:**
+- Grafo de níveis APF v6 → instâncias de `VuTemplateAsset` com resolução transitiva de prefabs `#...`.
+- Matriz 4x4 por entidade, em base local XY horizontal/Z vertical; composição `parent @ T @ Rz @ Ry @ Rx @ S`; Euler em graus **HIPÓTESE A VALIDAR COM JOGO**.
+- Leitura de defaults de posição/rotação/escala; aplicação de overrides `data.ChildEntities` vindos da instância sobre propriedades nomeadas dos filhos dos prefabs, sem substituir filhos não alterados; proteção contra ciclos, limites de profundidade e contagem, rejeição de posições inválidas.
+- `tests/test_resolve_world_instances.py` com **7 testes sintéticos aprovados** (pai rotacionado 90°, escala, eixo omitido preservado, override aninhado, ciclo, valores não finitos).
+- Execução local no XAPK original: nove arenas, **98.877 entidades visitadas incluindo expansão de prefabs**, **14.487 referências estáticas** com matriz calculada, **34.103 expansões de prefab**, **4.560 overrides aplicados**, e **151 entidades aquáticas** identificadas, mas sem geometria aquática renderizada. Persistem **28 overrides não encontrados em FactoryA, 2 em MilitaryA e 2 em SpaceportA**. Artefato privado `/RiptideMapLab/Riptide_world_instances_private_v3.zip`; relatório público agregado `docs/world-transform-coverage.json`.
+
+**Prova de geometria em `tools/export_world_glb.py`:**
+- `CityB`: total de 2.818 referências estáticas, **2.658 instâncias originais com geometria e transformações exportadas**, representando ~94,3% das referências estáticas; 160 instâncias não exportadas. Apenas **87 modelos estáticos distintos** precisaram ter sua geometria decodificada, três variantes restantes têm formato não suportado.
+- Arquivo pessoal `CityB_original_world_preview.glb` com 4.907.752 bytes salvo **privadamente** em `/RiptideMapLab/CityB_original_world_preview.glb`, NÃO no GitHub. GLB reaberto com trimesh: 2.658 nós de geometria, bounding box coerente com extents da cidade. Prévia superior `/RiptideMapLab/CityB_world_preview.png` é técnica, feita com pontos amostrados dos modelos transformados (não game render).
+- A geometria é o primeiro LOD reconhecido, sem materiais e texturas nesse GLB. Recursos de modelo com múltiplos LODs: `tools/visual_models.py` recebeu modo opt-in `preview_first_lod=True`, mantendo validação estrita por padrão. Alguns LZMA1 de modelo têm byte NUL extra, tolerado somente na **prévia pessoal** sob regras estritas, sem modificar APF.
+- Os 14 elementos aquáticos da CityB ainda não foram desenhados; posição e parâmetros originais permanecem no JSON privado. Estágios posteriores: integrar cache de instâncias ao Android, renderizar instâncias com batching, validar Euler/pivôs e decodificar água original.
+
+**Validação e CI:** testes matemáticos locais 7/7; [GitHub Actions Validate Original Scene Index](https://github.com/Nicky7x/Riptige/actions/runs/38343828695) **success** com teste de regressão de transforms. O GLB também passou round-trip no leitor 3D. **Não** afirmar que está idêntico ao motor original nem que existe novo APK. O v0.8 continua último APK testado no Poco.
