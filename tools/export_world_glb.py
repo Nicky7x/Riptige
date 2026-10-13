@@ -74,7 +74,7 @@ def build_private_scene(source,arena,out_glb,limit=None):
             # glTF is Y-up. Transform root positions from original (X,Y,Z) to (X,Z,-Y) for portability.
             root_basis=np.array([[1,0,0,0],[0,0,1,0],[0,-1,0,0],[0,0,0,1]],dtype='float64')
             matrix=root_basis@local
-            scene.add_geometry(mesh,geom_name=key,node_name=f'instance_{details["exported_instances"]:06}',transform=matrix)
+            scene.add_geometry(mesh,geom_name=key,node_name=f'{details["exported_instances"]:06}:{item["path"]}',transform=matrix)
             details['exported_instances']+=1
             if limit and details['exported_instances']>=limit:break
     scene.export(out_glb,file_type='glb')
