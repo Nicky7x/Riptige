@@ -42,6 +42,48 @@
     a{color:var(--accent)} code{color:#ffdcab}
     @media(max-width:850px){.layout{grid-template-columns:1fr;padding:12px;gap:12px}header{align-items:center}h1{font-size:20px}.stamp{display:none}canvas{height:46vh;min-height:280px}.stats{grid-template-columns:repeat(3,1fr)}}
   </style>
+<style>
+/* v0.7 — touchscreen landscape cockpit. Visual layer remains read-only. */
+#v07-shell{position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;background:#081321;color:#e9f8ff;font:12px/1.25 system-ui,-apple-system,Segoe UI,sans-serif;overflow:hidden}
+#v07-shell *{box-sizing:border-box}
+#v07-shell button,#v07-shell select{font:inherit;color:#e9f8ff}
+#v07-top{height:46px;flex-shrink:0;background:linear-gradient(90deg,#122737,#112033);border-bottom:1px solid #274258;display:flex;align-items:center;gap:11px;padding:4px 10px}
+#v07-brand{font-weight:900;letter-spacing:.06em;color:#65ead6;white-space:nowrap;font-size:12px}
+#v07-top label{display:flex;align-items:center;gap:5px;margin:0;font-size:11px;font-weight:700;color:#b7ced8;white-space:nowrap}
+#v07-top select{min-width:70px;max-width:145px;padding:5px 7px;height:34px;background:#122f41;border:1px solid #365870;border-radius:9px;font-size:12px}
+#v07-mode{margin-left:auto;white-space:nowrap;border:1px solid #2d615e;color:#80e5d4;border-radius:99px;padding:7px 10px;background:#11302f;font-weight:700}
+#v07-main{flex:1;min-height:0;display:flex;gap:0}
+.v07-rail{flex:0 0 66px;min-width:66px;max-height:100%;display:flex;flex-direction:column;gap:6px;padding:7px 5px;background:#101f30;overflow-y:auto;scrollbar-width:none}
+.v07-rail::-webkit-scrollbar{display:none}
+.v07-tool{border:1px solid #30516a!important;border-radius:11px!important;background:#1b3248!important;min-height:49px!important;padding:4px 2px!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex:0 0 auto;font-weight:750!important;touch-action:manipulation}
+.v07-tool .v07-icon{font-size:19px;line-height:20px}.v07-tool small{font-size:9px;line-height:10px;white-space:nowrap}
+.v07-tool[aria-pressed=true]{background:#176f67!important;border-color:#65e6d6!important;color:#fff!important}
+.v07-tool:disabled{opacity:.45!important}
+#v07-viewport{flex:1;min-width:0;position:relative;background:#0a1725;overflow:hidden}
+#v07-viewport>.view3d{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
+#v07-viewport #arena3d{width:100%!important;height:100%!important;min-height:0!important;border-radius:0!important;display:block!important}
+#v07-viewport .view3d-watermark{top:7px;right:7px;opacity:.65;font-size:9px}
+#v07-hint{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);max-width:calc(100% - 14px);width:max-content;display:flex;flex-direction:column;align-items:center;gap:1px;text-align:center;padding:6px 11px;border:1px solid #426176;background:#071b2bef;border-radius:12px;pointer-events:none;color:#d5e4ef;font-size:10px;z-index:2}
+#v07-hint b{color:#72e7d6;font-size:11px}
+#v07-player-label{position:absolute;top:9px;left:9px;display:none;pointer-events:none;background:#0b2737cc;border-radius:9px;padding:6px 9px;color:#7eebd9;font-weight:800;font-size:11px}
+#v07-shell.player #v07-player-label{display:block}
+#v07-stick{display:none;position:absolute;left:16px;bottom:54px;width:102px;height:102px;border:2px solid #66e0cf77;border-radius:100%;background:#163b4499;touch-action:none;z-index:5;user-select:none;-webkit-user-select:none}
+#v07-stick-knob{position:absolute;left:32px;top:32px;width:34px;height:34px;border-radius:100%;background:#6de2d1;border:3px solid #fff9;box-shadow:0 2px 18px #59efcf44;pointer-events:none}
+#v07-shell.player #v07-stick{display:block}
+#v07-shell.player #v07-hint{left:auto;right:8px;transform:none;bottom:8px}
+#v07-drawer{position:absolute;right:72px;top:52px;bottom:7px;width:min(345px,calc(100vw - 150px));overflow-y:auto;z-index:8;background:#0f2235f5;border:1px solid #4a6b7b;border-radius:13px;padding:10px;box-shadow:0 12px 40px #0009}
+#v07-drawer[hidden]{display:none}
+#v07-drawer .sidebar{display:flex!important;width:100%}
+#v07-drawer .section{padding:10px}#v07-drawer .panel{border-radius:9px}
+#v07-drawer .note{font-size:11px}#v07-drawer .positions{gap:4px}#v07-drawer input{min-width:0}
+#v07-drawer-top{display:flex;gap:7px;align-items:center;justify-content:space-between;margin:0 0 10px}#v07-drawer-top button{padding:7px 13px;min-height:30px}
+#v07-joystick-desc{position:absolute;left:12px;bottom:164px;color:#c7f2ea;font-size:10px;display:none}#v07-shell.player #v07-joystick-desc{display:block}
+#v07-shell:not(.player) #v07-player-label{display:none}
+body.v07-active{overflow:hidden}body.v07-active>.layout{display:none!important}
+@media(max-height:360px){#v07-top{height:37px}#v07-brand{font-size:10px}.v07-rail{padding:4px;gap:3px;flex-basis:60px;min-width:60px}.v07-tool{min-height:43px!important}.v07-tool .v07-icon{font-size:16px}#v07-stick{width:80px;height:80px;bottom:42px}#v07-stick-knob{left:24px;top:24px;width:30px;height:30px}}
+@media(max-width:650px){#v07-brand{font-size:10px}#v07-top{gap:6px;padding:4px 6px}#v07-top select{max-width:103px}#v07-mode{font-size:10px;padding:5px}.v07-rail{min-width:57px;flex-basis:57px}.v07-tool small{font-size:8px}}
+
+</style>
 </head>
 <body>
 <main class="layout">
@@ -322,9 +364,24 @@ setEnabled(false);updateSummary();render();
   if(!ctx){$('scene3d-info').textContent='Não foi possível iniciar a visualização 3D.';return;}
   let meshes=[],map=new Map(),selected='',onlySelected=false,callbacks={},mode='orbit',yaw=-.85,elevation=.64,range=1000,target=[0,0,0],bounds=null;
   let facesDrawn=[],pending=false,dirty=true,drag=null;const points=new Map();let prevMulti=null;
+  let player=false,playerPos=[0,0,3],playerYaw=0,playerPitch=0,stick=[0,0],lastFrame=0;
+  function firstPerson(on){
+    if(!on){player=false;stick=[0,0];mode='orbit';lastFrame=0;focus(true);return true;}
+    if(!meshes.length)return false;
+    const b=worldBounds(map.has(selected)?[map.get(selected)]:meshes);
+    playerPos=[(b.lo[0]+b.hi[0])/2,(b.lo[1]+b.hi[1])/2,b.lo[2]+Math.min(3,Math.max(1.8,(b.hi[2]-b.lo[2])*.08))];
+    playerYaw=yaw+Math.PI;playerPitch=0;stick=[0,0];mode='player';player=true;schedule();return true;
+  }
+  function tick(t){if(player){const dt=lastFrame?Math.min(.05,(t-lastFrame)/1000):0;lastFrame=t;
+      const c=Math.cos(playerYaw),v=Math.sin(playerYaw),[sx,sy]=stick;
+      if(Math.abs(sx)+Math.abs(sy)>.015){const span=bounds?Math.max(...bounds.hi.map((x,i)=>x-bounds.lo[i])):100;
+      const speed=Math.max(3,Math.min(65,span*.035));
+      playerPos[0]+=dt*speed*(-sy*c-sx*v);playerPos[1]+=dt*speed*(-sy*v+sx*c);schedule();}}
+      else lastFrame=0;requestAnimationFrame(tick);}
+  requestAnimationFrame(tick);
   const norm=v=>{const l=Math.hypot(...v)||1;return v.map(x=>x/l);}, dot=(a,b)=>a.reduce((v,n,i)=>v+n*b[i],0),cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
   function camera(){const c=Math.cos(elevation);return[target[0]+range*c*Math.cos(yaw),target[1]+range*c*Math.sin(yaw),target[2]+range*Math.sin(elevation)];}
-  function basis(){const eye=camera(),forward=norm(target.map((x,i)=>x-eye[i])),right=norm(cross(forward,[0,0,1])),up=cross(right,forward);return{eye,forward,right,up};}
+  function basis(){const eye=player?playerPos:camera(),forward=player?norm([Math.cos(playerPitch)*Math.cos(playerYaw),Math.cos(playerPitch)*Math.sin(playerYaw),Math.sin(playerPitch)]):norm(target.map((x,i)=>x-eye[i])),right=norm(cross(forward,[0,0,1])),up=cross(right,forward);return{eye,forward,right,up};}
   function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,1.6),w=Math.max(1,Math.round(r.width*d)),h=Math.max(1,Math.round(r.height*d));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}ctx.setTransform(d,0,0,d,0,0);return[r.width,r.height];}
   function project(v,b,w,h){const rel=v.map((x,i)=>x-b.eye[i]),depth=dot(rel,b.forward);if(depth<.02)return null;const f=h*.95;return[w*.5+dot(rel,b.right)*f/depth,h*.5-dot(rel,b.up)*f/depth,depth];}
   function worldBounds(items){const lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];for(const mesh of items){for(let k=0;k<3;k++){lo[k]=Math.min(lo[k],mesh.min[k]);hi[k]=Math.max(hi[k],mesh.max[k]);}}return{lo,hi};}
@@ -364,12 +421,14 @@ setEnabled(false);updateSummary();render();
   function xy(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
   function multi(){const a=[...points.values()];if(a.length<2)return null;return{cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2,dist:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)};}
   canvas.addEventListener('pointerdown',e=>{e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=xy(e);points.set(e.pointerId,{...p,travel:0});prevMulti=multi();
-    if(points.size>1){drag=null;return;}if(mode==='move'&&selected&&pick(p.x,p.y)===selected)drag={key:selected,delta:[0,0,0],x:p.x,y:p.y};});
+    if(points.size>1){drag=null;return;}if(player)return;if(mode==='move'&&selected&&pick(p.x,p.y)===selected)drag={key:selected,delta:[0,0,0],x:p.x,y:p.y};});
   canvas.addEventListener('pointermove',e=>{const old=points.get(e.pointerId);if(!old)return;e.preventDefault();const p=xy(e);p.travel=old.travel+Math.hypot(p.x-old.x,p.y-old.y);points.set(e.pointerId,p);
+    if(player){playerYaw+=(p.x-old.x)*.005;playerPitch=Math.max(-1.45,Math.min(1.45,playerPitch-(p.y-old.y)*.005));schedule();return;}
     if(points.size>1){const m=multi();if(prevMulti){range=Math.max(3,range*prevMulti.dist/Math.max(1,m.dist));const d=translate(prevMulti.cx-m.cx,m.cy-prevMulti.cy);target=target.map((x,i)=>x+d[i]);}prevMulti=m;drag=null;
     }else if(drag){const d=translate(p.x-drag.x,drag.y-p.y);drag.x=p.x;drag.y=p.y;drag.delta=drag.delta.map((x,i)=>x+d[i]);map.get(selected).shift=drag.delta.slice();
     }else{yaw+=(p.x-old.x)*.008;elevation=Math.min(1.45,Math.max(-1.42,elevation+(p.y-old.y)*.008));}schedule();});
   function done(e){const state=points.get(e.pointerId);if(!state)return;points.delete(e.pointerId);prevMulti=multi();
+    if(player){schedule();return;}
     if(drag){const ob=map.get(drag.key),delta=drag.delta;ob.shift=[0,0,0];drag=null;if(Math.hypot(...delta)>0.0001)callbacks.onMove?.(ob.key,delta);
     }else if(state.travel<9&&mode==='orbit'){const hit=pick(...Object.values(xy(e)));if(hit){selected=hit;updateInfo();callbacks.onSelect?.(hit);}}schedule();}
   canvas.addEventListener('pointerup',done);canvas.addEventListener('pointercancel',done);
@@ -378,10 +437,11 @@ setEnabled(false);updateSummary();render();
   const api={
     on(cb){callbacks=cb||{};},
     async loadArena(records){meshes=[];map.clear();const bad=[];for(const x of records){try{const v=make(x.key,x.data);meshes.push(v);map.set(x.key,v);}catch(e){bad.push(x.key+': '+e.message);}}
-      bounds=meshes.length?worldBounds(meshes):null;if(meshes.length)focus(true);selected='';updateInfo();return bad;},
+      bounds=meshes.length?worldBounds(meshes):null;if(meshes.length)focus(true);selected='';updateInfo();if(player)firstPerson(true);return bad;},
     select(k){selected=k;updateInfo();},
     update(key,bytes){if(!map.has(key))return;const m=make(key,bytes);const i=meshes.indexOf(map.get(key));meshes[i]=m;map.set(key,m);schedule();},
-    setMode(s){mode=s==='move'?'move':'orbit';},
+    setMode(s){if(player)firstPerson(false);mode=s==='move'?'move':'orbit';},
+    setPlayerMode:firstPerson,isPlayer(){return player;},setJoystick(x,y){stick=[Math.max(-1,Math.min(1,Number(x)||0)),Math.max(-1,Math.min(1,Number(y)||0))];},
     focusAll(){focus(true);},focusSelected(){focus(false);},getCount(){return meshes.length;},getVisibleCount(){return onlySelected&&map.has(selected)?1:meshes.length;}
   };root.RiptideScene3D=api;
   $('scene3d-orbit').addEventListener('click',()=>{mode='orbit';$('scene3d-orbit').classList.add('primary');$('scene3d-move').classList.remove('primary');});
@@ -417,12 +477,40 @@ setEnabled(false);updateSummary();render();
   const smooth=program(versus,fs), flat=program(flatV,flatF);
   let meshes=[],meshByKey=new Map(),selected='',onlySelected=false,pickMeshes=[],callbacks={},mode='orbit',yaw=-.85,elevation=.64,range=1200,target=[0,0,0],bounds=null,drag=null,dirty=true;
   let viewproj=new Float32Array(16),grid=null,pickFbo=null,pickTex=null,pickDepth=null,pickW=0,pickH=0;
+  // First-person inspection: free-flight camera. This is NOT game physics or a playable race.
+  let player=false,playerPos=[0,0,3],playerYaw=0,playerPitch=0,stick=[0,0],lastFrame=0;
+  function playerForward(){const cp=Math.cos(playerPitch);return [cp*Math.cos(playerYaw),cp*Math.sin(playerYaw),Math.sin(playerPitch)];}
+  function enterPlayer(){
+    if(!meshes.length)return false;
+    const chosen=meshByKey.get(selected),b=calcBounds(chosen?[chosen]:meshes);
+    const span=Math.max(1,b.hi[2]-b.lo[2]);
+    playerPos=[(b.lo[0]+b.hi[0])/2,(b.lo[1]+b.hi[1])/2,b.lo[2]+Math.min(3,Math.max(1.8,span*.08))];
+    playerYaw=yaw+Math.PI;playerPitch=0;stick=[0,0];player=true;mode='player';dirty=true;draw();return true;
+  }
+  function leavePlayer(){player=false;stick=[0,0];mode='orbit';lastFrame=0;dirty=true;focus(true);}
+  function frame(t){
+    if(player){
+      const dt=lastFrame?Math.min(.05,Math.max(0,(t-lastFrame)/1000)):0;
+      lastFrame=t;
+      const [sx,sy]=stick;
+      if(Math.abs(sx)+Math.abs(sy)>.015){
+        const span=bounds?Math.max(...bounds.hi.map((v,i)=>v-bounds.lo[i])):100;
+        const speed=Math.max(3,Math.min(65,span*.035));
+        const c=Math.cos(playerYaw),sn=Math.sin(playerYaw);
+        playerPos[0]+=dt*speed*(-sy*c-sx*sn);
+        playerPos[1]+=dt*speed*(-sy*sn+sx*c);
+        dirty=true;draw();
+      }
+    }else lastFrame=0;
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
   const MIN_DIST=2;
   function cross(a,b){return[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
   function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];}
   function unit(v){const d=Math.hypot(...v)||1;return v.map(x=>x/d);}
   function look(eye,at){const z=unit(eye.map((v,i)=>v-at[i])),x=unit(cross([0,0,1],z)),y=cross(z,x);return new Float32Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-dot(x,eye),-dot(y,eye),-dot(z,eye),1]);}
-  function perspective(aspect){const f=1/Math.tan(Math.PI/6),near=Math.max(.05,range/3000),far=Math.max(100,range*25);return new Float32Array([f/aspect,0,0,0,0,f,0,0,0,0,(far+near)/(near-far),-1,0,0,2*far*near/(near-far),0]);}
+  function perspective(aspect){const f=1/Math.tan(Math.PI/6),near=player?.05:Math.max(.05,range/3000),far=Math.max(100,range*25);return new Float32Array([f/aspect,0,0,0,0,f,0,0,0,0,(far+near)/(near-far),-1,0,0,2*far*near/(near-far),0]);}
   function mul(a,b){const o=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)for(let k=0;k<4;k++)o[c*4+r]+=a[k*4+r]*b[c*4+k];return o;}
   function camera(){const ce=Math.cos(elevation);return[target[0]+range*ce*Math.cos(yaw),target[1]+range*ce*Math.sin(yaw),target[2]+range*Math.sin(elevation)];}
   function uploadBuffer(data,itemSize,targetType=gl.ARRAY_BUFFER){const buf=gl.createBuffer();gl.bindBuffer(targetType,buf);gl.bufferData(targetType,data,gl.STATIC_DRAW);return buf;}
@@ -458,7 +546,7 @@ setEnabled(false);updateSummary();render();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,kind===gl.LINES?m.gpu.lines:m.gpu.indices);
     gl.drawElements(kind,kind===gl.LINES?m.lines.length:m.indices.length,gl.UNSIGNED_SHORT,0);}
   function render(picking=false){const[w,h]=resize();gl.viewport(0,0,w,h);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);gl.clearColor(...C.bg);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-    viewproj=mul(perspective(w/h),look(camera(),target));
+    viewproj=mul(perspective(w/h),player?look(playerPos,playerPos.map((v,i)=>v+playerForward()[i])):look(camera(),target));
     if(!meshes.length)return;
     if(!picking&&grid&&$('scene3d-grid').checked){use(flat);gl.uniform3fv(flat.shift,[0,0,0]);gl.uniform4fv(flat.shade,[.21,.34,.44,.55]);gl.bindBuffer(gl.ARRAY_BUFFER,grid.buf);gl.vertexAttribPointer(flat.pos,3,gl.FLOAT,false,0,0);gl.drawArrays(gl.LINES,0,grid.count);}
     use(picking?flat:smooth);
@@ -488,16 +576,19 @@ setEnabled(false);updateSummary();render();
   function gesture(){const pts=[...pointers.values()];if(pts.length<2)return null;return {dist:Math.hypot(pts[1].x-pts[0].x,pts[1].y-pts[0].y),cx:(pts[0].x+pts[1].x)/2,cy:(pts[0].y+pts[1].y)/2};}
   canvas.addEventListener('pointerdown',e=>{e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=coords(e);pointers.set(e.pointerId,{...p,startX:p.x,startY:p.y,travel:0});prevGesture=gesture();
     if(pointers.size!==1){drag=null;return;}
+    if(player)return;
     const match=pick(p.x,p.y);
     if(mode==='move'&&match&&match.key===selected){drag={key:selected,delta:[0,0,0],x:p.x,y:p.y};}
   });
   canvas.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;e.preventDefault();const p=coords(e),old=pointers.get(e.pointerId);p.startX=old.startX;p.startY=old.startY;p.travel=old.travel+Math.hypot(p.x-old.x,p.y-old.y);pointers.set(e.pointerId,p);
+    if(player){playerYaw+=(p.x-old.x)*.005;playerPitch=Math.max(-1.45,Math.min(1.45,playerPitch-(p.y-old.y)*.005));dirty=true;draw();return;}
     if(pointers.size>1){const g=gesture();if(prevGesture){range=Math.max(MIN_DIST,range*Math.exp((prevGesture.dist-g.dist)/Math.max(100,range*.05)));const delta=moveTo(prevGesture.cx-g.cx,g.cy-prevGesture.cy);target=target.map((x,i)=>x+delta[i]);}prevGesture=g;drag=null;
     }else if(drag){const d=moveTo(p.x-drag.x,drag.y-p.y);drag.x=p.x;drag.y=p.y;drag.delta=drag.delta.map((v,i)=>v+d[i]);meshByKey.get(drag.key).shift=drag.delta.slice();
     }else{yaw+=(p.x-old.x)*.008;elevation=Math.min(1.5,Math.max(-1.45,elevation+(p.y-old.y)*.008));}
     dirty=true;draw();
   });
   function release(e){const p=pointers.get(e.pointerId);if(!p)return;const current=coords(e);pointers.delete(e.pointerId);prevGesture=gesture();
+    if(player){dirty=true;draw();return;}
     if(drag){const move=drag,ob=meshByKey.get(move.key);ob.shift=[0,0,0];drag=null;
       if(Math.hypot(...move.delta)>0.0001 && callbacks.onMove)callbacks.onMove(move.key,move.delta);
     }else if(p.travel<9&&mode==='orbit'){const hit=pick(current.x,current.y);if(hit){selectedKey(hit.key);callbacks.onSelect?.(hit.key);}}
@@ -508,14 +599,17 @@ setEnabled(false);updateSummary();render();
     on(cb){callbacks=cb||{};},
     async loadArena(records){meshes.forEach(m=>dispose(m.gpu));meshes=[];meshByKey.clear();
       const bad=[];for(const {key,data} of records){try{const m=makeMesh(key,data);meshes.push(m);meshByKey.set(key,m);}catch(e){bad.push(key+': '+e.message);}}
-      bounds=meshes.length?calcBounds(meshes):null;createGrid();if(meshes.length)focus(true);selectedKey('');
+      bounds=meshes.length?calcBounds(meshes):null;createGrid();if(meshes.length)focus(true);selectedKey('');if(player)enterPlayer();
       info.textContent=meshes.length+' trechos físicos carregados'+(bad.length?' · '+bad.length+' ignorados':'')+' · arraste para orbitar.';
       return bad;
     },
     select:selectedKey,
     update(key,bytes){const prev=meshByKey.get(key);if(!prev)return;const m=makeMesh(key,bytes);m.shift=prev.shift;dispose(prev.gpu);meshes[meshes.indexOf(prev)]=m;meshByKey.set(key,m);dirty=true;draw();},
     focusAll(){focus(true);},focusSelected(){focus(false);},
-    setMode(next){mode=next==='move'?'move':'orbit';canvas.style.cursor=mode==='move'?'grab':'crosshair';},
+    setMode(next){if(player)leavePlayer();mode=next==='move'?'move':'orbit';canvas.style.cursor=mode==='move'?'grab':'crosshair';},
+    setPlayerMode(enabled){if(enabled)return enterPlayer();leavePlayer();return true;},
+    isPlayer(){return player;},
+    setJoystick(x,y){stick=[Math.max(-1,Math.min(1,Number(x)||0)),Math.max(-1,Math.min(1,Number(y)||0))];},
     getCount(){return meshes.length;},
     getVisibleCount(){return onlySelected&&meshByKey.has(selected)?1:meshes.length;}
   };
@@ -706,7 +800,8 @@ if(scene){scene.on({
       notes.textContent='Trecho '+section+' deslocado em 3D. '+editor.getSnapshot().patch.changes.length+' vértices alterados.';
     }catch(err){notes.textContent='Não foi possível mover: '+err.message;}}
  });}
-populateArenas();populateZones();openZone();openSceneArena();
+populateArenas();populateZones();await openZone();await openSceneArena();
+if(window.AndroidBridge?.editorReady)window.AndroidBridge.editorReady(Object.keys(bundle).length);
 })().catch(err=>{
   const message='Erro ao carregar editor: '+(err&&err.message||String(err));
   const output=document.getElementById('arena-summary')||document.getElementById('bundle-message');
@@ -714,5 +809,126 @@ populateArenas();populateZones();openZone();openSceneArena();
   if(window.AndroidBridge&&window.AndroidBridge.reportError)window.AndroidBridge.reportError(message);
   console.error(message);
 });
+</script>
+<script>
+/* Riptide Map Lab v0.7 — mobile-first HUD, no dependencies or network. */
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+const scene=window.RiptideScene3D;
+const shell=document.createElement('div');shell.id='v07-shell';
+shell.innerHTML=`
+ <div id="v07-top"><span id="v07-brand">≋ RIPTIDE MAP LAB</span>
+ <label>Arena <select id="v07-arena" aria-label="Escolha a arena"></select></label>
+ <label id="v07-zone-label">Trecho <select id="v07-zone" aria-label="Escolha o trecho"></select></label>
+ <span id="v07-mode" role="status">Prévia 3D</span></div>
+ <div id="v07-main">
+  <nav class="v07-rail" aria-label="Navegação">
+   <button class="v07-tool" data-action="orbit" aria-label="Orbitar câmera"><span class="v07-icon">◉</span><small>Orbitar</small></button>
+   <button class="v07-tool" data-action="focus" aria-label="Centralizar câmera"><span class="v07-icon">◎</span><small>Focar</small></button>
+   <button class="v07-tool" data-action="move" aria-label="Mover trecho físico"><span class="v07-icon">✥</span><small>Mover</small></button>
+   <button class="v07-tool" data-action="player" aria-label="Perspectiva do jogador"><span class="v07-icon">♟</span><small>Jogador</small></button>
+  </nav>
+  <section id="v07-viewport" aria-label="Arena 3D em tempo real">
+    <span id="v07-player-label">PERSPECTIVA DO JOGADOR · CÂMERA LIVRE</span>
+    <span id="v07-joystick-desc">Mover</span>
+    <div id="v07-stick" aria-label="Joystick virtual de movimento"><div id="v07-stick-knob"></div></div>
+    <div id="v07-hint" role="status"><b>Editor 3D</b><span>Arraste para girar a câmera. Toque numa ferramenta para ver sua função.</span></div>
+  </section>
+  <nav class="v07-rail" aria-label="Ferramentas">
+   <button class="v07-tool" data-action="arena" aria-label="Mostrar arena inteira"><span class="v07-icon">▣</span><small>Arena</small></button>
+   <button class="v07-tool" data-action="segment" aria-label="Mostrar trecho individual"><span class="v07-icon">▤</span><small>Trecho</small></button>
+   <button class="v07-tool" data-action="visual" aria-label="Mostrar modelos visuais"><span class="v07-icon">◈</span><small>Visual</small></button>
+   <button class="v07-tool" data-action="collision" aria-label="Mostrar colisões"><span class="v07-icon">◇</span><small>Colisão</small></button>
+   <button class="v07-tool" data-action="save" aria-label="Exportar patch"><span class="v07-icon">⇩</span><small>Exportar</small></button>
+   <button class="v07-tool" data-action="tools" aria-label="Abrir ferramentas avançadas"><span class="v07-icon">⚙</span><small>Mais</small></button>
+  </nav>
+ </div>
+ <div id="v07-drawer" hidden><div id="v07-drawer-top"><b>Ferramentas avançadas</b><button id="v07-close">Fechar ✕</button></div></div>`;
+document.body.append(shell);
+const view=document.querySelector('.view3d'),sidebar=document.querySelector('.sidebar');
+if(view)$('v07-viewport').prepend(view);
+if(sidebar)$('v07-drawer').append(sidebar);
+document.body.classList.add('v07-active');
+const descriptions={
+ orbit:['Orbitar câmera','Arraste sobre a pista para girar; com dois dedos, aproxime e desloque.'],
+ focus:['Centralizar câmera','Enquadra o trecho selecionado ou a arena completa.'],
+ move:['Mover trecho','Na camada de colisões, arraste o trecho selecionado para deslocá-lo.'],
+ player:['Perspectiva do jogador','Joystick esquerdo para andar; arraste na cena para olhar ao redor. Sem física ou colisões de pilotagem.'],
+ arena:['Arena inteira','Exibe todos os modelos/trechos da arena em uma cena 3D.'],
+ segment:['Trecho individual','Exibe somente os modelos associados ao trecho escolhido.'],
+ visual:['Geometria visual','Mostra os modelos 3D sem texturas; ainda não permite editá-los.'],
+ collision:['Geometria de colisão','Mostra as malhas físicas que já podem ser editadas experimentalmente.'],
+ save:['Exportar alterações','Gera o patch JSON com suas mudanças locais de colisão.'],
+ tools:['Ferramentas avançadas','Abre as coordenadas, filtros, seleção e opção de importar outro XAPK.']
+};
+function hint(action){const [name,desc]=descriptions[action]||['Editor',action];$('v07-hint').innerHTML='';
+ const title=document.createElement('b'),text=document.createElement('span');title.textContent=name;text.textContent=desc;$('v07-hint').append(title,text);
+}
+let player=false;
+const buttons=[...shell.querySelectorAll('[data-action]')];
+function update(){
+ for(const b of buttons){const cmd=b.dataset.action;
+  let active=cmd==='player'?player:cmd==='orbit'?!player&&$('scene3d-orbit').classList.contains('primary'):cmd==='move'?!player&&$('scene3d-move').classList.contains('primary'):cmd==='arena'?$('mode-arena').classList.contains('primary'):cmd==='segment'?$('mode-section').classList.contains('primary'):cmd==='visual'?$('layer-visual').classList.contains('primary'):cmd==='collision'?$('layer-collision').classList.contains('primary'):false;
+  b.setAttribute('aria-pressed',String(active));
+  b.disabled=cmd==='move'&&($('scene3d-move').disabled||player)||cmd==='visual'&&$('layer-visual').disabled;
+ }
+ const layer=$('layer-visual').classList.contains('primary')?'Visual 3D':'Colisão';
+ $('v07-mode').textContent=player?'Câmera: Jogador':layer+' · '+($('mode-arena').classList.contains('primary')?'Arena inteira':'Trecho');
+ $('v07-zone-label').style.display=$('mode-arena').classList.contains('primary')?'none':'flex';
+}
+function resetPlayer(){if(!player)return;player=false;scene?.setPlayerMode?.(false);scene?.setJoystick?.(0,0);shell.classList.remove('player');resetStick();}
+function click(action){hint(action);
+ if(action==='player'){
+   if(!scene?.setPlayerMode){hint('Jogador indisponível: este renderizador não suporta a câmera.');return;}
+   if(player)resetPlayer();else{
+     if(!scene.setPlayerMode(true)){hint('Selecione uma arena antes de entrar na perspectiva do jogador.');return;}
+     player=true;shell.classList.add('player');$('v07-drawer').hidden=true;
+   }
+ }else if(action==='orbit'||action==='move'){
+   resetPlayer();$('scene3d-'+action).click();
+ }else if(action==='focus'){
+   if(player){hint('Saia da perspectiva do jogador para centralizar a câmera.');return;}
+   ($('mode-arena').classList.contains('primary')?$('scene3d-all'):$('scene3d-focus')).click();
+ }else if(action==='arena'||action==='segment'||action==='visual'||action==='collision'){
+   if(player)resetPlayer();$('mode-'+action)?.click();
+   if(action==='visual'||action==='collision')$('layer-'+action)?.click();
+ }else if(action==='save'){$('bundle-export').click();}
+ else if(action==='tools'){$('v07-drawer').hidden=!$('v07-drawer').hidden;}
+ update();
+}
+for(const b of buttons){b.addEventListener('click',()=>click(b.dataset.action));}
+$('v07-close').addEventListener('click',()=>{$('v07-drawer').hidden=true;hint('tools');});
+// Keep landscape selectors synchronized with the original, tested loader.
+function syncSelect(original,mirror){
+ if(!original||!mirror)return;
+ const options=Array.from(original.options).map(o=>new Option(o.textContent,o.value));
+ mirror.replaceChildren(...options);mirror.value=original.value;
+}
+function syncAll(){syncSelect($('arena-select'),$('v07-arena'));syncSelect($('zone-select'),$('v07-zone'));update();}
+$('v07-arena').addEventListener('change',()=>{$('arena-select').value=$('v07-arena').value;$('arena-select').dispatchEvent(new Event('change'));syncAll();});
+$('v07-zone').addEventListener('change',()=>{$('zone-select').value=$('v07-zone').value;$('zone-select').dispatchEvent(new Event('change'));syncAll();});
+for(const [original] of [['arena-select'],['zone-select']]){
+ const target=$(original);new MutationObserver(syncAll).observe(target,{childList:true});
+ target.addEventListener('change',()=>queueMicrotask(syncAll));
+}
+for(const id of ['mode-arena','mode-section','layer-visual','layer-collision'])$(id).addEventListener('click',()=>queueMicrotask(syncAll));
+// Two-pointer control: joystick gets its own pointer and never triggers scene rotation.
+const pad=$('v07-stick'),knob=$('v07-stick-knob');let stickPointer=null;
+function resetStick(){stickPointer=null;knob.style.transform='translate(0px,0px)';scene?.setJoystick?.(0,0);}
+function steer(e){const r=pad.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+ const radius=Math.max(18,(Math.min(r.width,r.height)-36)/2),dx=e.clientX-cx,dy=e.clientY-cy;
+ const mag=Math.hypot(dx,dy),k=Math.min(1,radius/Math.max(.001,mag));
+ const x=dx*k,y=dy*k;knob.style.transform='translate('+x+'px,'+y+'px)';scene?.setJoystick?.(x/radius,y/radius);
+}
+pad.addEventListener('pointerdown',e=>{e.preventDefault();if(!player||stickPointer!==null)return;stickPointer=e.pointerId;pad.setPointerCapture(e.pointerId);steer(e);});
+pad.addEventListener('pointermove',e=>{if(stickPointer===e.pointerId){e.preventDefault();steer(e);}});
+for(const event of ['pointerup','pointercancel','lostpointercapture'])pad.addEventListener(event,e=>{if(stickPointer===e.pointerId)resetStick();});
+// Native reimport is available from the tools panel via AndroidBridge.
+if(window.AndroidBridge&&window.AndroidBridge.pickXapk){const button=document.createElement('button');button.textContent='Importar outro XAPK';button.className='v07-reimport';
+ button.addEventListener('click',()=>window.AndroidBridge.pickXapk());$('v07-drawer-top').append(button);}
+syncAll();requestAnimationFrame(()=>{window.dispatchEvent(new Event('resize'));scene?.focusAll?.();});
+window.RiptideMobileHUD={hint,refresh:syncAll};
+})();
+
 </script>
 </body></html>
