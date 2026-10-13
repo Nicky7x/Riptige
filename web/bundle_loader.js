@@ -67,7 +67,7 @@ function setControls(){
   if($('scene3d-all'))$('scene3d-all').disabled=viewMode==='segment';
   if($('scene3d-focus'))$('scene3d-focus').disabled=viewMode==='arena';
   if($('visual-layer-note'))$('visual-layer-note').textContent=layer==='visual'
-    ?'Prévia dos modelos 3D do jogo SEM texturas. Somente leitura; a edição física continua independente.'
+    ?'Modelos originais com texturas difusas quando disponíveis (ETC1/DXT5). Outros materiais seguem sem imagem. Somente leitura.'
     :'Malhas físicas de colisão (editáveis). Não representam a aparência texturizada final.';
 }
 async function openSceneArena(){
@@ -103,10 +103,10 @@ async function openSceneArena(){
     if(layer==='collision')scene.select(zone.value);
     else if(viewMode==='segment')scene.select(modelForSection(zone.value));
     scene.focusAll();
-    const type=layer==='visual'?'modelos visuais SEM texturas':'trechos de colisão';
+    const type=layer==='visual'?'modelos visuais (texturas parciais)':'trechos de colisão';
     $('arena-summary').textContent='Arena '+ar+' · '+records.length+' '+type+
       (viewMode==='arena'?' exibidos juntos.':' · apenas o trecho selecionado.')+
-      (layer==='visual'?' Visualização somente leitura.':'');
+      (layer==='visual'?' Texturas difusas quando suportadas; somente leitura.':'');
   }catch(err){if(token===arenaToken)$('scene3d-info').textContent='Falha na prévia 3D: '+err.message;}
 }
 $('mode-arena')?.addEventListener('click',()=>{viewMode='arena';openSceneArena();});
