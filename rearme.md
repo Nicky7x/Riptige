@@ -356,3 +356,15 @@ Portar um subconjunto comprovado do parser para o importador Android, com cache 
 - **APK entregue**: `/RiptideMapLab/Riptide_Map_Lab_Android_v0.9_debug.apk`, 150.880 bytes, SHA-256 `11179cb3da1a81a37d0b3e44279b326f7db9705b91b69d12b0af9ec54b978ab3`. Extraído do artefato `riptide-map-lab-android-debug` #11788613173. Conferido dentro do APK: `assets/editor_template.html` inclui `RiptideWorldV09`, ferramenta `rw-find-next` e placeholder `__EMBEDDED_ASSETS__`, sem assets proprietários.
 - **GLB pessoal atualizado**: `/RiptideMapLab/CityB_world_named_v09.glb` tem 5.185.752 bytes, 2.658 nós e nomes com caminhos originais do template. Parse confirmado em Chromium (sem WebGL). Pendente renderizar/testar no Poco e relatar fluidez.
 - **Atenção:** o GLB v0.9 é sem texturas/água e importado via seletor de arquivos; a v0.8 visual com texturas permanece no mesmo APK separadamente. Compatibilidade com jogo real não foi implementada.
+
+
+## 2026-10-13 — M1.20: Android v0.9 instalável; viewport GLB editável (ChatGPT)
+
+O usuário questionou se o trabalho teria sido perdido por limite de execução da conversa. **Confirmação verificável posterior**:
+- Última build GitHub Actions [run #38345467404](https://github.com/Nicky7x/Riptige/actions/runs/38345467404), commit `85ca66c911ec`, conclusão **success**. Testes Node para v0.7/v0.8/v0.9 e `gradle :app:testDebugUnitTest :app:assembleDebug` passaram.
+- Artefato ID `11788613173` baixado e APK extraído para `/mnt/data/Riptide_Map_Lab_Android_v0.9_debug.apk`, **150.880 bytes**, SHA-256 `11179cb3da1a81a37d0b3e44279b326f7db9705b91b69d12b0af9ec54b978ab3`; HTML interno contém `RiptideWorldV09`, busca por nome, seleção de cena GLB, edição JSON.
+- O APK foi salvo na Biblioteca, nome real atribuído `/RiptideMapLab/Riptide_Map_Lab_Android_v0.9_debug(2).apk` porque já existia um arquivo com o nome simples; o link sandbox refere-se ao arquivo inspecionado.
+- `CityB_world_named_v09.glb` privado de ~5 MB, SHA-256 `ec76e329e42076b8ae11347034668625844b2884bacb3cc48aa038583420d39d` disponível localmente e na Biblioteca `/RiptideMapLab/CityB_world_named_v09.glb`.
+- Funcionalidade v0.9: **Mais → Abrir cena 3D (GLB)** via seletor Storage Access Framework, WebGL agrupando instâncias, busca por caminho/modelo, mover, duplicar, ocultar, exportar/importar `riptide-world-edit-v1` JSON. Mantém o editor v0.8 de XAPK; não altera o jogo.
+- Testes de parsing no Chromium conseguiram reconhecer **2.658 objetos e 86 geometrias distintas**; o ambiente não oferece WebGL, portanto o render não foi verificado em GPU. O teste físico no Poco X8 Pro está **pendente**.
+- **Limitações essenciais:** não reconstrói automaticamente todas as arenas do XAPK no Android: é preciso abrir o GLB da CityB separado. GLB atual sem água/texturas; o editor v0.8 mantém as texturas originais de modelos de nível em modo anterior. Animações, sky e edição de malha permanecem pendentes.
