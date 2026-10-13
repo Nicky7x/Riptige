@@ -141,6 +141,7 @@ public final class ApfImporter {
             // Convert a conservative subset of ORIGINAL diffuse images entirely on-device.
             // Referenced texture names and UVs remain local, never included in public APK.
             Set<String> seenTextures=new HashSet<>();int decodedTextures=0;
+            try{
             for(String material:usedMaterials){
                 String tex=materialDiffuse.get(material);
                 if(tex==null)continue;
@@ -163,6 +164,7 @@ public final class ApfImporter {
                     textures.put(tex,texRecord);decodedTextures++;
                 }catch(Exception ignored){/* unsupported material/image variant: shaded fallback */}
             }
+            }catch(org.json.JSONException e){throw new IOException("Metadados de material inválidos",e);}
         }
         if(meshes==0)throw new IOException("Não encontrei malhas compatíveis nesse XAPK");
         int arenaCount=arenas.length();
