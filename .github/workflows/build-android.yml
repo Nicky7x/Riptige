@@ -7,12 +7,14 @@ on:
       - '.github/workflows/build-android.yml'
       - 'web/**'
       - 'tests-js/mobile-v07.test.cjs'
+      - 'tests-js/texture-v08.test.cjs'
   pull_request:
     paths:
       - 'android/**'
       - '.github/workflows/build-android.yml'
       - 'web/**'
       - 'tests-js/mobile-v07.test.cjs'
+      - 'tests-js/texture-v08.test.cjs'
 permissions:
   contents: read
 jobs:
@@ -33,6 +35,8 @@ jobs:
           gradle-version: '8.13'
       - name: Validate landscape editor bundle
         run: node tests-js/mobile-v07.test.cjs
+      - name: Validate material and UV rendering integration
+        run: node tests-js/texture-v08.test.cjs
       - name: Compile Android debug APK
         run: gradle -p android --no-daemon :app:testDebugUnitTest :app:assembleDebug
       - name: Publish test APK
