@@ -170,42 +170,7 @@ async function refreshLibrary(autoOpen=false){
 async function openArena(ar){
  if(!privateLibrary?.arenas?.[ar])return false;
  const entry=privateLibrary.arenas[ar],token=++worldLoadToken;
- const allowed='^(CityA|CityB|FactoryA|FactoryB|MilitaryA|OldCityA|ParkA|ParkB|SpaceportA)button.id='rw-import';button.addEventListener('click',()=>input.click());$('v07-drawer-top').append(button);
-input.addEventListener('change',()=>{const f=input.files?.[0];if(f)activateFile(f);input.value='';});
-jsonInput.addEventListener('change',()=>{const f=jsonInput.files?.[0];if(!f)return;f.text().then(applyJSON).catch(e=>note('JSON inválido: '+e.message));jsonInput.value='';});
-$('rw-close').onclick=()=>{wrap.classList.remove('show');selected=null;note('Cena fechada; a visualização original permanece disponível.')};
-$('rw-home').onclick=focus;
-let searchAfter=-1;
-$('rw-find-next').onclick=()=>{
- if(!loaded)return note('Abra primeiro uma cena GLB.');
- const text=$('rw-find').value.trim().toLocaleLowerCase('pt-BR');
- if(!text)return note('Digite parte do nome de uma estrutura ou modelo.');
- for(let d=1;d<=loaded.nodes.length;d++){
-  const i=(searchAfter+d)%loaded.nodes.length,n=loaded.nodes[i];
-  if((n.name+' '+loaded.meshNames[n.mesh]).toLocaleLowerCase('pt-BR').includes(text)){
-   searchAfter=i;select(n);center=[n.matrix[12],n.matrix[13],n.matrix[14]];
-   distance=Math.max(10,Math.min(distance,120));dirty=true;draw();
-   note('Encontrado: '+n.name+' · '+loaded.meshNames[n.mesh]);return;
-  }
- }
- note('Nenhuma instância corresponde a: '+text);
-};
-$('rw-find').addEventListener('keydown',e=>{if(e.key==='Enter')$('rw-find-next').click();});
-
-$('rw-apply').onclick=()=>{if(!selected)return note('Selecione um objeto antes de mover.');const val=['rw-x','rw-y','rw-z'].map(x=>Number($(x).value));if(val.some(n=>!Number.isFinite(n)||Math.abs(n)>1e7))return note('Coordenadas inválidas');selected.matrix[12]=val[0];selected.matrix[13]=val[1];selected.matrix[14]=val[2];recompute();note('Posição atualizada. Exporte a cena JSON para salvar.')};
-$('rw-copy').onclick=()=>{if(!selected)return note('Selecione um objeto para duplicar');const id='object-copy-'+loaded.nodes.length+'-'+Math.floor(performance.now()).toString(36);const n={...selected,id,name:selected.name+' (cópia)',matrix:selected.matrix.slice(),geometry:selected.geometry.slice(),hidden:false};n.matrix[12]+=3;loaded.nodes.push(n);select(n);recompute();note('Objeto duplicado: '+n.name)};
-$('rw-hide').onclick=()=>{if(!selected)return note('Selecione um objeto para ocultar');selected.hidden=!selected.hidden;const name=selected.name;recompute();note((selected.hidden?'Ocultado: ':'Restaurado: ')+name+' (exporte JSON)')};
-$('rw-save').onclick=saveScene;$('rw-load').onclick=()=>jsonInput.click();
-function xy(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
-canvas.addEventListener('pointerdown',e=>{e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=xy(e);pointers.set(e.pointerId,{...p,startX:p.x,startY:p.y,movement:0});if(pointers.size>1){const a=[...pointers.values()];gesture=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);} });
-canvas.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;e.preventDefault();const p=xy(e),old=pointers.get(e.pointerId);p.movement=old.movement+Math.hypot(p.x-old.x,p.y-old.y);p.startX=old.startX;p.startY=old.startY;pointers.set(e.pointerId,p);if(pointers.size>1){const a=[...pointers.values()],newDist=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);if(gesture)distance*=Math.max(.85,Math.min(1.15,gesture/Math.max(1,newDist)));gesture=newDist;}else{yaw-=(p.x-old.x)*.008;pitch=Math.max(-1.52,Math.min(1.52,pitch+(p.y-old.y)*.008));}dirty=true;draw();});
-function end(e){const o=pointers.get(e.pointerId);if(!o)return;pointers.delete(e.pointerId);gesture=null;if(o.movement>7||!loaded||!vp)return;const p=xy(e),r=canvas.getBoundingClientRect(),scaleX=canvas.width/r.width,scaleY=canvas.height/r.height;let best=null,dmin=900;
- for(const n of loaded.nodes){if(n.hidden)continue;const clip=proj(vp,[n.matrix[12],n.matrix[13],n.matrix[14]]);if(clip[3]<=0)continue;const x=(clip[0]/clip[3]*.5+.5)*canvas.width,y=(1-(clip[1]/clip[3]*.5+.5))*canvas.height;const d=(x-p.x*scaleX)**2+(y-p.y*scaleY)**2;if(d<dmin){dmin=d;best=n;}}
- if(best){select(best);note('Selecionado: '+best.name+'. Edite X/Y/Z para mover.')}else note('Nenhum objeto próximo do toque; aproxime a câmera.');}
-canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',e=>pointers.delete(e.pointerId));canvas.addEventListener('wheel',e=>{e.preventDefault();distance*=Math.exp(e.deltaY*.001);dirty=true;draw();},{passive:false});
-root.addEventListener('resize',()=>{dirty=true;draw()});
-root.RiptideWorldV09={parse:readGLB,openFile:activateFile,loadArrayBuffer:load,getScene:()=>loaded,exportScene:saveScene,applyJSON,openArena,refreshLibrary};
-})(typeof window!=='undefined'?window:null);;
+ const allowed='^(CityA|CityB|FactoryA|FactoryB|MilitaryA|OldCityA|ParkA|ParkB|SpaceportA)$';
  if(!(new RegExp(allowed)).test(ar)||entry.glb!=='world/'+ar+'.glb'||entry.water!=='water/'+ar+'.json')
     throw Error('Referência de arena inválida');
  note('Carregando mundo 3D de '+ar+'…');
@@ -287,5 +252,5 @@ function end(e){const o=pointers.get(e.pointerId);if(!o)return;pointers.delete(e
  if(best){select(best);note('Selecionado: '+best.name+'. Edite X/Y/Z para mover.')}else note('Nenhum objeto próximo do toque; aproxime a câmera.');}
 canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',e=>pointers.delete(e.pointerId));canvas.addEventListener('wheel',e=>{e.preventDefault();distance*=Math.exp(e.deltaY*.001);dirty=true;draw();},{passive:false});
 root.addEventListener('resize',()=>{dirty=true;draw()});
-root.RiptideWorldV09={parse:readGLB,openFile:activateFile,loadArrayBuffer:load,getScene:()=>loaded,exportScene:saveScene,applyJSON};
+root.RiptideWorldV09={parse:readGLB,openFile:activateFile,loadArrayBuffer:load,getScene:()=>loaded,exportScene:saveScene,applyJSON,openArena,refreshLibrary};
 })(typeof window!=='undefined'?window:null);
