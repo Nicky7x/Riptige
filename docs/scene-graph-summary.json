@@ -1,0 +1,102 @@
+{
+  "format": "riptide-template-graph-audit-v1",
+  "method": "FPUV APF v6, FNV-1a64 typed template fields; source game XAPK owned by user",
+  "coordinate_space": "LOCAL transforms, not composed to world positions",
+  "arenas": [
+    {
+      "arena": "CityA",
+      "total_entities": 2780,
+      "model_or_prefab_refs": 1699,
+      "water_entities": 27,
+      "water_maps_referenced_by_entities": 26,
+      "water_positions_explicit": 26,
+      "unknown_field_hashes": 0
+    },
+    {
+      "arena": "CityB",
+      "total_entities": 3782,
+      "model_or_prefab_refs": 2865,
+      "water_entities": 14,
+      "water_maps_referenced_by_entities": 13,
+      "water_positions_explicit": 14,
+      "unknown_field_hashes": 0
+    },
+    {
+      "arena": "FactoryA",
+      "total_entities": 3996,
+      "model_or_prefab_refs": 2664,
+      "water_entities": 23,
+      "water_maps_referenced_by_entities": 23,
+      "water_positions_explicit": 23,
+      "unknown_field_hashes": 0
+    },
+    {
+      "arena": "FactoryB",
+      "total_entities": 1050,
+      "model_or_prefab_refs": 694,
+      "water_entities": 10,
+      "water_maps_referenced_by_entities": 9,
+      "water_positions_explicit": 9,
+      "unknown_field_hashes": 0
+    },
+    {
+      "arena": "MilitaryA",
+      "total_entities": 2127,
+      "model_or_prefab_refs": 1245,
+      "water_entities": 6,
+      "water_maps_referenced_by_entities": 4,
+      "water_positions_explicit": 5,
+      "unknown_field_hashes": 0
+    },
+    {
+      "arena": "OldCityA",
+      "total_entities": 6566,
+      "model_or_prefab_refs": 5368,
+      "water_entities": 2,
+      "water_maps_referenced_by_entities": 1,
+      "water_positions_explicit": 2,
+      "unknown_field_hashes": 0
+    },
+    {
+      "arena": "ParkA",
+      "total_entities": 7608,
+      "model_or_prefab_refs": 6701,
+      "water_entities": 39,
+      "water_maps_referenced_by_entities": 38,
+      "water_positions_explicit": 39,
+      "unknown_field_hashes": 0
+    },
+    {
+      "arena": "ParkB",
+      "total_entities": 3167,
+      "model_or_prefab_refs": 2328,
+      "water_entities": 20,
+      "water_maps_referenced_by_entities": 19,
+      "water_positions_explicit": 20,
+      "unknown_field_hashes": 0
+    },
+    {
+      "arena": "SpaceportA",
+      "total_entities": 2111,
+      "model_or_prefab_refs": 1286,
+      "water_entities": 10,
+      "water_maps_referenced_by_entities": 9,
+      "water_positions_explicit": 10,
+      "unknown_field_hashes": 0
+    }
+  ],
+  "aggregate": {
+    "entities": 33187,
+    "water_entity_types": {
+      "VuWaterRampEntity": 21,
+      "VuWaterSurfaceEntity": 122,
+      "VuInfiniteOceanWaveEntity": 8
+    }
+  },
+  "limitations": [
+    "Local transforms are not yet combined through entity parent hierarchy",
+    "Model or prefab references are not all unique actual meshes",
+    "Water maps are not water geometry, and ocean entities may have no WaterMap property",
+    "Full engine rendering, water shading, collisions and AI are not implemented"
+  ]
+}
