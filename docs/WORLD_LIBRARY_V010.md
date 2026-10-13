@@ -11,7 +11,7 @@ pkg update
 pkg install python git python-numpy -y
 python -m pip install trimesh
 termux-setup-storage
-git clone https://github.com/Nicky7x/Riptige.git
+git clone --branch feature/all-arenas-world-library --single-branch https://github.com/Nicky7x/Riptige.git
 cd Riptige
 python tools/build_private_world_library.py \
   "$HOME/storage/downloads/SEU_JOGO.xapk" \
@@ -22,7 +22,7 @@ O gerador usa numpy e trimesh, pode demorar e consumir espaço adicional, e nunc
 
 ## Importar e trocar de arena
 
-1. Instale a build experimental v0.10 e importe o XAPK como já fazia na v0.8/0.9.
+1. Baixe a build debug v0.10 no [GitHub Actions da branch experimental](https://github.com/Nicky7x/Riptige/actions/runs/38349960267), descompacte o artefato ZIP e instale o APK; depois e importe o XAPK como já fazia na v0.8/0.9.
 2. No editor, abra **Mais → Importar biblioteca 3D (9 arenas)** e selecione somente o ZIP privado gerado (uma vez).
 3. A biblioteca fica no armazenamento privado do Android. A arena selecionada será carregada automaticamente como GLB no mesmo viewport do editor; ao mudar de arena, o GLB correspondente será carregado.
 4. O botão **Mundo 3D** reabre essa visualização quando fechada. O botão **Água: ligada/oculta** controla a camada de água aproximada.
