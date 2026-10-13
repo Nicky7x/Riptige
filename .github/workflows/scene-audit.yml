@@ -8,6 +8,8 @@ on:
       - 'tests/test_parse_scene_graph.py'
       - 'tools/resolve_scene_prefabs.py'
       - 'tests/test_resolve_scene_prefabs.py'
+      - 'tools/resolve_world_instances.py'
+      - 'tests/test_resolve_world_instances.py'
       - '.github/workflows/scene-audit.yml'
   pull_request:
     paths:
@@ -17,6 +19,8 @@ on:
       - 'tests/test_parse_scene_graph.py'
       - 'tools/resolve_scene_prefabs.py'
       - 'tests/test_resolve_scene_prefabs.py'
+      - 'tools/resolve_world_instances.py'
+      - 'tests/test_resolve_world_instances.py'
       - '.github/workflows/scene-audit.yml'
   workflow_dispatch:
 permissions:
@@ -31,6 +35,8 @@ jobs:
           python-version: '3.12'
       - name: Validate typed scene graph and local transform extraction
         run: python -m unittest discover -s tests -p 'test_parse_scene_graph.py' -v
+      - name: Validate inherited world transforms and prefab child overrides
+        run: python -m unittest discover -s tests -p 'test_resolve_world_instances.py' -v
       - name: Validate prefab dependency extraction
         run: python -m unittest discover -s tests -p 'test_resolve_scene_prefabs.py' -v
       - name: Test scene references without proprietary game resources
