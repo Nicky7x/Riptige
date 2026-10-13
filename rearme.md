@@ -377,3 +377,11 @@ O usuário questionou se o trabalho teria sido perdido por limite de execução 
 - **Escopo honesto:** prévia aquática plana NÃO reproduz o recurso `VuWaterMapAsset`, ondas, rampas detalhadas ou shaders originais. O mundo GLB permanece sem textura, enquanto os modelos texturizados da v0.8 usam pipeline separado. Animação e objetos desconhecidos ausentes. Não se afirma que a importação de GLB derive automaticamente do XAPK sem o passo Termux, nem que o APK foi validado no Poco.
 - **Validação exigida:** GitHub Actions green, importar ZIP pessoal completo no Android, alternar todas as nove arenas, aferir renderização/performance, verificar origem/escala dos planos aquáticos. Rodar testes de regressão.
 - **Privacidade:** o ZIP pessoal, GLBs, water JSON original e XAPK são proibidos no GitHub.
+
+
+## 2026-10-13 — M1.21: UV/texturas no mundo 3D, WaterMap indexado (ChatGPT)
+- **Objetivo do usuário:** aplicar texturas e água a todas as arenas GLB, dentro do APK.
+- **Método:** leitura UV em strides comprovados; exportação GLB por grupo de material com nome original; renderização WebGL com PNG difuso privado existente no cache APF/Android e fallback para material sem textura. Biblioteca ZIP com APF descompactado uma vez, inventário preciso de `VuWaterMapAsset` de cada entidade e código de água plana nas posições reconhecidas.
+- **Arquivos:** `tools/visual_models.py`, `tools/export_world_glb.py`, `tools/build_private_world_library.py`, `web/world_scene.js`, `web/bundle_loader.js`, template Android, testes e docs.
+- **Restrições:** não há textura/material completo da Vector Engine, tampouco água real com ondas/refração/topologia. Nenhum dado extraído do jogo publicado; nenhum patch em jogo.
+- **Testes esperados:** suíte JS e Python sintética, Actions Gradle, teste físico no Poco após importação de XAPK e regeneração da biblioteca privada.
