@@ -5,10 +5,14 @@ on:
     paths:
       - 'android/**'
       - '.github/workflows/build-android.yml'
+      - 'web/**'
+      - 'tests-js/mobile-v07.test.cjs'
   pull_request:
     paths:
       - 'android/**'
       - '.github/workflows/build-android.yml'
+      - 'web/**'
+      - 'tests-js/mobile-v07.test.cjs'
 permissions:
   contents: read
 jobs:
