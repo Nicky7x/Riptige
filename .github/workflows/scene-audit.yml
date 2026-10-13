@@ -1,0 +1,25 @@
+name: Validate Original Scene Index
+on:
+  push:
+    paths:
+      - 'tools/scene_dependencies.py'
+      - 'tests/test_scene_dependencies.py'
+      - '.github/workflows/scene-audit.yml'
+  pull_request:
+    paths:
+      - 'tools/scene_dependencies.py'
+      - 'tests/test_scene_dependencies.py'
+      - '.github/workflows/scene-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scene-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test scene references without proprietary game resources
+        run: python -m unittest discover -s tests -p 'test_scene_dependencies.py' -v
