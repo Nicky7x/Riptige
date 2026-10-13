@@ -207,3 +207,28 @@ A análise dos blocos APK Signature Scheme v2 dos APKs debug v0.1 e v0.2 mostrou
 - **APK extraído e verificado:** `Riptide_Map_Lab_Android_v0.7_debug.apk` com 131.352 bytes, SHA-256 `029e677f463fd4101ea57a833bf58013113be42850f85d947820beaf9e521b76`. O APK contém HTML ~79 KB com CSS e JS do joystick embutidos, manifesto Android, dex e **não inclui assets comerciais**. Cópia entregue em Biblioteca `/RiptideMapLab/Riptide_Map_Lab_Android_v0.7_debug.apk`.
 - **Smoke no Chromium:** 932×420 pixels, duas malhas sintéticas de CityA e uma de CityB; captura confirma botões nos dois lados, centro com cena real (sintética) em projeção, topo com arena, tooltip discreta; ativar perspectiva do jogador, tocar joystick, voltar para navegação órbita e alternar visual/colisão e abrir ferramentas não gerou pageerror. Prévia `/mnt/data/riptide-v07/landscape_mock_preview.png` no contexto desta execução.
 - **Pendência:** instalar e testar a v0.7 fisicamente no Poco X8 Pro, especialmente comportamento da tela cheia pós-importação, toque multissensor do joystick e reimportação de XAPK no painel "Mais". Assinatura debug do runner GitHub pode exigir desinstalação da v0.6; exportar os patches antes de limpar dados.
+
+
+## 2026-10-12/13 — M1.14: direção de gestos e prévia de texturas reais (ChatGPT)
+
+**Relato do proprietário:** v0.7 opera normalmente no Poco, mas movimento horizontal de câmera e arraste vertical de estruturas parecem invertidos; solicitou todos os recursos visuais texturizados, cores e imagens dos cenários.
+
+**Correção de toque:** `web/scene3d.js`, `web/scene3d_fallback.js` e scripts embutidos no Android invertem o sinal de `yaw` (órbita) e `playerYaw` (perspectiva de jogador) no arraste horizontal; invertem o parâmetro vertical de `moveTo/translate` usado para movimentar uma malha XY por arraste. **Ainda não testado no hardware após correção**, embora v0.7 tenha sido aprovada no Poco.
+
+**Descobertas confirmadas no XAPK original, sem publicação dos recursos comerciais:**
+- Inventário: 740 `VuTextureAsset`, 346 `VuMaterialAsset` e 248 `VuStaticModelAsset/Level`.
+- Em uma sondagem read-only de materiais de 245 modelos que puderam ser percorridos, 176 nomes únicos de material e 86 texturas difusas distintas referenciadas.
+- Exemplo de ligação: `VuStaticModelAsset/Level/CityA/Zone01` → material `Building/City/ComD_Solid_vc` → parâmetro `DiffuseTexture` referindo `Building/City/ComD_Solid` → `VuTextureAsset/Building/City/ComD_Solid`. Não confundir com textura normal ou máscara.
+- Header de `VuTextureAsset`: dimensões em offsets 21/25, níveis mip em offset 29, formato OpenGL em offset 33, primeiro payload em offset 70. Confirmadas texturas ETC1 (`0x8D64`) e BC3/DXT5 (`0x83F3`), mais formatos LUMINANCE/RGBA nos recursos observados. Os mips não são integralmente reconstruídos, apenas o nível base.
+- Coordenadas UV dos streams estáticos mapeadas em offsets de stride 20→12, 24→16, 28→16, 32→20, 36→24. Grupos material/stream convertidos em offsets globais de índice; cada grupo aponta para sua textura quando a decodificação funciona.
+
+**Código criado:**
+- `android/.../TexturePreview.java`: leitura conservativa de cabeçalho, PNG local ETC1 via Android e decodificador DXT5/BC3 puro, limites de tamanho e proteção contra formatos desconhecidos.
+- `android/.../VisualPreviewMeta.java`: grupos de índices + materiais + UVs em bytes little-endian. Não edita visual real do motor.
+- `android/.../ApfImporter.java`: carrega metadados `__materials`, `__textures` e `uvblob/uvsize/groups` em `__visuals` **no cache privado do app**, usando apenas recursos do XAPK do proprietário; imagens limitadas a 256px de prévia e no máximo 160 texturas.
+- `web/scene3d.js`: novo shader difuso WebGL, seleção por grupos de material, GPU texture lazy-load com PNG local em data URI, alfa parcial, fallback para sombreamento simples.
+- `web/bundle_loader.js`: entrega metadados UV/textura por modelo ao renderizador. Sincronizado no `android/app/src/main/assets/editor_template.html`.
+
+**Validação concluída:** Python read-only sondou os recursos reais com material difuso e offsets de formato; Node `tests-js/mobile-v07.test.cjs` e `tests-js/texture-v08.test.cjs`, JUnit `TexturePreviewTest` e build Android foram aprovados no [run #38332343448](https://github.com/Nicky7x/Riptige/actions/runs/38332343448). Artefato `app-debug.apk` de **141160 bytes**, SHA-256 `76e91e249d50803a8aa7fa2a22c6e653b5f5713a3702dd6dc332cb1adfcdac9a`; foi salvo em Biblioteca `/RiptideMapLab/Riptide_Map_Lab_Android_v0.8_debug.apk`. Nada de assets originais foi enviado ao repositório.
+
+**Limitações importantes:** o app não reproduz materiais completos (normal maps, máscaras, cubemaps, lightmaps, iluminação real, água, céu, shader específicos); modelos sem UV/material/texture aceitos continuam sem imagem. A prévia visual ainda é somente leitura e não há arena editada e carregada no jogo. Os testes CI não executaram o APK num emulador ou aparelho real; pedir ao usuário para **reimportar XAPK** e avaliar texturas em CityA e outros níveis; coletar screenshot/log de falhas.
