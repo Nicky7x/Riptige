@@ -151,3 +151,18 @@ Na primeira importação, os botões nativos aparecem; após carregar o editor, 
 Código: `web/mobile_landscape.js`, `web/mobile_landscape.css`, `web/scene3d.js`, `web/scene3d_fallback.js`, `android/app/src/main/assets/editor_template.html`. A validação de scripts e recursos mínimos está em `tests-js/mobile-v07.test.cjs`.
 
 A compilação de APK pelo [GitHub Actions](https://github.com/Nicky7x/Riptige/actions/workflows/build-android.yml) precisa passar antes de usar um novo APK. O teste automatizado do HUD em Chromium usou apenas dados sintéticos e **não** substitui o teste de gestos e GPU no Poco X8 Pro. Se o Android não permitir atualizar um APK debug anterior por assinatura diferente, exporte qualquer patch e reinstale, pois a desinstalação apaga o cache privado.
+
+
+## Android v0.8 — cores e texturas difusas originais (experimental)
+
+A primeira versão texturizada do visualizador usa dados **extraídos somente do XAPK escolhido pelo usuário**, sem incluir imagens comerciais no código ou APK público. O importador identifica materiais `VuMaterialAsset`, suas referências `DiffuseTexture`, os arquivos `VuTextureAsset`, coordenadas UV dos modelos estáticos e grupos de triângulos por material. Converte localmente texturas ETC1 e DXT5 (e alguns formatos não comprimidos) para PNGs de prévia e desenha cada grupo usando sua imagem verdadeira quando disponível.
+
+O visualizador WebGL usa sombreamento simplificado e alfa; **não** reproduz ainda normal maps, lightmaps, reflexos, shaders especializados, água nem 100% das texturas. Quando não há suporte ao recurso, mantém a geometria sem imagem. A camada visual continua apenas para inspeção, sem edição de modelos dentro do jogo. No fallback Canvas, as imagens não são desenhadas.
+
+**Corrigidos também:** o sinal do arraste horizontal da câmera e o arraste vertical de objetos na visualização física (WebGL e Canvas).
+
+**Importante:** após instalar v0.8, use **Importar XAPK** novamente uma vez para atualizar o catálogo privado; sem isso, o cache antigo não contém os UVs nem as texturas. As texturas nunca são enviadas a um servidor.
+
+[Detalhes técnicos e formatos suportados](docs/TEXTURES.md).
+
+**Validação:** [GitHub Actions #38332343448](https://github.com/Nicky7x/Riptige/actions/runs/38332343448) passou verificações Node, JUnit e `assembleDebug`; gerou `app-debug.apk` de 141160 bytes, SHA-256 `76e91e249d50803a8aa7fa2a22c6e653b5f5713a3702dd6dc332cb1adfcdac9a`. A correção de interação e a aplicação de texturas ainda precisam ser avaliadas no Poco X8 Pro.
