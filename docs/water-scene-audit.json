@@ -1,0 +1,826 @@
+{
+  "format": "riptide-scene-dependency-audit-v1",
+  "arenas": [
+    {
+      "arena": "CityA",
+      "scene_asset": "VuTemplateAsset/Levels/CityA",
+      "scene_bytes": 1198119,
+      "water_assets": 26,
+      "water_references": 26,
+      "unlinked_water": [],
+      "entity_types": [
+        "VuWaterSurfaceEntity",
+        "VuWaterRampEntity",
+        "VuInfiniteOceanWaveEntity"
+      ],
+      "map_formats": {
+        "CityA/WR01": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "CityA/WR04": {
+          "width": 536870912,
+          "height": 134217728,
+          "format": "0xff00008d"
+        },
+        "CityA/WR05": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "CityA/WR07": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "CityA/WS01": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "CityA/WS03": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "CityA/WS04": {
+          "width": 2147483648,
+          "height": 134217728,
+          "format": "0xff000083"
+        },
+        "CityA/WS06": {
+          "width": 0,
+          "height": 167772162,
+          "format": "0xff000083"
+        },
+        "CityA/WS07": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "CityA/WS08": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "CityA/WS09": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "CityA/WS11": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "CityA/WS13": {
+          "width": 2147483648,
+          "height": 134217728,
+          "format": "0xff000083"
+        },
+        "CityA/WS14": {
+          "width": 2147483648,
+          "height": 134217728,
+          "format": "0xff000083"
+        },
+        "CityA/WS15": {
+          "width": 2,
+          "height": 167772162,
+          "format": "0xff000083"
+        },
+        "CityA/WS16": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "CityA/WS18": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        }
+      },
+      "unreadable": [
+        {
+          "resource": "CityA/WR02",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WR02"
+        },
+        {
+          "resource": "CityA/WR03",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WR03"
+        },
+        {
+          "resource": "CityA/WR06",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WR06"
+        },
+        {
+          "resource": "CityA/WR08",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WR08"
+        },
+        {
+          "resource": "CityA/WS02",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WS02"
+        },
+        {
+          "resource": "CityA/WS05",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WS05"
+        },
+        {
+          "resource": "CityA/WS10",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WS10"
+        },
+        {
+          "resource": "CityA/WS12",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WS12"
+        },
+        {
+          "resource": "CityA/WS17",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityA/WS17"
+        }
+      ],
+      "render_status": "requires original water entity transforms and surface topology"
+    },
+    {
+      "arena": "CityB",
+      "scene_asset": "VuTemplateAsset/Levels/CityB",
+      "scene_bytes": 1488483,
+      "water_assets": 13,
+      "water_references": 13,
+      "unlinked_water": [],
+      "entity_types": [
+        "VuWaterSurfaceEntity",
+        "VuWaterRampEntity",
+        "VuInfiniteOceanWaveEntity",
+        "VuWaterTextureSettingsEntity"
+      ],
+      "map_formats": {
+        "CityB/WR01": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "CityB/WS02": {
+          "width": 0,
+          "height": 150994945,
+          "format": "0xff000083"
+        },
+        "CityB/WS03": {
+          "width": 1073741825,
+          "height": 150994944,
+          "format": "0xff000083"
+        },
+        "CityB/WS05": {
+          "width": 1,
+          "height": 167772162,
+          "format": "0xff000083"
+        },
+        "CityB/WS06": {
+          "width": 2147483648,
+          "height": 134217728,
+          "format": "0xff000083"
+        },
+        "CityB/WS07": {
+          "width": 2147483648,
+          "height": 134217728,
+          "format": "0xff000083"
+        },
+        "CityB/WS08": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "CityB/WS09": {
+          "width": 2147483648,
+          "height": 134217728,
+          "format": "0xff000083"
+        },
+        "CityB/WS10": {
+          "width": 268435456,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "CityB/WS12": {
+          "width": 268435456,
+          "height": 83886080,
+          "format": "0xff000083"
+        }
+      },
+      "unreadable": [
+        {
+          "resource": "CityB/WR02",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityB/WR02"
+        },
+        {
+          "resource": "CityB/WS01",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityB/WS01"
+        },
+        {
+          "resource": "CityB/WS04",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/CityB/WS04"
+        }
+      ],
+      "render_status": "requires original water entity transforms and surface topology"
+    },
+    {
+      "arena": "FactoryA",
+      "scene_asset": "VuTemplateAsset/Levels/FactoryA",
+      "scene_bytes": 1909496,
+      "water_assets": 23,
+      "water_references": 23,
+      "unlinked_water": [],
+      "entity_types": [
+        "VuWaterSurfaceEntity",
+        "VuWaterRampEntity"
+      ],
+      "map_formats": {
+        "FactoryA/Zone1_WS01": {
+          "width": 0,
+          "height": 150994945,
+          "format": "0xff000083"
+        },
+        "FactoryA/Zone2_WS02": {
+          "width": 536870912,
+          "height": 100663296,
+          "format": "0xff000083"
+        },
+        "FactoryA/Zone2_WS042": {
+          "width": 536870912,
+          "height": 100663296,
+          "format": "0xff000083"
+        },
+        "FactoryA/Zone3_WS01": {
+          "width": 1,
+          "height": 184549380,
+          "format": "0xff000083"
+        },
+        "FactoryA/Zone4_WS01": {
+          "width": 1,
+          "height": 150994945,
+          "format": "0xff000083"
+        },
+        "FactoryA/Zone4_WS04": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "FactoryA/Zone4_WS05": {
+          "width": 134217728,
+          "height": 83886080,
+          "format": "0xff000083"
+        },
+        "FactoryA/Zone4_WS06": {
+          "width": 1,
+          "height": 150994945,
+          "format": "0xff000083"
+        },
+        "FactoryA/Zone4_WS08": {
+          "width": 536870912,
+          "height": 100663296,
+          "format": "0xff000083"
+        },
+        "FactoryA/Zone4_WS09": {
+          "width": 536870912,
+          "height": 100663296,
+          "format": "0xff000083"
+        },
+        "FactoryA/Zone5_WS01": {
+          "width": 2147483648,
+          "height": 134217728,
+          "format": "0xff000083"
+        },
+        "FactoryA/Zone5_WS02": {
+          "width": 536870912,
+          "height": 100663296,
+          "format": "0xff000083"
+        },
+        "FactoryA/Zone5_WS03": {
+          "width": 2147483648,
+          "height": 134217728,
+          "format": "0xff000083"
+        },
+        "FactoryA/Zone5_WS04": {
+          "width": 536870912,
+          "height": 100663296,
+          "format": "0xff000083"
+        },
+        "FactoryA/Zone7_WS01": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "FactoryA/Zone7_WS02": {
+          "width": 2147483648,
+          "height": 134217728,
+          "format": "0xff000083"
+        }
+      },
+      "unreadable": [
+        {
+          "resource": "FactoryA/Zone2_WS04",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryA/Zone2_WS04"
+        },
+        {
+          "resource": "FactoryA/Zone2_WS12",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryA/Zone2_WS12"
+        },
+        {
+          "resource": "FactoryA/Zone3_WS02",
+          "reason": "Recurso excedeu limite: VuWaterMapAsset/FactoryA/Zone3_WS02"
+        },
+        {
+          "resource": "FactoryA/Zone5_WR01",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryA/Zone5_WR01"
+        },
+        {
+          "resource": "FactoryA/Zone5_WS05",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryA/Zone5_WS05"
+        },
+        {
+          "resource": "FactoryA/Zone5_WS11",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryA/Zone5_WS11"
+        },
+        {
+          "resource": "FactoryA/Zone7_WS04",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryA/Zone7_WS04"
+        }
+      ],
+      "render_status": "requires original water entity transforms and surface topology"
+    },
+    {
+      "arena": "FactoryB",
+      "scene_asset": "VuTemplateAsset/Levels/FactoryB",
+      "scene_bytes": 492899,
+      "water_assets": 8,
+      "water_references": 8,
+      "unlinked_water": [],
+      "entity_types": [
+        "VuWaterSurfaceEntity",
+        "VuInfiniteOceanWaveEntity"
+      ],
+      "map_formats": {
+        "FactoryB/WPlat02": {
+          "width": 536870912,
+          "height": 100663296,
+          "format": "0xff00008d"
+        },
+        "FactoryB/WS03": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "FactoryB/WS04": {
+          "width": 1073741825,
+          "height": 150994944,
+          "format": "0xff000083"
+        },
+        "FactoryB/WS05": {
+          "width": 0,
+          "height": 150994945,
+          "format": "0xff000083"
+        },
+        "FactoryB/WS06": {
+          "width": 1073741824,
+          "height": 134217728,
+          "format": "0xff000083"
+        }
+      },
+      "unreadable": [
+        {
+          "resource": "FactoryB/WPlat01",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryB/WPlat01"
+        },
+        {
+          "resource": "FactoryB/WS01",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryB/WS01"
+        },
+        {
+          "resource": "FactoryB/WS02",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/FactoryB/WS02"
+        }
+      ],
+      "render_status": "requires original water entity transforms and surface topology"
+    },
+    {
+      "arena": "MilitaryA",
+      "scene_asset": "VuTemplateAsset/Levels/MilitaryA",
+      "scene_bytes": 1119335,
+      "water_assets": 4,
+      "water_references": 4,
+      "unlinked_water": [],
+      "entity_types": [
+        "VuWaterSurfaceEntity",
+        "VuInfiniteOceanWaveEntity"
+      ],
+      "map_formats": {
+        "MilitaryA/WS01": {
+          "width": 1,
+          "height": 167772162,
+          "format": "0xff000083"
+        },
+        "MilitaryA/WS02": {
+          "width": 2,
+          "height": 167772162,
+          "format": "0xff000083"
+        }
+      },
+      "unreadable": [
+        {
+          "resource": "MilitaryA/WS03",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/MilitaryA/WS03"
+        },
+        {
+          "resource": "MilitaryA/WS04",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/MilitaryA/WS04"
+        }
+      ],
+      "render_status": "requires original water entity transforms and surface topology"
+    },
+    {
+      "arena": "OldCityA",
+      "scene_asset": "VuTemplateAsset/Levels/OldCityA",
+      "scene_bytes": 2310950,
+      "water_assets": 1,
+      "water_references": 1,
+      "unlinked_water": [],
+      "entity_types": [
+        "VuWaterSurfaceEntity",
+        "VuInfiniteOceanWaveEntity"
+      ],
+      "map_formats": {},
+      "unreadable": [
+        {
+          "resource": "OldCityA/WS01_v2",
+          "reason": "Recurso excedeu limite: VuWaterMapAsset/OldCityA/WS01_v2"
+        }
+      ],
+      "render_status": "requires original water entity transforms and surface topology"
+    },
+    {
+      "arena": "ParkA",
+      "scene_asset": "VuTemplateAsset/Levels/ParkA",
+      "scene_bytes": 3057174,
+      "water_assets": 38,
+      "water_references": 38,
+      "unlinked_water": [],
+      "entity_types": [
+        "VuWaterSurfaceEntity",
+        "VuWaterRampEntity",
+        "VuInfiniteOceanWaveEntity"
+      ],
+      "map_formats": {
+        "ParkA/WR02": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkA/WR03": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkA/WS01": {
+          "width": 536870912,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkA/WS02": {
+          "width": 1,
+          "height": 150994945,
+          "format": "0xff000083"
+        },
+        "ParkA/WS04": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkA/WS05": {
+          "width": 268435456,
+          "height": 83886080,
+          "format": "0xff000083"
+        },
+        "ParkA/WS06": {
+          "width": 134217728,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkA/WS08": {
+          "width": 1073741824,
+          "height": 134217728,
+          "format": "0xff000083"
+        },
+        "ParkA/WS09": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkA/WS10": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkA/WS11": {
+          "width": 536870912,
+          "height": 100663296,
+          "format": "0xff000083"
+        },
+        "ParkA/WS12": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkA/WS13": {
+          "width": 536870912,
+          "height": 100663296,
+          "format": "0xff000083"
+        },
+        "ParkA/WS14": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkA/WS16": {
+          "width": 536870912,
+          "height": 100663296,
+          "format": "0xff000083"
+        },
+        "ParkA/WS18": {
+          "width": 536870912,
+          "height": 100663296,
+          "format": "0xff00008d"
+        },
+        "ParkA/WS19": {
+          "width": 1073741824,
+          "height": 134217728,
+          "format": "0xff000083"
+        },
+        "ParkA/WS21": {
+          "width": 536870912,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkA/WS22": {
+          "width": 536870912,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkA/WS23": {
+          "width": 268435456,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkA/WS24": {
+          "width": 536870912,
+          "height": 100663296,
+          "format": "0xff00008d"
+        },
+        "ParkA/WS27": {
+          "width": 268435456,
+          "height": 83886080,
+          "format": "0xff000083"
+        },
+        "ParkA/WS29": {
+          "width": 536870912,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkA/WS30": {
+          "width": 536870912,
+          "height": 100663296,
+          "format": "0xff000083"
+        },
+        "ParkA/WS31": {
+          "width": 536870912,
+          "height": 100663296,
+          "format": "0xff000083"
+        },
+        "ParkA/WS32": {
+          "width": 536870912,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkA/WS34": {
+          "width": 2,
+          "height": 167772162,
+          "format": "0xff000083"
+        }
+      },
+      "unreadable": [
+        {
+          "resource": "ParkA/WR01",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WR01"
+        },
+        {
+          "resource": "ParkA/WR04",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WR04"
+        },
+        {
+          "resource": "ParkA/WS03",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS03"
+        },
+        {
+          "resource": "ParkA/WS07",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS07"
+        },
+        {
+          "resource": "ParkA/WS15",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS15"
+        },
+        {
+          "resource": "ParkA/WS17",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS17"
+        },
+        {
+          "resource": "ParkA/WS20",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS20"
+        },
+        {
+          "resource": "ParkA/WS25",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS25"
+        },
+        {
+          "resource": "ParkA/WS26",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS26"
+        },
+        {
+          "resource": "ParkA/WS28",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS28"
+        },
+        {
+          "resource": "ParkA/WS33",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkA/WS33"
+        }
+      ],
+      "render_status": "requires original water entity transforms and surface topology"
+    },
+    {
+      "arena": "ParkB",
+      "scene_asset": "VuTemplateAsset/Levels/ParkB",
+      "scene_bytes": 1420240,
+      "water_assets": 19,
+      "water_references": 19,
+      "unlinked_water": [],
+      "entity_types": [
+        "VuWaterSurfaceEntity",
+        "VuWaterRampEntity",
+        "VuInfiniteOceanWaveEntity",
+        "VuWaterTextureSettingsEntity"
+      ],
+      "map_formats": {
+        "ParkB/WR03": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkB/WR06": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkB/WS01": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkB/WS04": {
+          "width": 1,
+          "height": 150994945,
+          "format": "0xff000083"
+        },
+        "ParkB/WS05": {
+          "width": 536870912,
+          "height": 100663296,
+          "format": "0xff000083"
+        },
+        "ParkB/WS06": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "ParkB/WS08": {
+          "width": 2147483648,
+          "height": 134217728,
+          "format": "0xff000083"
+        },
+        "ParkB/WS09": {
+          "width": 1,
+          "height": 150994945,
+          "format": "0xff000083"
+        },
+        "ParkB/WS11": {
+          "width": 0,
+          "height": 150994945,
+          "format": "0xff000083"
+        },
+        "ParkB/WS12": {
+          "width": 1,
+          "height": 150994945,
+          "format": "0xff000083"
+        }
+      },
+      "unreadable": [
+        {
+          "resource": "ParkB/WR01",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WR01"
+        },
+        {
+          "resource": "ParkB/WR02",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WR02"
+        },
+        {
+          "resource": "ParkB/WR04",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WR04"
+        },
+        {
+          "resource": "ParkB/WR05",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WR05"
+        },
+        {
+          "resource": "ParkB/WS02",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WS02"
+        },
+        {
+          "resource": "ParkB/WS03",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WS03"
+        },
+        {
+          "resource": "ParkB/WS07",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WS07"
+        },
+        {
+          "resource": "ParkB/WS10",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WS10"
+        },
+        {
+          "resource": "ParkB/WS13",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/ParkB/WS13"
+        }
+      ],
+      "render_status": "requires original water entity transforms and surface topology"
+    },
+    {
+      "arena": "SpaceportA",
+      "scene_asset": "VuTemplateAsset/Levels/SpaceportA",
+      "scene_bytes": 1109375,
+      "water_assets": 9,
+      "water_references": 9,
+      "unlinked_water": [],
+      "entity_types": [
+        "VuWaterSurfaceEntity",
+        "VuInfiniteOceanWaveEntity",
+        "VuWaterTextureSettingsEntity"
+      ],
+      "map_formats": {
+        "SpaceportA/WS02": {
+          "width": 1073741824,
+          "height": 117440512,
+          "format": "0xff000083"
+        },
+        "SpaceportA/WS03": {
+          "width": 1073741825,
+          "height": 150994944,
+          "format": "0xff000083"
+        },
+        "SpaceportA/WS05": {
+          "width": 1073741826,
+          "height": 167772160,
+          "format": "0xff000083"
+        },
+        "SpaceportA/WS06": {
+          "width": 2147483648,
+          "height": 134217728,
+          "format": "0xff000083"
+        },
+        "SpaceportA/WS08": {
+          "width": 1,
+          "height": 150994945,
+          "format": "0xff000083"
+        },
+        "SpaceportA/WS09": {
+          "width": 2147483649,
+          "height": 150994944,
+          "format": "0xff000083"
+        }
+      },
+      "unreadable": [
+        {
+          "resource": "SpaceportA/WS01",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/SpaceportA/WS01"
+        },
+        {
+          "resource": "SpaceportA/WS04",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/SpaceportA/WS04"
+        },
+        {
+          "resource": "SpaceportA/WS07",
+          "reason": "Tamanho do recurso divergente VuWaterMapAsset/SpaceportA/WS07"
+        }
+      ],
+      "render_status": "requires original water entity transforms and surface topology"
+    }
+  ],
+  "limitations": [
+    "The water maps are compressed image/data resources, not water surface meshes.",
+    "This audit does not decode entity transforms, water vertices, waves or shader properties.",
+    "No resource contents from the game are included in this JSON, only references and metadata."
+  ]
+}
