@@ -313,3 +313,16 @@ Portar um subconjunto comprovado do parser para o importador Android, com cache 
 - Os 14 elementos aquáticos da CityB ainda não foram desenhados; posição e parâmetros originais permanecem no JSON privado. Estágios posteriores: integrar cache de instâncias ao Android, renderizar instâncias com batching, validar Euler/pivôs e decodificar água original.
 
 **Validação e CI:** testes matemáticos locais 7/7; [GitHub Actions Validate Original Scene Index](https://github.com/Nicky7x/Riptige/actions/runs/38343828695) **success** com teste de regressão de transforms. O GLB também passou round-trip no leitor 3D. **Não** afirmar que está idêntico ao motor original nem que existe novo APK. O v0.8 continua último APK testado no Poco.
+
+
+## 2026-10-13 — M1.19: escopo do produto confirmado pelo proprietário
+
+**Declaração explícita do proprietário:** o objetivo do Riptide Map Lab é **ver as arenas inteiras, originais e com seus recursos no editor**, para (1) alterar arenas existentes posteriormente e (2) encarregar IAs de criarem arenas do zero. **Não é objetivo prioritário recriar a jogabilidade de Riptide GP Renegade ou seus shaders/física exatos.**
+
+### Critérios práticos
+- **Cena íntegra e editável:** reconstruir geometria, instâncias, água, texturas, posições, rotações, escalas, hierarquias, identificação dos objetos e recursos ambientais relevantes para navegação/edição. Renderização pode ser aproximada quando o efeito é cosmético, mas transformações e estrutura da arena precisam ser fiéis.
+- **Formato de cena acessível a humanos e IAs:** especificação versionada, legível/machine-readable (por exemplo JSON declarativo), com IDs persistentes, entidades, hierarquia, transform/matriz, referência de assets locais, propriedades de água, grupos/layers e metadados. Separar arquivos binários proprietários do esquema e dos patches. Evitar redistribuição de conteúdos do XAPK.
+- **Edição futura:** seleção, transformação, inclusão e remoção de instâncias, edição de geometria, salvamento, undo/redo, import/export de cenas e patches. O formato tem de permitir que um agente gere uma arena do zero sem usar touchscreen.
+- **Duas metas distintas:** (A) **criar/carregar/visualizar** uma arena inédita no editor; (B) exportar/aplicar essa arena ao jogo real. B requer investigação de serialização, assets, colisões, IA/checkpoints/física e não deve bloquear A.
+- **Prioridade técnica atual:** integrar as instâncias reais já resolvidas em M1.18 ao visualizador Android usando cache privado e GPU instancing ou agrupamento, preservando geometria/texturas atuais; depois incluir água e demais sistemas originais. Evitar gastar tempo priorizando efeitos que não afetam a edição.
+- **Status:** este marco registra clarificação do escopo, **não representa APK novo nem arena completa entregue**.
