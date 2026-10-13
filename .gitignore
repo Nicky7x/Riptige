@@ -18,3 +18,9 @@ analysis/
 __pycache__/
 *.pyc
 .venv/
+
+# Artefatos pessoais de cenário 3D e água (nunca versionar)
+*.glb
+*Biblioteca3D*.zip
+*private-world*.json
+*private-world*.zip
