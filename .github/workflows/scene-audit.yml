@@ -4,11 +4,15 @@ on:
     paths:
       - 'tools/scene_dependencies.py'
       - 'tests/test_scene_dependencies.py'
+      - 'tools/parse_scene_graph.py'
+      - 'tests/test_parse_scene_graph.py'
       - '.github/workflows/scene-audit.yml'
   pull_request:
     paths:
       - 'tools/scene_dependencies.py'
       - 'tests/test_scene_dependencies.py'
+      - 'tools/parse_scene_graph.py'
+      - 'tests/test_parse_scene_graph.py'
       - '.github/workflows/scene-audit.yml'
   workflow_dispatch:
 permissions:
@@ -21,5 +25,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Validate typed scene graph and local transform extraction
+        run: python -m unittest discover -s tests -p 'test_parse_scene_graph.py' -v
       - name: Test scene references without proprietary game resources
         run: python -m unittest discover -s tests -p 'test_scene_dependencies.py' -v
