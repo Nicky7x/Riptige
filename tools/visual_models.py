@@ -16,6 +16,7 @@ class VertexStream:
     stride: int
     positions: list[tuple[float,float,float]]
     indices: list[int]
+    uvs: list[tuple[float,float]] | None = None
 
 @dataclass
 class VisualModel:
@@ -77,11 +78,20 @@ def parse_static_model(data: bytes, max_vertices=150000, max_indices=900000, *, 
         count=size//stride
         if count>max_vertices:raise VisualModelError('too many vertices')
         positions=[]
+        # UV position agrees with Android VisualPreviewMeta. Unknown strides are
+        # deliberately kept untextured instead of guessing vertex layouts.
+        uv_at={20:12,24:16,28:16,32:20,36:24}.get(stride)
+        uvs=[] if uv_at is not None else None
         for i in range(count):
             coords=struct.unpack_from('<3f',data,p+i*stride)
             if any(not math.isfinite(x) or abs(x)>1e7 for x in coords):
                 raise VisualModelError('non-finite vertex')
             positions.append(coords)
+            if uvs is not None:
+                uv=struct.unpack_from('<2f',data,p+i*stride+uv_at)
+                if not all(math.isfinite(a) and abs(a)<=1e6 for a in uv):
+                    uv=(0.,0.)
+                uvs.append(uv)
         p+=size
         if p+4>len(data):raise VisualModelError('index count missing')
         icount=struct.unpack_from('<I',data,p)[0];p+=4
@@ -90,7 +100,7 @@ def parse_static_model(data: bytes, max_vertices=150000, max_indices=900000, *, 
         indices=list(struct.unpack_from('<'+str(icount)+'H',data,p)) if icount else []
         if indices and max(indices)>=count:raise VisualModelError('triangle references absent vertex')
         p+=2*icount
-        streams.append(VertexStream(stride,positions,indices))
+        streams.append(VertexStream(stride,positions,indices,uvs))
     for group in groups:
         si=group['stream_index']
         if si>=len(streams):raise VisualModelError('group references unknown stream')
