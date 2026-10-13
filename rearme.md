@@ -250,3 +250,35 @@ A análise dos blocos APK Signature Scheme v2 dos APKs debug v0.1 e v0.2 mostrou
 **Artefatos de metadados:** `docs/water-scene-audit.json` (resumo de cobertura por arena), `docs/SCENE_REBUILD.md` (critérios de aceite e próxima implementação). Uma cópia local com lista completa de nomes por arena foi gerada privadamente, sem recursos binários proprietários.
 
 **Próxima etapa técnica:** parser read-only das entidades do `VuTemplateAsset` e validação de UM transform de modelo e UMA entidade de água com posicionamento original. Só depois carregar toda a cena, sky e sistemas avançados. **Não foi gerado novo APK**, pois ainda não há geometria aquática posicionada corretamente para integrar. Não declarar arena reconstruída.
+
+
+## 2026-10-13 — M1.16: decodificador completo de grafo de cena tipado (ChatGPT)
+
+**Meta do proprietário:** reproduzir arenas originais completas no editor, com água, objetos e posicionamento fiel; prioridade sobre ferramentas cosméticas.
+
+### Descoberta de engenharia reversa
+
+- Consegui decodificar recursivamente os nove recursos `VuTemplateAsset/Levels/*` do XAPK original. Os nomes das chaves são identificados por hashes **FNV-1a64** das strings na tabela interna do próprio template.
+- Cabeçalho de arquivo `<u32 1><u32 comprimento total>` seguido de valor tipado. Tags verificadas: `1` inteiro com sinal, `2` float32, `3` inteiro sem sinal, `4` string UTF-8 em offset **relativo à própria tag** (não comprimento), `5` array de offsets relativos e `6` objeto de campos `<u64 hash><u32 metadado><u32 offset relativo>`.
+- Exemplos de FNV-1a64: `RootEntity=0x7456288f86d4ad5a`, `Position=0xc1611c0558728a2a`, `X=0xaf64154c86024d67`, `Y=0xaf64144c86024bb4`. Campos nomeados como `data`, `ChildEntities`, `type`, `name`, `Components`, `VuTransformComponent`, `Properties`, `Position`, `Rotation` e `Scale` foram recuperados estruturalmente, sem sondagem cega de floats.
+- Descoberta importante: valores grandes como `3.40282306e38` podem aparecer como sentinelas `float32`; não rejeitá-los por magnitude enquanto forem finitos. Coordenadas negativas inteiras aparecem como tag 1 `int32`, não como `uint32`.
+
+### Verificação no XAPK original
+
+- **9/9 cenas parseadas integralmente**, sem hashes de propriedades não reconhecidos; **33.187 entidades de cena** reconhecidas (isso não é quantidade de meshes distintas).
+- **151 entidades de água**, separadas em **122 `VuWaterSurfaceEntity`**, **21 `VuWaterRampEntity`** e **8 `VuInfiniteOceanWaveEntity`**. **141** dessas entidades referenciam explicitamente mapas de água; as outras podem usar recursos globais ou não possuir campo `WaterMap`.
+- CityB: **3.782 entidades**, **14 entidades aquáticas** e **13 referências aquáticas**, com valores `Position/Rotation/Scale` locais decodificados. A hierarquia entre pais e filhos ainda precisa ser composta em coordenadas de mundo para renderizar a cena fiel.
+- Outras referências de modelo normalmente usam `#` como prefixo de *prefab alias*, não um modelo independente diretamente. O exportador distingue essas fontes no campo `model_reference_type`.
+- Nenhuma coordenada original extraída nem recurso proprietário foi enviada ao repositório público. O relatório agregado sem posições está em `docs/scene-graph-summary.json`.
+
+### Entrega e testes
+
+- `tools/parse_scene_graph.py` (leitor de APF/APK/XAPK em modo leitura, com limites de tamanho, profundidade e número de nós) e `tests/test_parse_scene_graph.py` (5 testes sintéticos: hashes, ponteiros relativos, transform negativo, cabeçalho e tag inválida).
+- `docs/TEMPLATE_GRAPH.md` registra o formato observado, instruções e limitações; código público não contém imagens, vértices nem dados da cópia do jogo.
+- Verificação local completa e [CI GitHub Actions](https://github.com/Nicky7x/Riptige/actions/runs/38337038053) **success**.
+- Arquivo privado de metadados extraídos das nove arenas (ZIP compactado, sem XAPK/APF) salvo na Biblioteca do proprietário em `/RiptideMapLab/Riptide_Original_Scene_Instances_Private.zip`, não enviado ao GitHub.
+- **Não foi compilado um APK novo**, pois o renderizador Android v0.8 não interpreta ainda instâncias nem compõe matrizes parentais. Não confundir posições locais com posições finais, nem declarar água/cena completa.
+
+### Próxima implementação
+
+Portar um subconjunto comprovado do parser para o importador Android, com cache privado de instâncias; compor transforms ancestrais e validar convenções de ângulos e pivôs para CityB; relacionar prefab aliases a `VuStaticModelAsset` e às texturas já carregadas. Depois recuperar superfícies aquáticas com geometria e parâmetros originais, sem planos inferidos.
