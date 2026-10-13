@@ -1,3 +1,4 @@
+
 /* Riptide Map Lab / Scene 3D alpha. WebGL1, no external libraries.
  * Displays actual collision geometry, not textured visual assets.
  * Touch: orbit (one finger), pan (two fingers), pinch zoom, select by tapping.
@@ -21,12 +22,40 @@
   const smooth=program(versus,fs), flat=program(flatV,flatF);
   let meshes=[],meshByKey=new Map(),selected='',onlySelected=false,pickMeshes=[],callbacks={},mode='orbit',yaw=-.85,elevation=.64,range=1200,target=[0,0,0],bounds=null,drag=null,dirty=true;
   let viewproj=new Float32Array(16),grid=null,pickFbo=null,pickTex=null,pickDepth=null,pickW=0,pickH=0;
+  // First-person inspection: free-flight camera. This is NOT game physics or a playable race.
+  let player=false,playerPos=[0,0,3],playerYaw=0,playerPitch=0,stick=[0,0],lastFrame=0;
+  function playerForward(){const cp=Math.cos(playerPitch);return [cp*Math.cos(playerYaw),cp*Math.sin(playerYaw),Math.sin(playerPitch)];}
+  function enterPlayer(){
+    if(!meshes.length)return false;
+    const chosen=meshByKey.get(selected),b=calcBounds(chosen?[chosen]:meshes);
+    const span=Math.max(1,b.hi[2]-b.lo[2]);
+    playerPos=[(b.lo[0]+b.hi[0])/2,(b.lo[1]+b.hi[1])/2,b.lo[2]+Math.min(3,Math.max(1.8,span*.08))];
+    playerYaw=yaw+Math.PI;playerPitch=0;stick=[0,0];player=true;mode='player';dirty=true;draw();return true;
+  }
+  function leavePlayer(){player=false;stick=[0,0];mode='orbit';lastFrame=0;dirty=true;focus(true);}
+  function frame(t){
+    if(player){
+      const dt=lastFrame?Math.min(.05,Math.max(0,(t-lastFrame)/1000)):0;
+      lastFrame=t;
+      const [sx,sy]=stick;
+      if(Math.abs(sx)+Math.abs(sy)>.015){
+        const span=bounds?Math.max(...bounds.hi.map((v,i)=>v-bounds.lo[i])):100;
+        const speed=Math.max(3,Math.min(65,span*.035));
+        const c=Math.cos(playerYaw),sn=Math.sin(playerYaw);
+        playerPos[0]+=dt*speed*(-sy*c-sx*sn);
+        playerPos[1]+=dt*speed*(-sy*sn+sx*c);
+        dirty=true;draw();
+      }
+    }else lastFrame=0;
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
   const MIN_DIST=2;
   function cross(a,b){return[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
   function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];}
   function unit(v){const d=Math.hypot(...v)||1;return v.map(x=>x/d);}
   function look(eye,at){const z=unit(eye.map((v,i)=>v-at[i])),x=unit(cross([0,0,1],z)),y=cross(z,x);return new Float32Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-dot(x,eye),-dot(y,eye),-dot(z,eye),1]);}
-  function perspective(aspect){const f=1/Math.tan(Math.PI/6),near=Math.max(.05,range/3000),far=Math.max(100,range*25);return new Float32Array([f/aspect,0,0,0,0,f,0,0,0,0,(far+near)/(near-far),-1,0,0,2*far*near/(near-far),0]);}
+  function perspective(aspect){const f=1/Math.tan(Math.PI/6),near=player?.05:Math.max(.05,range/3000),far=Math.max(100,range*25);return new Float32Array([f/aspect,0,0,0,0,f,0,0,0,0,(far+near)/(near-far),-1,0,0,2*far*near/(near-far),0]);}
   function mul(a,b){const o=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)for(let k=0;k<4;k++)o[c*4+r]+=a[k*4+r]*b[c*4+k];return o;}
   function camera(){const ce=Math.cos(elevation);return[target[0]+range*ce*Math.cos(yaw),target[1]+range*ce*Math.sin(yaw),target[2]+range*Math.sin(elevation)];}
   function uploadBuffer(data,itemSize,targetType=gl.ARRAY_BUFFER){const buf=gl.createBuffer();gl.bindBuffer(targetType,buf);gl.bufferData(targetType,data,gl.STATIC_DRAW);return buf;}
@@ -62,7 +91,7 @@
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,kind===gl.LINES?m.gpu.lines:m.gpu.indices);
     gl.drawElements(kind,kind===gl.LINES?m.lines.length:m.indices.length,gl.UNSIGNED_SHORT,0);}
   function render(picking=false){const[w,h]=resize();gl.viewport(0,0,w,h);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);gl.clearColor(...C.bg);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-    viewproj=mul(perspective(w/h),look(camera(),target));
+    viewproj=mul(perspective(w/h),player?look(playerPos,playerPos.map((v,i)=>v+playerForward()[i])):look(camera(),target));
     if(!meshes.length)return;
     if(!picking&&grid&&$('scene3d-grid').checked){use(flat);gl.uniform3fv(flat.shift,[0,0,0]);gl.uniform4fv(flat.shade,[.21,.34,.44,.55]);gl.bindBuffer(gl.ARRAY_BUFFER,grid.buf);gl.vertexAttribPointer(flat.pos,3,gl.FLOAT,false,0,0);gl.drawArrays(gl.LINES,0,grid.count);}
     use(picking?flat:smooth);
@@ -92,16 +121,19 @@
   function gesture(){const pts=[...pointers.values()];if(pts.length<2)return null;return {dist:Math.hypot(pts[1].x-pts[0].x,pts[1].y-pts[0].y),cx:(pts[0].x+pts[1].x)/2,cy:(pts[0].y+pts[1].y)/2};}
   canvas.addEventListener('pointerdown',e=>{e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=coords(e);pointers.set(e.pointerId,{...p,startX:p.x,startY:p.y,travel:0});prevGesture=gesture();
     if(pointers.size!==1){drag=null;return;}
+    if(player)return;
     const match=pick(p.x,p.y);
     if(mode==='move'&&match&&match.key===selected){drag={key:selected,delta:[0,0,0],x:p.x,y:p.y};}
   });
   canvas.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;e.preventDefault();const p=coords(e),old=pointers.get(e.pointerId);p.startX=old.startX;p.startY=old.startY;p.travel=old.travel+Math.hypot(p.x-old.x,p.y-old.y);pointers.set(e.pointerId,p);
+    if(player){playerYaw+=(p.x-old.x)*.005;playerPitch=Math.max(-1.45,Math.min(1.45,playerPitch-(p.y-old.y)*.005));dirty=true;draw();return;}
     if(pointers.size>1){const g=gesture();if(prevGesture){range=Math.max(MIN_DIST,range*Math.exp((prevGesture.dist-g.dist)/Math.max(100,range*.05)));const delta=moveTo(prevGesture.cx-g.cx,g.cy-prevGesture.cy);target=target.map((x,i)=>x+delta[i]);}prevGesture=g;drag=null;
     }else if(drag){const d=moveTo(p.x-drag.x,drag.y-p.y);drag.x=p.x;drag.y=p.y;drag.delta=drag.delta.map((v,i)=>v+d[i]);meshByKey.get(drag.key).shift=drag.delta.slice();
     }else{yaw+=(p.x-old.x)*.008;elevation=Math.min(1.5,Math.max(-1.45,elevation+(p.y-old.y)*.008));}
     dirty=true;draw();
   });
   function release(e){const p=pointers.get(e.pointerId);if(!p)return;const current=coords(e);pointers.delete(e.pointerId);prevGesture=gesture();
+    if(player){dirty=true;draw();return;}
     if(drag){const move=drag,ob=meshByKey.get(move.key);ob.shift=[0,0,0];drag=null;
       if(Math.hypot(...move.delta)>0.0001 && callbacks.onMove)callbacks.onMove(move.key,move.delta);
     }else if(p.travel<9&&mode==='orbit'){const hit=pick(current.x,current.y);if(hit){selectedKey(hit.key);callbacks.onSelect?.(hit.key);}}
@@ -112,14 +144,17 @@
     on(cb){callbacks=cb||{};},
     async loadArena(records){meshes.forEach(m=>dispose(m.gpu));meshes=[];meshByKey.clear();
       const bad=[];for(const {key,data} of records){try{const m=makeMesh(key,data);meshes.push(m);meshByKey.set(key,m);}catch(e){bad.push(key+': '+e.message);}}
-      bounds=meshes.length?calcBounds(meshes):null;createGrid();if(meshes.length)focus(true);selectedKey('');
+      bounds=meshes.length?calcBounds(meshes):null;createGrid();if(meshes.length)focus(true);selectedKey('');if(player)enterPlayer();
       info.textContent=meshes.length+' trechos físicos carregados'+(bad.length?' · '+bad.length+' ignorados':'')+' · arraste para orbitar.';
       return bad;
     },
     select:selectedKey,
     update(key,bytes){const prev=meshByKey.get(key);if(!prev)return;const m=makeMesh(key,bytes);m.shift=prev.shift;dispose(prev.gpu);meshes[meshes.indexOf(prev)]=m;meshByKey.set(key,m);dirty=true;draw();},
     focusAll(){focus(true);},focusSelected(){focus(false);},
-    setMode(next){mode=next==='move'?'move':'orbit';canvas.style.cursor=mode==='move'?'grab':'crosshair';},
+    setMode(next){if(player)leavePlayer();mode=next==='move'?'move':'orbit';canvas.style.cursor=mode==='move'?'grab':'crosshair';},
+    setPlayerMode(enabled){if(enabled)return enterPlayer();leavePlayer();return true;},
+    isPlayer(){return player;},
+    setJoystick(x,y){stick=[Math.max(-1,Math.min(1,Number(x)||0)),Math.max(-1,Math.min(1,Number(y)||0))];},
     getCount(){return meshes.length;},
     getVisibleCount(){return onlySelected&&meshByKey.has(selected)?1:meshes.length;}
   };
