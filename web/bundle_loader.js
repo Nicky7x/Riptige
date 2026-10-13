@@ -1,15 +1,8 @@
+
 (async()=>{'use strict';
 const $=s=>document.getElementById(s);
 let bundle=JSON.parse($('private-assets').textContent);
-if(bundle.__external_bundle){
-  const notice=document.getElementById('arena-summary');
-  if(notice)notice.textContent='Lendo biblioteca local de arenas…';
-  const response=await fetch('/arenas_bundle.json',{cache:'no-store'});
-  if(!response.ok)throw Error('Falha ao carregar arenas: '+response.status);
-  bundle=await response.json();
-  if(!bundle || typeof bundle!=='object' || !Object.keys(bundle).length)
-    throw Error('Catálogo de arenas vazio');
-}
+if(bundle.__external_bundle){const response=await fetch('/arenas_bundle.json');if(!response.ok)throw Error('Falha ao carregar arenas: '+response.status);bundle=await response.json();}
 const visuals=bundle.__visuals||{};delete bundle.__visuals;
 const editor=window.RiptideEditor;
 const arena=$('arena-select'),zone=$('zone-select'),notes=$('bundle-message');
@@ -183,7 +176,7 @@ if(scene){scene.on({
     }catch(err){notes.textContent='Não foi possível mover: '+err.message;}}
  });}
 populateArenas();populateZones();await openZone();await openSceneArena();
-if(window.AndroidBridge&&window.AndroidBridge.editorReady)window.AndroidBridge.editorReady(Object.keys(bundle).length);
+if(window.AndroidBridge?.editorReady)window.AndroidBridge.editorReady(Object.keys(bundle).length);
 })().catch(err=>{
   const message='Erro ao carregar editor: '+(err&&err.message||String(err));
   const output=document.getElementById('arena-summary')||document.getElementById('bundle-message');
