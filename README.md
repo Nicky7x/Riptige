@@ -166,3 +166,14 @@ O visualizador WebGL usa sombreamento simplificado e alfa; **não** reproduz ain
 [Detalhes técnicos e formatos suportados](docs/TEXTURES.md).
 
 **Validação:** [GitHub Actions #38332343448](https://github.com/Nicky7x/Riptige/actions/runs/38332343448) passou verificações Node, JUnit e `assembleDebug`; gerou `app-debug.apk` de 141160 bytes, SHA-256 `76e91e249d50803a8aa7fa2a22c6e653b5f5713a3702dd6dc332cb1adfcdac9a`. A correção de interação e a aplicação de texturas ainda precisam ser avaliadas no Poco X8 Pro.
+
+
+### Novo avanço M1.16 — hierarquia original de cenas decodificada
+
+Agora existe um [leitor dos templates originais](tools/parse_scene_graph.py), capaz de identificar o grafo de entidades, `VuTransformComponent` e as propriedades de água diretamente do XAPK do usuário. Foram verificadas as **9 arenas**, totalizando **33.187 entidades**, inclusive **151 entidades aquáticas** (141 com mapas aquáticos explícitos). O formato usa nomes de propriedades identificados por **FNV-1a64** e variantes tipadas; [detalhes e limitações](docs/TEMPLATE_GRAPH.md).
+
+```sh
+python tools/parse_scene_graph.py SEU_JOGO.xapk --arena CityB --out cityb-instancias-privadas.json
+```
+
+O JSON com coordenadas originais deve permanecer privado. **Ainda não compomos todas as transformações hierárquicas nem renderizamos as superfícies aquáticas completas no Android**; portanto a v0.8 instalada continua sendo o editor mais recente. Testes sintéticos e verificação [CI](https://github.com/Nicky7x/Riptige/actions/runs/38337038053) aprovados.
