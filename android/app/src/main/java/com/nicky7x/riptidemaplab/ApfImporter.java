@@ -153,12 +153,12 @@ public final class ApfImporter {
                 try{
                     byte[] raw=new byte[t.csize];file.seek(t.offset);file.readFully(raw);
                     byte[] decompressed=unpack(raw,t.usize,t.flags);
-                    TexturePreview.Header h=TexturePreview.header(decompressed);
-                    if(h.width>1024||h.height>1024)continue;
+                    TexturePreview.Header texHeader=TexturePreview.header(decompressed);
+                    if(texHeader.width>1024||texHeader.height>1024)continue;
                     byte[] png=TexturePreview.png(decompressed);
                     JSONObject texRecord=new JSONObject();
                     texRecord.put("data",Base64.encodeToString(png,Base64.NO_WRAP));
-                    texRecord.put("w",h.width);texRecord.put("h",h.height);
+                    texRecord.put("w",texHeader.width);texRecord.put("h",texHeader.height);
                     texRecord.put("format","PNG");
                     textures.put(tex,texRecord);decodedTextures++;
                 }catch(Exception ignored){/* unsupported material/image variant: shaded fallback */}
