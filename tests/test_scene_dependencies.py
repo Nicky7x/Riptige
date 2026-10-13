@@ -10,8 +10,8 @@ class WaterSceneIndexTest(unittest.TestCase):
     def mk_apf(self):
         scene=b'\x00VuWaterSurfaceEntity\x00CityA/WS01\x00VuInfiniteOceanWaveEntity\x00'
         tex=bytearray(70+16)
-        struct.pack_into('<II',tex,21,4,4)
-        struct.pack_into('<I',tex,33,0x83f3)
+        struct.pack_into('<II',tex,20,4,4)
+        struct.pack_into('<I',tex,32,0x83f3)
         resources=[('VuTemplateAsset/Levels/CityA',scene),('VuWaterMapAsset/CityA/WS01',bytes(tex)),('VuWaterMapAsset/CityA/WS02',bytes(tex))]
         blob=bytearray(56);idx=bytearray();off=56
         for name,data in resources:
