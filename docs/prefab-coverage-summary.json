@@ -1,0 +1,56 @@
+{
+  "prefab_references_from_scenes": 23544,
+  "distinct_prefabs_used_by_scenes": 285,
+  "prefab_definitions_found": 285,
+  "missing_direct_prefab_definitions": [],
+  "distinct_nested_prefab_links": 38,
+  "nested_prefab_links_with_definition": 38,
+  "distinct_static_model_references_in_prefabs": 293,
+  "static_model_resources_present": 291,
+  "distinct_texture_references_in_prefabs": 8,
+  "texture_resources_present": 8,
+  "arenas": {
+    "CityA": {
+      "prefab_instance_count": 1654,
+      "distinct_prefabs": 104
+    },
+    "CityB": {
+      "prefab_instance_count": 2549,
+      "distinct_prefabs": 85
+    },
+    "FactoryA": {
+      "prefab_instance_count": 2517,
+      "distinct_prefabs": 76
+    },
+    "FactoryB": {
+      "prefab_instance_count": 638,
+      "distinct_prefabs": 41
+    },
+    "MilitaryA": {
+      "prefab_instance_count": 1114,
+      "distinct_prefabs": 51
+    },
+    "OldCityA": {
+      "prefab_instance_count": 5322,
+      "distinct_prefabs": 78
+    },
+    "ParkA": {
+      "prefab_instance_count": 6366,
+      "distinct_prefabs": 84
+    },
+    "ParkB": {
+      "prefab_instance_count": 2243,
+      "distinct_prefabs": 62
+    },
+    "SpaceportA": {
+      "prefab_instance_count": 1141,
+      "distinct_prefabs": 63
+    }
+  },
+  "limitations": [
+    "Counts are dependency/instance references, not distinct rendered meshes.",
+    "Nested prefabs may carry animated/dynamic data and transformations not applied.",
+    "Some Model Asset paths may refer to skinned/animated rather than static resources.",
+    "No proprietary model bytes or scene transforms are in this summary."
+  ]
+}
