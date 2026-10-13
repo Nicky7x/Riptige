@@ -7,15 +7,15 @@ android {
         applicationId 'com.nicky7x.riptidemaplab'
         minSdk 26
         targetSdk 35
-        versionCode 10
-        versionName '0.10.0-alpha'
+        versionCode 11
+        versionName '0.11.0-alpha'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
     buildTypes {
-        debug { applicationIdSuffix '.v10' }
+        debug { applicationIdSuffix '.v11' }
         release { minifyEnabled false }
     }
 }
