@@ -368,3 +368,12 @@ O usuário questionou se o trabalho teria sido perdido por limite de execução 
 - Funcionalidade v0.9: **Mais → Abrir cena 3D (GLB)** via seletor Storage Access Framework, WebGL agrupando instâncias, busca por caminho/modelo, mover, duplicar, ocultar, exportar/importar `riptide-world-edit-v1` JSON. Mantém o editor v0.8 de XAPK; não altera o jogo.
 - Testes de parsing no Chromium conseguiram reconhecer **2.658 objetos e 86 geometrias distintas**; o ambiente não oferece WebGL, portanto o render não foi verificado em GPU. O teste físico no Poco X8 Pro está **pendente**.
 - **Limitações essenciais:** não reconstrói automaticamente todas as arenas do XAPK no Android: é preciso abrir o GLB da CityB separado. GLB atual sem água/texturas; o editor v0.8 mantém as texturas originais de modelos de nível em modo anterior. Animações, sky e edição de malha permanecem pendentes.
+
+
+## 2026-10-13 — v0.10 proposta: biblioteca privada das nove arenas (ChatGPT)
+- **Solicitação:** GLBs de TODAS as arenas carregados no próprio editor; água específica de cada mapa, texturas e demais componentes.
+- **Método:** gerador `tools/build_private_world_library.py` cria um ZIP contendo os nove GLBs e os metadados de entidades aquáticas reconstruídos por `resolve_world_instances.py`, sem upload dos recursos comerciais. Ponte Android SAF importa e guarda uma única biblioteca ZIP em armazenamento privado e intercepta apenas URLs locais de cena. `web/world_scene.js` seleciona automaticamente o GLB conforme arena e sobrepõe planos de água somente para entidades com dimensões decodificadas.
+- **Código:** `android/app/src/main/java/com/nicky7x/riptidemaplab/MainActivity.java`, `android/app/src/main/assets/editor_template.html`, `web/world_scene.js`, `web/bundle_loader.js`, testes e documentação.
+- **Escopo honesto:** prévia aquática plana NÃO reproduz o recurso `VuWaterMapAsset`, ondas, rampas detalhadas ou shaders originais. O mundo GLB permanece sem textura, enquanto os modelos texturizados da v0.8 usam pipeline separado. Animação e objetos desconhecidos ausentes. Não se afirma que a importação de GLB derive automaticamente do XAPK sem o passo Termux, nem que o APK foi validado no Poco.
+- **Validação exigida:** GitHub Actions green, importar ZIP pessoal completo no Android, alternar todas as nove arenas, aferir renderização/performance, verificar origem/escala dos planos aquáticos. Rodar testes de regressão.
+- **Privacidade:** o ZIP pessoal, GLBs, water JSON original e XAPK são proibidos no GitHub.

@@ -13,10 +13,13 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipEntry;
+import org.json.JSONObject;
 
 /** Native Android shell for the existing offline 3D editor. */
 public final class MainActivity extends Activity {
-    private static final int REQUEST_XAPK=1001,REQUEST_EXPORT=1002,REQUEST_WORLD_FILE=1003;
+    private static final int REQUEST_XAPK=1001,REQUEST_EXPORT=1002,REQUEST_WORLD_FILE=1003,REQUEST_WORLD_LIBRARY=1004;
     private final ExecutorService worker=Executors.newSingleThreadExecutor();
     private WebView web;
     private ValueCallback<Uri[]> pendingWorldFileChooser;
@@ -129,6 +132,38 @@ public final class MainActivity extends Activity {
                             java.util.Collections.emptyMap(),new ByteArrayInputStream(new byte[0]));
                     }
                 }
+                if("https".equals(scheme) && "appassets.androidplatform.net".equals(u.getHost())
+                        && u.getPath()!=null && u.getPath().startsWith("/worlds/")){
+                    String name=u.getPath().substring("/worlds/".length());
+                    boolean manifest="manifest.json".equals(name);
+                    boolean safe=manifest || name.matches("(world/[A-Za-z0-9]+[.]glb|water/[A-Za-z0-9]+[.]json)");
+                    if(safe){
+                        try {
+                            File library=new File(getFilesDir(),"riptide-world-library.zip");
+                            if(!library.isFile())throw new FileNotFoundException("Biblioteca 3D ausente");
+                            ZipFile zip=new ZipFile(library);
+                            ZipEntry entry=zip.getEntry(name);
+                            if(entry==null || entry.isDirectory() || entry.getSize()<0 ||
+                                    entry.getSize()>(name.endsWith(".glb")?140L*1024*1024:2L*1024*1024)){
+                                zip.close();throw new IOException("Recurso 3D inválido");
+                            }
+                            InputStream stream=new FilterInputStream(zip.getInputStream(entry)){
+                                @Override public void close() throws IOException {try{super.close();}finally{zip.close();}}
+                            };
+                            WebResourceResponse response=new WebResourceResponse(
+                                name.endsWith(".glb")?"model/gltf-binary":"application/json",
+                                "UTF-8",stream);
+                            java.util.Map<String,String> headers=new java.util.HashMap<>();
+                            headers.put("Cache-Control","no-store");
+                            headers.put("Access-Control-Allow-Origin","*");
+                            response.setResponseHeaders(headers);
+                            return response;
+                        }catch(IOException ignored){
+                            return new WebResourceResponse("text/plain","UTF-8",404,"Not Found",
+                                    java.util.Collections.emptyMap(),new ByteArrayInputStream(new byte[0]));
+                        }
+                    }
+                }
                 return new WebResourceResponse("text/plain","UTF-8",403,"Forbidden",
                     java.util.Collections.emptyMap(),new ByteArrayInputStream(new byte[0]));
             }
@@ -211,6 +246,7 @@ public final class MainActivity extends Activity {
         }
         if(result!=RESULT_OK||data==null||data.getData()==null)return;
         if(req==REQUEST_XAPK)importXapk(data.getData());
+        else if(req==REQUEST_WORLD_LIBRARY)importWorldLibrary(data.getData());
         else if(req==REQUEST_EXPORT) {
             String export=pendingExport;pendingExport="";
             worker.execute(()->{
@@ -221,6 +257,63 @@ public final class MainActivity extends Activity {
                 }catch(Exception e){onUi(()->setStatus("Erro ao salvar: "+e.getMessage()));}
             });
         }
+    }
+
+    private void chooseWorldLibrary(){
+        Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/zip");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        try {startActivityForResult(intent,REQUEST_WORLD_LIBRARY);}
+        catch(Exception ex){setStatus("Não foi possível selecionar biblioteca 3D: "+ex.getMessage());}
+    }
+    private void importWorldLibrary(Uri uri){
+        setStatus("Importando biblioteca privada das nove arenas…");
+        worker.execute(()->{
+            File tmp=new File(getFilesDir(),"riptide-world-library.partial");
+            File dst=new File(getFilesDir(),"riptide-world-library.zip");
+            try{
+                try(InputStream in=getContentResolver().openInputStream(uri);
+                    OutputStream out=new BufferedOutputStream(new FileOutputStream(tmp))){
+                    if(in==null)throw new IOException("Não foi possível abrir ZIP");
+                    byte[] buf=new byte[65536];int n;long total=0;
+                    while((n=in.read(buf))!=-1){
+                        total+=n;if(total>350L*1024*1024)throw new IOException("Biblioteca excede 350 MB");
+                        out.write(buf,0,n);
+                    }
+                }
+                try(ZipFile zip=new ZipFile(tmp)){
+                    ZipEntry m=zip.getEntry("manifest.json");
+                    if(m==null||m.getSize()<20||m.getSize()>20000)
+                        throw new IOException("Manifesto ausente ou inválido");
+                    byte[] bytes=new byte[(int)m.getSize()];
+                    try(InputStream in=zip.getInputStream(m)){
+                        int p=0,n;while(p<bytes.length && (n=in.read(bytes,p,bytes.length-p))!=-1)p+=n;
+                        if(p!=bytes.length)throw new IOException("Manifesto incompleto");
+                    }
+                    JSONObject manifest=new JSONObject(new String(bytes,StandardCharsets.UTF_8));
+                    if(!"riptide-private-world-library-v1".equals(manifest.optString("format")))
+                        throw new IOException("Formato de biblioteca 3D desconhecido");
+                    JSONObject arenas=manifest.getJSONObject("arenas");
+                    for(String arena:new String[]{"CityA","CityB","FactoryA","FactoryB","MilitaryA",
+                            "OldCityA","ParkA","ParkB","SpaceportA"}){
+                        JSONObject entry=arenas.getJSONObject(arena);
+                        String glb="world/"+arena+".glb",water="water/"+arena+".json";
+                        if(!glb.equals(entry.getString("glb"))||!water.equals(entry.getString("water")))
+                            throw new IOException("Caminhos de cena inválidos: "+arena);
+                        ZipEntry model=zip.getEntry(glb),surface=zip.getEntry(water);
+                        if(model==null||model.getSize()<28||model.getSize()>140L*1024*1024||
+                                surface==null||surface.getSize()<10||surface.getSize()>2L*1024*1024)
+                            throw new IOException("Cena ausente ou grande demais: "+arena);
+                    }
+                }
+                if(dst.exists()&&!dst.delete())throw new IOException("Não consegui trocar biblioteca antiga");
+                if(!tmp.renameTo(dst))throw new IOException("Não consegui guardar biblioteca 3D");
+                onUi(()->{setStatus("Biblioteca privada das 9 arenas instalada.");
+                    web.evaluateJavascript("window.dispatchEvent(new Event('riptideWorldLibraryChanged'))",null);});
+            }catch(Exception ex){onUi(()->setStatus("Biblioteca inválida: "+ex.getMessage()));}
+            finally{if(tmp.exists())tmp.delete();}
+        });
     }
 
     private void importXapk(Uri uri){
@@ -297,6 +390,7 @@ public final class MainActivity extends Activity {
         @JavascriptInterface public void editorReady(int count){
             onUi(()->{setStatus("Editor 3D pronto · "+count+" arenas locais · sem upload");enterImmersiveEditor();});
         }
+        @JavascriptInterface public void pickWorldLibrary(){onUi(()->chooseWorldLibrary());}
         @JavascriptInterface public void pickXapk(){
             onUi(()->{leaveImmersiveEditor();selectXapk();});
         }

@@ -192,6 +192,7 @@ if(scene){scene.on({
     }catch(err){notes.textContent='Não foi possível mover: '+err.message;}}
  });}
 populateArenas();populateZones();await openZone();await openSceneArena();
+window.dispatchEvent(new Event('riptideArenasReady'));
 if(window.AndroidBridge?.editorReady)window.AndroidBridge.editorReady(Object.keys(bundle).length);
 })().catch(err=>{
   const message='Erro ao carregar editor: '+(err&&err.message||String(err));

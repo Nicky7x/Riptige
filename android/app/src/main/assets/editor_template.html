@@ -909,6 +909,7 @@ if(scene){scene.on({
     }catch(err){notes.textContent='Não foi possível mover: '+err.message;}}
  });}
 populateArenas();populateZones();await openZone();await openSceneArena();
+window.dispatchEvent(new Event('riptideArenasReady'));
 if(window.AndroidBridge?.editorReady)window.AndroidBridge.editorReady(Object.keys(bundle).length);
 })().catch(err=>{
   const message='Erro ao carregar editor: '+(err&&err.message||String(err));
@@ -1117,25 +1118,34 @@ const wrap=document.createElement('div');wrap.id='rw-world';wrap.innerHTML=`<can
 const input=document.createElement('input');input.type='file';input.accept='.glb,model/gltf-binary,application/octet-stream';input.style.display='none';document.body.append(input);
 const jsonInput=document.createElement('input');jsonInput.type='file';jsonInput.accept='.json,application/json';jsonInput.style.display='none';document.body.append(jsonInput);
 const canvas=$('rw-canvas'),gl=canvas.getContext('webgl',{antialias:true,alpha:false});
-let ext=gl?.getExtension('ANGLE_instanced_arrays'),UINT=gl?.getExtension('OES_element_index_uint'),loaded=null,selected=null,dirty=true,cacheGPU=new Map(),batches=[],center=[0,0,0],distance=500,yaw=.7,pitch=.58,vp=null,pointers=new Map(),gesture=null;
+let ext=gl?.getExtension('ANGLE_instanced_arrays'),UINT=gl?.getExtension('OES_element_index_uint'),loaded=null,selected=null,dirty=true,privateLibrary=null,worldLoadToken=0,activeArena=null,cacheGPU=new Map(),batches=[],center=[0,0,0],distance=500,yaw=.7,pitch=.58,vp=null,pointers=new Map(),gesture=null;
 function note(s){$('rw-toast').textContent=s}
 function shader(type,code){const o=gl.createShader(type);gl.shaderSource(o,code);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))fail('Shader: '+gl.getShaderInfoLog(o));return o}
 let program=null,loc=null;
 if(gl){program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,`
 attribute vec3 pos;attribute vec4 m0,m1,m2,m3;uniform mat4 viewProj;varying float shade;
 void main(){vec4 p=mat4(m0,m1,m2,m3)*vec4(pos,1.0);shade=clamp(.48+.003*p.y,.22,.95);gl_Position=viewProj*p;}`));
-gl.attachShader(program,shader(gl.FRAGMENT_SHADER,`precision mediump float;varying float shade;void main(){gl_FragColor=vec4(vec3(.37,.57,.66)*shade,1.);}`));gl.linkProgram(program);
+gl.attachShader(program,shader(gl.FRAGMENT_SHADER,`precision mediump float;varying float shade;uniform vec4 layerColor;void main(){gl_FragColor=vec4(layerColor.rgb*shade,layerColor.a);}`));gl.linkProgram(program);
 if(!gl.getProgramParameter(program,gl.LINK_STATUS))fail(gl.getProgramInfoLog(program));
-loc={pos:gl.getAttribLocation(program,'pos'),matrix:[0,1,2,3].map(i=>gl.getAttribLocation(program,'m'+i)),vp:gl.getUniformLocation(program,'viewProj')};}
+loc={pos:gl.getAttribLocation(program,'pos'),matrix:[0,1,2,3].map(i=>gl.getAttribLocation(program,'m'+i)),vp:gl.getUniformLocation(program,'viewProj'),color:gl.getUniformLocation(program,'layerColor')};}
 function clearGPU(){if(!gl)return;for(const g of cacheGPU.values()){gl.deleteBuffer(g.pos);gl.deleteBuffer(g.idx);}for(const b of batches)gl.deleteBuffer(b.matrixBuffer);cacheGPU.clear();batches=[]}
 function recompute(){if(!loaded||!gl)return;for(const b of batches)gl.deleteBuffer(b.matrixBuffer);batches=[];
  const sorted=new Map();for(const node of loaded.nodes){if(node.hidden)continue;for(const key of node.geometry||[]){if(!sorted.has(key))sorted.set(key,[]);sorted.get(key).push(node);}}
+ // Water uses the ORIGINAL entity placement and dimensions, not a fake arena-wide plane.
+ // This is only a flat diagnostic preview; real waves, tessellation and maps are unknown.
+ if(loaded.water?.length && loaded.showWater!==false){
+   const key='__water_surface__';
+   loaded.geometry.set(key,{key,positions:new Float32Array([
+     -.5,-.5,0, .5,-.5,0, .5,.5,0, -.5,.5,0
+   ]),indices:new Uint16Array([0,1,2,0,2,3]),min:[-.5,-.5,0],max:[.5,.5,0]});
+   sorted.set(key,loaded.water.filter(n=>!n.hidden));
+ }
  for(const [key,nodes] of sorted){const resource=loaded.geometry.get(key);if(!resource)continue;let gpu=cacheGPU.get(key);if(!gpu){let indices=resource.indices;let type=indices instanceof Uint32Array?gl.UNSIGNED_INT:indices instanceof Uint8Array?gl.UNSIGNED_BYTE:gl.UNSIGNED_SHORT;
  if(type===gl.UNSIGNED_INT&&!UINT){const maxIndex=indices.reduce((max,v)=>Math.max(max,v),0);if(maxIndex>65535){note('GPU sem índices de 32 bits; parte da cena não será exibida.');continue;}indices=Uint16Array.from(indices);type=gl.UNSIGNED_SHORT;}
  const pos=gl.createBuffer(),idx=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,pos);gl.bufferData(gl.ARRAY_BUFFER,resource.positions,gl.STATIC_DRAW);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,idx);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,indices,gl.STATIC_DRAW);
  gpu={pos,idx,type,count:indices.length};cacheGPU.set(key,gpu);}
  const matrices=new Float32Array(nodes.length*16);nodes.forEach((n,i)=>matrices.set(n.matrix,i*16));const matrixBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,matrixBuffer);gl.bufferData(gl.ARRAY_BUFFER,matrices,gl.DYNAMIC_DRAW);
- batches.push({gpu,matrixBuffer,count:nodes.length,nodes,matrices});
+ batches.push({gpu,matrixBuffer,count:nodes.length,nodes,matrices,water:key==='__water_surface__'});
  }dirty=true;draw();}
 function bounds(){let lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];for(const n of loaded.nodes){if(n.hidden)continue;for(const key of n.geometry||[]){const g=loaded.geometry.get(key);if(!g)continue;
  for(let k=0;k<8;k++){const xyz=[k&1?g.max[0]:g.min[0],k&2?g.max[1]:g.min[1],k&4?g.max[2]:g.min[2]];const p=proj(n.matrix,xyz);for(let a=0;a<3;a++){lo[a]=Math.min(lo[a],p[a]);hi[a]=Math.max(hi[a],p[a]);}}}}
@@ -1144,17 +1154,38 @@ function focus(){if(!loaded)return;const b=bounds();center=b.lo.map((v,i)=>(v+b.
 function eye(){return [center[0]+distance*Math.cos(pitch)*Math.sin(yaw),center[1]+distance*Math.sin(pitch),center[2]+distance*Math.cos(pitch)*Math.cos(yaw)]}
 function resize(){const rect=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,1.7),w=Math.max(1,Math.floor(rect.width*dpr)),h=Math.max(1,Math.floor(rect.height*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;dirty=true;}return[w,h]}
 function draw(){if(!loaded||!gl||!wrap.classList.contains('show')||!dirty)return;dirty=false;const[w,h]=resize();gl.viewport(0,0,w,h);gl.enable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.clearColor(.028,.061,.106,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);vp=mul(projection(w/h,distance*10+500),look(eye(),center));gl.useProgram(program);gl.uniformMatrix4fv(loc.vp,false,new Float32Array(vp));
- for(const batch of batches){gl.bindBuffer(gl.ARRAY_BUFFER,batch.gpu.pos);gl.enableVertexAttribArray(loc.pos);gl.vertexAttribPointer(loc.pos,3,gl.FLOAT,false,0,0);
+ for(const batch of batches){
+ if(batch.water){gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
+  gl.uniform4f(loc.color,.07,.63,.88,.55);}
+ else {gl.disable(gl.BLEND);gl.depthMask(true);gl.uniform4f(loc.color,.37,.57,.66,1);}
+ gl.bindBuffer(gl.ARRAY_BUFFER,batch.gpu.pos);gl.enableVertexAttribArray(loc.pos);gl.vertexAttribPointer(loc.pos,3,gl.FLOAT,false,0,0);
  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,batch.gpu.idx);gl.bindBuffer(gl.ARRAY_BUFFER,batch.matrixBuffer);
  for(let i=0;i<4;i++){const a=loc.matrix[i];gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,4,gl.FLOAT,false,64,i*16);if(ext)ext.vertexAttribDivisorANGLE(a,1);}
  if(ext)ext.drawElementsInstancedANGLE(gl.TRIANGLES,batch.gpu.count,batch.gpu.type,0,batch.count);
  else{for(let i=0;i<Math.min(batch.count,600);i++){for(let col=0;col<4;col++){const a=loc.matrix[col];gl.disableVertexAttribArray(a);gl.vertexAttrib4fv(a,batch.matrices.subarray(i*16+col*4,i*16+col*4+4));}gl.drawElements(gl.TRIANGLES,batch.gpu.count,batch.gpu.type,0);}}
  if(ext)for(const a of loc.matrix)ext.vertexAttribDivisorANGLE(a,0);
  }
+ gl.disable(gl.BLEND);gl.depthMask(true);
  if(selected){const p=proj(vp,[selected.matrix[12],selected.matrix[13],selected.matrix[14]]);if(p[3]>0){let x=(p[0]/p[3]*.5+.5)*w,y=(1-(p[1]/p[3]*.5+.5))*h;const marker=$('rw-toast');marker.style.left=Math.max(8,Math.min(canvas.clientWidth-100,x/(w/canvas.clientWidth)))+'px';marker.style.top=Math.max(42,Math.min(canvas.clientHeight-90,y/(h/canvas.clientHeight)))+'px';} }
  }
 function activateFile(file){if(!file)return;const reader=new FileReader();reader.onload=()=>{try{load(reader.result,file.name)}catch(err){note('Falha no GLB: '+err.message);console.error(err)}};reader.onerror=()=>note('Não foi possível abrir o arquivo.');reader.readAsArrayBuffer(file);}
-function load(buffer,name){if(!gl)fail('WebGL indisponível para a visualização de instâncias.');let scene=readGLB(buffer);clearGPU();loaded=scene;selected=null;recompute();wrap.classList.add('show');$('rw-title').textContent='Cena: '+name+' · '+loaded.nodes.length+' objetos';$('rw-meta').textContent='Toque para selecionar';focus();note('Cena original carregada. Toque em uma peça, altere X/Y/Z ou exporte JSON para IA.');$('v07-drawer').hidden=true;}
+function cleanWater(entities){
+ if(!Array.isArray(entities))return [];
+ const waters=[];
+ for(const e of entities.slice(0,1000)){
+   if(!e?.drawable||!Array.isArray(e.matrix)||e.matrix.length!==16 ||
+      e.matrix.some(v=>typeof v!=='number'||!Number.isFinite(v)||Math.abs(v)>1e9)||
+      !Number.isFinite(e.width)||!Number.isFinite(e.length)||
+      e.width<=0||e.length<=0||e.width>1000000||e.length>1000000)continue;
+   const matrix=e.matrix.slice();
+   for(let r=0;r<4;r++){matrix[r]*=e.width;matrix[4+r]*=e.length;}
+   waters.push({path:String(e.path||''),kind:String(e.kind||''),waterMap:e.waterMap||null,
+     matrix,geometry:['__water_surface__'],hidden:false});
+ }
+ return waters;
+}
+function load(buffer,name,waterMetadata=[]){if(!gl)fail('WebGL indisponível para a visualização de instâncias.');let scene=readGLB(buffer);
+ scene.water=cleanWater(waterMetadata);clearGPU();loaded=scene;selected=null;recompute();wrap.classList.add('show');$('rw-title').textContent='Cena: '+name+' · '+loaded.nodes.length+' objetos';$('rw-meta').textContent='Toque para selecionar';focus();note('Cena: '+loaded.nodes.length+' objetos; '+scene.water.length+' superfícies de água com dimensões verificadas (prévia aproximada). Modelos GLB ainda sem materiais/texturas.');$('v07-drawer').hidden=true;}
 function select(n){selected=n;for(const [k,i] of [['rw-x',12],['rw-y',13],['rw-z',14]])$(k).value=n?Number(n.matrix[i].toFixed(3)):'';
  $('rw-meta').textContent=n?(n.name+' · '+loaded.meshNames[n.mesh]):'Toque para selecionar';dirty=true;draw();}
 function saveScene(){if(!loaded)return;const doc={format:'riptide-world-edit-v1',version:1,units:'glTF_Y_UP',assetSource:'user-selected-private-GLB',entities:loaded.nodes.map(n=>({id:n.id,name:n.name,mesh:loaded.meshNames[n.mesh],meshIndex:n.mesh,matrix:n.matrix.map(x=>Number(x.toFixed(6))),hidden:n.hidden}))};
@@ -1165,6 +1196,70 @@ function applyJSON(s){if(!loaded)fail('Abra o GLB de referência antes do JSON')
  loaded.nodes=newNodes;select(null);recompute();focus();note('Cena JSON aplicada: '+newNodes.length+' entidades.');}
 // Set after parse; allows JSON import to refer to the original mesh geometry by stable meshIndex.
 const oldRead=readGLB;readGLB=function(ab){const doc=oldRead(ab);doc.meshDefs=[];for(const n of doc.nodes)if(!doc.meshDefs[n.mesh])doc.meshDefs[n.mesh]=n.geometry;return doc;};
+// Load all nine scenes from ONE private ZIP that stays on the owner's Android device.
+async function refreshLibrary(autoOpen=false){
+ try{
+   const res=await fetch('/worlds/manifest.json',{cache:'no-store'});
+   if(!res.ok){privateLibrary=null;return false;}
+   const data=await res.json();
+   if(data.format!=='riptide-private-world-library-v1'||!data.arenas||
+       Object.keys(data.arenas).length!==9)throw Error('Biblioteca incompleta');
+   privateLibrary=data;
+   if(autoOpen && $('arena-select')?.value)await openArena($('arena-select').value);
+   return true;
+ }catch(err){privateLibrary=null;note('Biblioteca indisponível: '+err.message);return false;}
+}
+async function openArena(ar){
+ if(!privateLibrary?.arenas?.[ar])return false;
+ const entry=privateLibrary.arenas[ar],token=++worldLoadToken;
+ const allowed='^(CityA|CityB|FactoryA|FactoryB|MilitaryA|OldCityA|ParkA|ParkB|SpaceportA)$';
+ if(!(new RegExp(allowed)).test(ar)||entry.glb!=='world/'+ar+'.glb'||entry.water!=='water/'+ar+'.json')
+    throw Error('Referência de arena inválida');
+ note('Carregando mundo 3D de '+ar+'…');
+ const [model,surface]=await Promise.all([
+   fetch('/worlds/'+entry.glb,{cache:'no-store'}),
+   fetch('/worlds/'+entry.water,{cache:'no-store'})
+ ]);
+ if(!model.ok||!surface.ok)throw Error('Recursos locais incompletos para '+ar);
+ const [bytes,water]=await Promise.all([model.arrayBuffer(),surface.json()]);
+ if(token!==worldLoadToken)return false;
+ if(water.format!=='riptide-water-preview-v1'||water.arena!==ar)throw Error('Metadados de água incompatíveis');
+ load(bytes,ar+' · mundo privado',water.entities);
+ activeArena=ar;
+ return true;
+}
+root.addEventListener('riptideArenasReady',()=>{refreshLibrary(true).catch(err=>note(err.message));});
+root.addEventListener('riptideWorldLibraryChanged',()=>{refreshLibrary(true).catch(err=>note(err.message));});
+$('arena-select')?.addEventListener('change',()=>{
+ if(privateLibrary && wrap.classList.contains('show')){
+   openArena($('arena-select').value).catch(err=>note('Falha ao trocar arena: '+err.message));
+ }
+});
+const mainWorld=document.createElement('button');
+mainWorld.textContent='🌐 Mundo 3D';mainWorld.id='rw-open-world';mainWorld.className='v07-tool';
+mainWorld.title='Ver mundo reconstruído da arena selecionada, no editor';
+mainWorld.addEventListener('click',()=>{
+ if(privateLibrary)openArena($('arena-select').value).catch(err=>note(err.message));
+ else { $('v07-drawer').hidden=false;note('Importe primeiro a biblioteca privada com as 9 arenas.'); }
+});
+const rail=document.querySelector?.('#v07-main .v07-rail:last-child')||document.querySelector?.('#v07-main .v07-rail');
+if(rail)rail.append(mainWorld);
+if(root.AndroidBridge?.pickWorldLibrary){
+ const importLib=document.createElement('button');
+ importLib.textContent='Importar biblioteca 3D (9 arenas)';
+ importLib.id='rw-import-library';
+ importLib.onclick=()=>root.AndroidBridge.pickWorldLibrary();
+ $('v07-drawer-top').append(importLib);
+}
+const waterToggle=document.createElement('button');
+waterToggle.id='rw-water';waterToggle.textContent='Água: ligada';
+waterToggle.onclick=()=>{
+ if(!loaded)return;
+ loaded.showWater=loaded.showWater===false;
+ waterToggle.textContent=loaded.showWater?'Água: ligada':'Água: oculta';
+ recompute();
+};
+$('rw-bar')?.insertBefore?.(waterToggle,$('rw-home'));
 const button=document.createElement('button');button.textContent='Abrir cena 3D (GLB)';button.id='rw-import';button.addEventListener('click',()=>input.click());$('v07-drawer-top').append(button);
 input.addEventListener('change',()=>{const f=input.files?.[0];if(f)activateFile(f);input.value='';});
 jsonInput.addEventListener('change',()=>{const f=jsonInput.files?.[0];if(!f)return;f.text().then(applyJSON).catch(e=>note('JSON inválido: '+e.message));jsonInput.value='';});
@@ -1199,7 +1294,7 @@ function end(e){const o=pointers.get(e.pointerId);if(!o)return;pointers.delete(e
  if(best){select(best);note('Selecionado: '+best.name+'. Edite X/Y/Z para mover.')}else note('Nenhum objeto próximo do toque; aproxime a câmera.');}
 canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',e=>pointers.delete(e.pointerId));canvas.addEventListener('wheel',e=>{e.preventDefault();distance*=Math.exp(e.deltaY*.001);dirty=true;draw();},{passive:false});
 root.addEventListener('resize',()=>{dirty=true;draw()});
-root.RiptideWorldV09={parse:readGLB,openFile:activateFile,loadArrayBuffer:load,getScene:()=>loaded,exportScene:saveScene,applyJSON};
+root.RiptideWorldV09={parse:readGLB,openFile:activateFile,loadArrayBuffer:load,getScene:()=>loaded,exportScene:saveScene,applyJSON,openArena,refreshLibrary};
 })(typeof window!=='undefined'?window:null);
 
 </script>

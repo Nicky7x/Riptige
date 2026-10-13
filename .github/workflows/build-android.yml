@@ -9,6 +9,8 @@ on:
       - 'tests-js/mobile-v07.test.cjs'
       - 'tests-js/texture-v08.test.cjs'
       - 'tests-js/world-v09.test.cjs'
+      - 'tools/build_private_world_library.py'
+      - 'tests/test_private_world_library.py'
   pull_request:
     paths:
       - 'android/**'
@@ -41,6 +43,8 @@ jobs:
         run: node tests-js/texture-v08.test.cjs
       - name: Validate offline GLB scene parser and document chooser
         run: node tests-js/world-v09.test.cjs
+      - name: Verify private world metadata transforms
+        run: python3 -m unittest discover -s tests -p 'test_private_world_library.py' -v
       - name: Compile Android debug APK
         run: gradle -p android --no-daemon :app:testDebugUnitTest :app:assembleDebug
       - name: Publish test APK
