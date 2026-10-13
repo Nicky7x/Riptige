@@ -16,9 +16,10 @@ import java.util.concurrent.Executors;
 
 /** Native Android shell for the existing offline 3D editor. */
 public final class MainActivity extends Activity {
-    private static final int REQUEST_XAPK=1001,REQUEST_EXPORT=1002;
+    private static final int REQUEST_XAPK=1001,REQUEST_EXPORT=1002,REQUEST_WORLD_FILE=1003;
     private final ExecutorService worker=Executors.newSingleThreadExecutor();
     private WebView web;
+    private ValueCallback<Uri[]> pendingWorldFileChooser;
     private TextView status;
     private Button importButton,homeButton;
     private LinearLayout rootPage,rootToolbar;
@@ -82,6 +83,22 @@ public final class MainActivity extends Activity {
         web.setBackgroundColor(Color.rgb(11,18,32));
         web.addJavascriptInterface(new Bridge(),"AndroidBridge");
         web.setWebChromeClient(new WebChromeClient(){
+            @Override public boolean onShowFileChooser(WebView view,ValueCallback<Uri[]> callback,FileChooserParams params){
+                if(pendingWorldFileChooser!=null)pendingWorldFileChooser.onReceiveValue(null);
+                pendingWorldFileChooser=callback;
+                try{
+                    Intent open=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    open.addCategory(Intent.CATEGORY_OPENABLE);
+                    open.setType("*/*"); // Android providers often report .glb as application/octet-stream.
+                    open.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivityForResult(open,REQUEST_WORLD_FILE);
+                    return true;
+                }catch(Exception e){
+                    pendingWorldFileChooser=null;callback.onReceiveValue(null);
+                    setStatus("Não foi possível abrir o seletor de cenas: "+e.getMessage());
+                    return true;
+                }
+            }
             @Override public boolean onConsoleMessage(ConsoleMessage message){
                 if(message.messageLevel()==ConsoleMessage.MessageLevel.ERROR)
                     onUi(()->setStatus("Erro 3D: "+message.message()));
@@ -184,6 +201,14 @@ public final class MainActivity extends Activity {
 
     @Override protected void onActivityResult(int req,int result,Intent data){
         super.onActivityResult(req,result,data);
+        if(req==REQUEST_WORLD_FILE){
+            ValueCallback<Uri[]> callback=pendingWorldFileChooser;
+            pendingWorldFileChooser=null;
+            if(callback!=null)
+                callback.onReceiveValue(result==RESULT_OK&&data!=null&&data.getData()!=null?
+                    new Uri[]{data.getData()}:null);
+            return;
+        }
         if(result!=RESULT_OK||data==null||data.getData()==null)return;
         if(req==REQUEST_XAPK)importXapk(data.getData());
         else if(req==REQUEST_EXPORT) {
@@ -290,5 +315,8 @@ public final class MainActivity extends Activity {
     @Override public void onBackPressed(){
         if(web.canGoBack())web.goBack();else super.onBackPressed();
     }
-    @Override protected void onDestroy(){web.destroy();worker.shutdownNow();super.onDestroy();}
+    @Override protected void onDestroy(){
+        if(pendingWorldFileChooser!=null){pendingWorldFileChooser.onReceiveValue(null);pendingWorldFileChooser=null;}
+        web.destroy();worker.shutdownNow();super.onDestroy();
+    }
 }
