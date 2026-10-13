@@ -203,3 +203,12 @@ O roadmap deve priorizar: (1) importação e reconstrução espacial dos assets 
 O formato gerado por IA deverá representar entidades com IDs estáveis, transformações, hierarquia, referências a recursos, propriedades de água, layers e operações de edição. Os arquivos comerciais permanecem locais/privados; nenhum asset original deve ser versionado no repositório público.
 
 **Estado atual:** a infraestrutura de interpretação de cenas/prefabs e uma prévia GLB privada de CityB existem, mas a reconstrução integral ainda **não foi integrada ao APK Android**. Ver [transformações](docs/WORLD_TRANSFORMS.md).
+
+
+### Android v0.9 — modo de instâncias, primeiro ciclo de edição por IA
+
+Além dos recursos da v0.8, a v0.9 abre **cenas GLB privadas** no próprio app: **Mais → Abrir cena 3D (GLB)**. A prévia pessoal de `CityB` contém **2.658 instâncias** reconstruídas por transforms originais e caminhos dos objetos. O visualizador WebGL1 compartilha buffers de modelos e utiliza `ANGLE_instanced_arrays` quando disponível. Inclui busca por nome/caminho, seleção, editar X/Y ↑/Z, duplicar/ocultar e **Cena JSON / Importar JSON** para colaborar com IAs.
+
+A especificação [`riptide-world-edit-v1`](docs/AI_SCENE_V09.md) permite que uma IA altere o JSON exportado e insira novas instâncias de **meshes já existentes no GLB**. Ainda não suporta modelos criados do zero por JSON; também não reconstrói a arena dentro do jogo. O GLB é uma prévia de geometria **sem texturas ou água**; a visualização texturizada da v0.8 permanece disponível separadamente. Para usar este modo, é necessário selecionar o GLB pessoal; importação automática de cena/prefabs diretamente do XAPK no Android permanece em desenvolvimento.
+
+[Validação automática do editor](https://github.com/Nicky7x/Riptige/actions/workflows/build-android.yml) executa teste de GLB e JSON, regressões da v0.7/v0.8, JUnit e montagem APK. Renderização, gestos e desempenho de GPU devem ser confirmados no Poco.
