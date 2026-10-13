@@ -232,3 +232,21 @@ A análise dos blocos APK Signature Scheme v2 dos APKs debug v0.1 e v0.2 mostrou
 **Validação concluída:** Python read-only sondou os recursos reais com material difuso e offsets de formato; Node `tests-js/mobile-v07.test.cjs` e `tests-js/texture-v08.test.cjs`, JUnit `TexturePreviewTest` e build Android foram aprovados no [run #38332343448](https://github.com/Nicky7x/Riptige/actions/runs/38332343448). Artefato `app-debug.apk` de **141160 bytes**, SHA-256 `76e91e249d50803a8aa7fa2a22c6e653b5f5713a3702dd6dc332cb1adfcdac9a`; foi salvo em Biblioteca `/RiptideMapLab/Riptide_Map_Lab_Android_v0.8_debug.apk`. Nada de assets originais foi enviado ao repositório.
 
 **Limitações importantes:** o app não reproduz materiais completos (normal maps, máscaras, cubemaps, lightmaps, iluminação real, água, céu, shader específicos); modelos sem UV/material/texture aceitos continuam sem imagem. A prévia visual ainda é somente leitura e não há arena editada e carregada no jogo. Os testes CI não executaram o APK num emulador ou aparelho real; pedir ao usuário para **reimportar XAPK** e avaliar texturas em CityA e outros níveis; coletar screenshot/log de falhas.
+
+
+## 2026-10-12/13 — M1.15: scene-coverage & water reference audit (ChatGPT)
+
+**Prioridade explicitada pelo usuário:** não basta ver modelos isolados; deseja reproduzir dentro do editor as nove arenas **originais completas com todos os recursos**. Não simular água/posicionamento arbitrariamente.
+
+**Descobertas do XAPK do proprietário (read-only):**
+- Os `VuWaterMapAsset/<arena>/...` são mapas de dados de imagem; não definem por si só geometria aquática. No `VuTemplateAsset/Levels/<arena>` há referências `<arena>/WS...`, `<arena>/WR...`, `VuWaterSurfaceEntity`, `VuWaterRampEntity`, `VuInfiniteOceanWaveEntity` etc.
+- Novo `tools/scene_dependencies.py` identifica as referências exatas dos 9 templates: **141 de 141 recursos aquáticos** aparecem nas cenas correspondentes. Inclui nomes com variantes `FactoryA/Zone1_WS01`, `OldCityA/WS01_v2`, `FactoryB/WPlat01`; não pressupor somente WS01/WR01.
+- Cabeçalho `VuWaterMapAsset` é diferente de `VuTextureAsset` (largura/altura/formato em offsets 20/24/32, não 21/25/33). Após corrigir parsing, 141 mapas com formato reconhecido: **135 DXT1 (0x83f1)**, **6 ETC1 (0x8d64)**; nenhum rejeitado. Para arquivos grandes, leitura só dos primeiros 70 bytes após decomprimir, sem carregar os mapas completos.
+- Referências diretas de recursos nas nove cenas: **409 nomes de `VuStaticModelAsset`** (por arena), **9 animados**, **28 cubemaps**, **21 lightmaps**, **31 texturas** e **6 materiais**. São nomes em cenas de topo, não número de instâncias; prefabs aninhados podem referenciar mais. O editor v0.8 não desenha todos esses objetos.
+- O impedimento principal é ler o **grafo binário e transforms de instâncias** de `VuTemplateAsset`: as referências de água e modelos estão presentes, mas ainda não sabemos extrair com confiabilidade suas posições, orientações e dimensões originais.
+
+**Código e testes:** `tools/scene_dependencies.py` suporta APF, APK e XAPK aninhado (`base.apk/assets/Assets.apf`), sem uploads nem retenção de arquivos temporários. `tests/test_scene_dependencies.py` tem 3 testes sintéticos incluindo arquivo XAPK aninhado. Os testes passaram localmente e via workflow [Validate Original Scene Index](https://github.com/Nicky7x/Riptige/actions/runs/38335433458) **success**. Executado contra o XAPK real: nove templates, 141/141 referências de água.
+
+**Artefatos de metadados:** `docs/water-scene-audit.json` (resumo de cobertura por arena), `docs/SCENE_REBUILD.md` (critérios de aceite e próxima implementação). Uma cópia local com lista completa de nomes por arena foi gerada privadamente, sem recursos binários proprietários.
+
+**Próxima etapa técnica:** parser read-only das entidades do `VuTemplateAsset` e validação de UM transform de modelo e UMA entidade de água com posicionamento original. Só depois carregar toda a cena, sky e sistemas avançados. **Não foi gerado novo APK**, pois ainda não há geometria aquática posicionada corretamente para integrar. Não declarar arena reconstruída.
