@@ -192,3 +192,14 @@ python tools/export_world_glb.py game.xapk --arena CityB --output cityb-private.
 ```
 
 **Status Android:** o app v0.8 instalado não recebeu ainda o leitor de hierarquias. Precisamos validar matrizes/pivôs e otimizar instâncias antes de inserir tudo na WebView Android; nenhum APK novo foi apresentado neste marco.
+
+
+### Visão do produto — arenas editáveis e criação por IA
+
+**Objetivo principal:** reconstruir fielmente as arenas originais como **cenas 3D integrais no editor**, de modo que o proprietário possa modificá-las e também solicitar que IAs gerem arenas inéditas. O editor **não pretende reproduzir a física nem a jogabilidade do Renegade**.
+
+O roadmap deve priorizar: (1) importação e reconstrução espacial dos assets originais — modelos, prefabs, água, materiais e hierarquias; (2) seleção e manipulação de entidades, criação/remoção de objetos, geometria e salvamento; (3) **formato de cena documentado e versionado**, utilizável por agentes de IA para carregar, transformar e criar arenas de forma declarativa; (4) exportação de patches e, como esforço independente, eventual compatibilidade com o jogo. Renderização dos efeitos sofisticados é secundária quando não comprometer a visualização e edição correta do cenário.
+
+O formato gerado por IA deverá representar entidades com IDs estáveis, transformações, hierarquia, referências a recursos, propriedades de água, layers e operações de edição. Os arquivos comerciais permanecem locais/privados; nenhum asset original deve ser versionado no repositório público.
+
+**Estado atual:** a infraestrutura de interpretação de cenas/prefabs e uma prévia GLB privada de CityB existem, mas a reconstrução integral ainda **não foi integrada ao APK Android**. Ver [transformações](docs/WORLD_TRANSFORMS.md).
