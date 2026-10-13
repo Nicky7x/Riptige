@@ -212,3 +212,12 @@ Além dos recursos da v0.8, a v0.9 abre **cenas GLB privadas** no próprio app: 
 A especificação [`riptide-world-edit-v1`](docs/AI_SCENE_V09.md) permite que uma IA altere o JSON exportado e insira novas instâncias de **meshes já existentes no GLB**. Ainda não suporta modelos criados do zero por JSON; também não reconstrói a arena dentro do jogo. O GLB é uma prévia de geometria **sem texturas ou água**; a visualização texturizada da v0.8 permanece disponível separadamente. Para usar este modo, é necessário selecionar o GLB pessoal; importação automática de cena/prefabs diretamente do XAPK no Android permanece em desenvolvimento.
 
 [Validação automática do editor](https://github.com/Nicky7x/Riptige/actions/workflows/build-android.yml) executa teste de GLB e JSON, regressões da v0.7/v0.8, JUnit e montagem APK. Renderização, gestos e desempenho de GPU devem ser confirmados no Poco.
+
+
+### v0.10 experimental — biblioteca 3D privada para TODAS as arenas
+
+A v0.9 exigia selecionar manualmente um GLB e só havia uma prévia CityB disponível. A branch experimental v0.10 acrescenta um **gerador local de ZIP privado com GLBs das nove arenas e os respectivos metadados aquáticos**: `tools/build_private_world_library.py`. O app Android importa esse único ZIP e depois carrega automaticamente o GLB correspondente quando você troca a arena, dentro do viewport do editor. Nenhum GLB comercial entra no APK público.
+
+A prévia aquática usa somente posições e tamanhos reconhecidos, como **planos diagnósticos**; não recria as ondas/mapas reais. Os GLBs **ainda não exibem as texturas da v0.8**, e diversos objetos/efeitos faltam. Ainda não há integração direta desse compositor ao importador XAPK Android; gerar o ZIP no próprio Poco via Termux é um passo separado, executado uma só vez. [Instruções e limites](docs/WORLD_LIBRARY_V010.md).
+
+Status: **código experimental não validado no Poco e não equivale a pista jogável**.
