@@ -25,7 +25,7 @@ class VisualModel:
     trailing: bytes
 
 
-def parse_static_model(data: bytes, max_vertices=150000, max_indices=900000) -> VisualModel:
+def parse_static_model(data: bytes, max_vertices=150000, max_indices=900000, *, preview_first_lod=False) -> VisualModel:
     """Read a VuStaticModelAsset; position = first 3 little-endian f32 in each vertex.
 
     For every material group, returns (material, buffer, index_start, triangle_count).
@@ -98,7 +98,15 @@ def parse_static_model(data: bytes, max_vertices=150000, max_indices=900000) -> 
             raise VisualModelError('group indices outside vertex stream')
     trailing=data[p:]
     if len(trailing)>32:
-        raise VisualModelError('unexpected trailing bytes')
+        # Some verified static assets contain one or more additional LOD blocks.
+        # The reader does not decode those blocks yet; ONLY for a private preview,
+        # permit the validated first stream when trailing data starts with finite
+        # position-like floats. Normal parsing remains strict by default.
+        if not preview_first_lod or len(trailing)<64:
+            raise VisualModelError('unexpected trailing bytes')
+        floats=struct.unpack_from('<3f',trailing)
+        if any(not math.isfinite(v) or abs(v)>1e7 for v in floats):
+            raise VisualModelError('unrecognized extra LOD header')
     return VisualModel(materials,groups,streams,trailing)
 
 
