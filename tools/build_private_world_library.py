@@ -11,6 +11,7 @@ import argparse
 import json
 import math
 import pathlib
+import shutil
 import tempfile
 import zipfile
 
@@ -87,32 +88,39 @@ def build_library(source: pathlib.Path, output: pathlib.Path, levels=LEVELS):
                 'note': 'Cenas privadas. Prévia de água aproximada e SEM shaders/ondas/refração originais.'}
     try:
         with tempfile.TemporaryDirectory(prefix='riptide-private-world-') as folder:
-            with zipfile.ZipFile(tmp, 'w', compression=zipfile.ZIP_DEFLATED,
-                                 compresslevel=1, allowZip64=True) as archive:
+            # Unpack XAPK/APK only ONCE on the phone, not 18+ times.
+            # Temporary proprietary APF is removed when the build finishes.
+            apf_source = source
+            if source.suffix.lower() != '.apf':
+                apf_source = pathlib.Path(folder) / 'Assets.private.apf'
+                with local_apf(source) as data, apf_source.open('wb') as out:
+                    shutil.copyfileobj(data, out, length=1024*1024)
+            with apf_source.open('rb') as apf, zipfile.ZipFile(
+                    tmp, 'w', compression=zipfile.ZIP_DEFLATED,
+                    compresslevel=1, allowZip64=True) as archive:
+                entries = index_apf(apf)
                 for arena in levels:
                     if arena not in LEVELS:
                         raise ValueError('Arena não reconhecida: ' + arena)
                     glb = pathlib.Path(folder) / (arena + '.glb')
-                    counts, _ = build_private_scene(source, arena, glb)
+                    counts, _ = build_private_scene(apf_source, arena, glb)
                     if not glb.is_file() or glb.stat().st_size < 28:
                         raise ValueError('GLB não foi gerado para ' + arena)
-                    water = water_records(resolve(source, arena))
+                    water = water_records(resolve(apf_source, arena))
                     # Original water-map metadata is indexed by the *actual* WaterMap
                     # reference on each surface, not guessed by proximity or arena name.
                     water_maps = {}
-                    with local_apf(source) as apf:
-                        entries = index_apf(apf)
-                        for ref in sorted({w['waterMap'] for w in water if w['waterMap']}):
-                            key = 'VuWaterMapAsset/' + ref.removeprefix('VuWaterMapAsset/')
-                            if key not in entries:
-                                water_maps[ref] = {'status': 'missing'}
-                                continue
-                            try:
-                                header = water_map_header(apf, entries[key])
-                                water_maps[ref] = {'status': 'indexed', **header}
-                            except (ValueError, OSError, EOFError) as exc:
-                                water_maps[ref] = {'status': 'unsupported',
-                                                   'reason': type(exc).__name__}
+                    for ref in sorted({w['waterMap'] for w in water if w['waterMap']}):
+                        key = 'VuWaterMapAsset/' + ref.removeprefix('VuWaterMapAsset/')
+                        if key not in entries:
+                            water_maps[ref] = {'status': 'missing'}
+                            continue
+                        try:
+                            header = water_map_header(apf, entries[key])
+                            water_maps[ref] = {'status': 'indexed', **header}
+                        except (ValueError, OSError, EOFError) as exc:
+                            water_maps[ref] = {'status': 'unsupported',
+                                               'reason': type(exc).__name__}
                     world_name = 'world/' + arena + '.glb'
                     water_name = 'water/' + arena + '.json'
                     archive.write(glb, world_name, compress_type=zipfile.ZIP_STORED)
