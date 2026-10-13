@@ -138,3 +138,16 @@ Tests: 12 Python sintéticos aprovados, interpretação de 223 modelos reais (25
 A build foi aprovada no [GitHub Actions](https://github.com/Nicky7x/Riptige/actions/runs/38314935003). A edição das colisões e a nova prévia dos modelos 3D originais ficam em camadas separadas. **É necessário importar novamente o XAPK original** após a atualização, porque o cache antigo não continha modelos visuais. Ver [formato validado](docs/VISUAL_MODELS.md).
 
 O APK é **debug**, não está na Play Store e sua prévia visual não tem texturas nem escreve os modelos no APF. Ainda depende de teste prático em Android para comprovar performance e correta importação visual.
+
+
+### Android v0.7 — landscape e câmera de jogador
+
+A interface Android passou a ser horizontal (**sensorLandscape**) com HUD lateral e preview 3D ocupando o centro. Ela tem botões de câmera (orbitar, focar, mover e jogador), camada (visual/colisão), escopo (arena/trecho), exportação de patches e painel avançado. Cada ferramenta exibe o próprio nome e explicação ao toque. **Joystick virtual** no canto esquerdo permite movimentar uma câmera livre em primeira pessoa, e arrastar no canvas olha ao redor.
+
+O modo jogador é **apenas de inspeção visual**: não simula física de jetski, contato com água, colisões nem percurso real. A camada de modelos visuais continua **sem texturas e somente leitura**. Para manipular colisões, volte ao modo órbita/colisão.
+
+Na primeira importação, os botões nativos aparecem; após carregar o editor, o Android entra em fullscreen, mas **Importar outro XAPK** continua acessível em **Mais → Ferramentas avançadas**. Biblioteca local continua privada e offline.
+
+Código: `web/mobile_landscape.js`, `web/mobile_landscape.css`, `web/scene3d.js`, `web/scene3d_fallback.js`, `android/app/src/main/assets/editor_template.html`. A validação de scripts e recursos mínimos está em `tests-js/mobile-v07.test.cjs`.
+
+A compilação de APK pelo [GitHub Actions](https://github.com/Nicky7x/Riptige/actions/workflows/build-android.yml) precisa passar antes de usar um novo APK. O teste automatizado do HUD em Chromium usou apenas dados sintéticos e **não** substitui o teste de gestos e GPU no Poco X8 Pro. Se o Android não permitir atualizar um APK debug anterior por assinatura diferente, exporte qualquer patch e reinstale, pois a desinstalação apaga o cache privado.
