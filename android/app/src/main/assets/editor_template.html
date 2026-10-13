@@ -423,10 +423,10 @@ setEnabled(false);updateSummary();render();
   canvas.addEventListener('pointerdown',e=>{e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=xy(e);points.set(e.pointerId,{...p,travel:0});prevMulti=multi();
     if(points.size>1){drag=null;return;}if(player)return;if(mode==='move'&&selected&&pick(p.x,p.y)===selected)drag={key:selected,delta:[0,0,0],x:p.x,y:p.y};});
   canvas.addEventListener('pointermove',e=>{const old=points.get(e.pointerId);if(!old)return;e.preventDefault();const p=xy(e);p.travel=old.travel+Math.hypot(p.x-old.x,p.y-old.y);points.set(e.pointerId,p);
-    if(player){playerYaw+=(p.x-old.x)*.005;playerPitch=Math.max(-1.45,Math.min(1.45,playerPitch-(p.y-old.y)*.005));schedule();return;}
+    if(player){playerYaw-=(p.x-old.x)*.005;playerPitch=Math.max(-1.45,Math.min(1.45,playerPitch-(p.y-old.y)*.005));schedule();return;}
     if(points.size>1){const m=multi();if(prevMulti){range=Math.max(3,range*prevMulti.dist/Math.max(1,m.dist));const d=translate(prevMulti.cx-m.cx,m.cy-prevMulti.cy);target=target.map((x,i)=>x+d[i]);}prevMulti=m;drag=null;
-    }else if(drag){const d=translate(p.x-drag.x,drag.y-p.y);drag.x=p.x;drag.y=p.y;drag.delta=drag.delta.map((x,i)=>x+d[i]);map.get(selected).shift=drag.delta.slice();
-    }else{yaw+=(p.x-old.x)*.008;elevation=Math.min(1.45,Math.max(-1.42,elevation+(p.y-old.y)*.008));}schedule();});
+    }else if(drag){const d=translate(p.x-drag.x,p.y-drag.y);drag.x=p.x;drag.y=p.y;drag.delta=drag.delta.map((x,i)=>x+d[i]);map.get(selected).shift=drag.delta.slice();
+    }else{yaw-=(p.x-old.x)*.008;elevation=Math.min(1.45,Math.max(-1.42,elevation+(p.y-old.y)*.008));}schedule();});
   function done(e){const state=points.get(e.pointerId);if(!state)return;points.delete(e.pointerId);prevMulti=multi();
     if(player){schedule();return;}
     if(drag){const ob=map.get(drag.key),delta=drag.delta;ob.shift=[0,0,0];drag=null;if(Math.hypot(...delta)>0.0001)callbacks.onMove?.(ob.key,delta);
@@ -581,10 +581,10 @@ setEnabled(false);updateSummary();render();
     if(mode==='move'&&match&&match.key===selected){drag={key:selected,delta:[0,0,0],x:p.x,y:p.y};}
   });
   canvas.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;e.preventDefault();const p=coords(e),old=pointers.get(e.pointerId);p.startX=old.startX;p.startY=old.startY;p.travel=old.travel+Math.hypot(p.x-old.x,p.y-old.y);pointers.set(e.pointerId,p);
-    if(player){playerYaw+=(p.x-old.x)*.005;playerPitch=Math.max(-1.45,Math.min(1.45,playerPitch-(p.y-old.y)*.005));dirty=true;draw();return;}
+    if(player){playerYaw-=(p.x-old.x)*.005;playerPitch=Math.max(-1.45,Math.min(1.45,playerPitch-(p.y-old.y)*.005));dirty=true;draw();return;}
     if(pointers.size>1){const g=gesture();if(prevGesture){range=Math.max(MIN_DIST,range*Math.exp((prevGesture.dist-g.dist)/Math.max(100,range*.05)));const delta=moveTo(prevGesture.cx-g.cx,g.cy-prevGesture.cy);target=target.map((x,i)=>x+delta[i]);}prevGesture=g;drag=null;
-    }else if(drag){const d=moveTo(p.x-drag.x,drag.y-p.y);drag.x=p.x;drag.y=p.y;drag.delta=drag.delta.map((v,i)=>v+d[i]);meshByKey.get(drag.key).shift=drag.delta.slice();
-    }else{yaw+=(p.x-old.x)*.008;elevation=Math.min(1.5,Math.max(-1.45,elevation+(p.y-old.y)*.008));}
+    }else if(drag){const d=moveTo(p.x-drag.x,p.y-drag.y);drag.x=p.x;drag.y=p.y;drag.delta=drag.delta.map((v,i)=>v+d[i]);meshByKey.get(drag.key).shift=drag.delta.slice();
+    }else{yaw-=(p.x-old.x)*.008;elevation=Math.min(1.5,Math.max(-1.45,elevation+(p.y-old.y)*.008));}
     dirty=true;draw();
   });
   function release(e){const p=pointers.get(e.pointerId);if(!p)return;const current=coords(e);pointers.delete(e.pointerId);prevGesture=gesture();
