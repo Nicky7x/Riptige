@@ -483,7 +483,7 @@ setEnabled(false);updateSummary();render();
     gl_Position=viewProj*vec4(pos+shift,1.);}`;
   const texF=`precision mediump float;uniform sampler2D image;uniform vec4 shade;
     varying vec2 vUV;varying float diffuse;
-    void main(){vec4 c=texture2D(image,vUV);gl_FragColor=vec4(c.rgb*shade.rgb*diffuse,c.a*shade.a);}`;
+    void main(){vec4 c=texture2D(image,vUV);if(c.a<0.05)discard;gl_FragColor=vec4(c.rgb*shade.rgb*diffuse,c.a*shade.a);}`;
   const textured=program(texV,texF);
   textured.uv=gl.getAttribLocation(textured.program,'uv');
   textured.image=gl.getUniformLocation(textured.program,'image');
@@ -590,6 +590,7 @@ setEnabled(false);updateSummary();render();
   function drawTextured(m,color){
     if(!m.gpu.uv||!m.groups?.length){use(smooth);drawMesh(m,smooth,color,gl.TRIANGLES);return;}
     use(textured);
+    gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
     gl.uniform3fv(textured.shift,m.shift);
     gl.uniform4fv(textured.shade,color);
     gl.uniform1i(textured.image,0);
@@ -599,7 +600,6 @@ setEnabled(false);updateSummary();render();
     gl.enableVertexAttribArray(textured.uv);
     gl.bindBuffer(gl.ARRAY_BUFFER,m.gpu.uv);gl.vertexAttribPointer(textured.uv,2,gl.FLOAT,false,0,0);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,m.gpu.indices);
-    const completed=new Uint8Array(m.indices.length);
     for(const group of m.groups){
       const start=group.start|0,count=group.count|0;
       if(count<1||start<0||start+count>m.indices.length)continue;
@@ -622,9 +622,9 @@ setEnabled(false);updateSummary();render();
         gl.bindBuffer(gl.ARRAY_BUFFER,m.gpu.uv);gl.vertexAttribPointer(textured.uv,2,gl.FLOAT,false,0,0);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,m.gpu.indices);
       }
-      completed.fill(1,start,start+count);
     }
     gl.disableVertexAttribArray(textured.uv);
+    gl.disable(gl.BLEND);
   }
   function render(picking=false){const[w,h]=resize();gl.viewport(0,0,w,h);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);gl.clearColor(...C.bg);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
     viewproj=mul(perspective(w/h),player?look(playerPos,playerPos.map((v,i)=>v+playerForward()[i])):look(camera(),target));
