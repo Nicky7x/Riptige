@@ -27,6 +27,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
+      - name: Validate landscape editor bundle
+        run: node tests-js/mobile-v07.test.cjs
       - name: Compile Android debug APK
         run: gradle -p android --no-daemon :app:testDebugUnitTest :app:assembleDebug
       - name: Publish test APK
