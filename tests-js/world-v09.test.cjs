@@ -42,5 +42,5 @@ const java=fs.readFileSync('android/app/src/main/java/com/nicky7x/riptidemaplab/
 assert.ok(java.includes('onShowFileChooser'));assert.ok(java.includes('REQUEST_WORLD_FILE'));
 assert.ok(java.includes('REQUEST_WORLD_LIBRARY'));assert.ok(java.includes('riptide-world-library.zip'));
 assert.ok(source.includes('riptide-private-world-library-v1'));
-assert.ok(source.includes("loaded.water=cleanWater(waterMetadata)"));
+assert.ok(source.includes("scene.water=cleanWater(waterMetadata)"));
 console.log('v0.9: GLB 2.0 private scene parser, hierarchy, column-major transforms, bounds validation and SAF integration: OK');
