@@ -348,3 +348,11 @@ Portar um subconjunto comprovado do parser para o importador Android, com cache 
 - Critério de avanço: v0.9 é uma entrega **funcional de interface e parser**, com build Android testado em CI; não é arena visualmente integral e não promete física ou execução dentro do Renegade. Para próximos passos: importador de templates/prefabs Java, texturas por instância, água original, geometria editável/novos primitives.
 
 **Artefatos:** documentação `docs/AI_SCENE_V09.md`, código `web/world_scene.js`, teste `tests-js/world-v09.test.cjs`, GLB privado. A última build ainda deve ser confirmada pelo GitHub Actions antes do APK ser entregue.
+
+
+### M1.20 — Compilação final e entrega verificadas
+
+- **GitHub Actions** [run #38345467404](https://github.com/Nicky7x/Riptige/actions/runs/38345467404) na revisão `85ca66c9`: status **success** para testes v0.7/v0.8, novo Node v0.9 (GLB sintético + JSON roundtrip), Android JUnit e assembleDebug.
+- **APK entregue**: `/RiptideMapLab/Riptide_Map_Lab_Android_v0.9_debug.apk`, 150.880 bytes, SHA-256 `11179cb3da1a81a37d0b3e44279b326f7db9705b91b69d12b0af9ec54b978ab3`. Extraído do artefato `riptide-map-lab-android-debug` #11788613173. Conferido dentro do APK: `assets/editor_template.html` inclui `RiptideWorldV09`, ferramenta `rw-find-next` e placeholder `__EMBEDDED_ASSETS__`, sem assets proprietários.
+- **GLB pessoal atualizado**: `/RiptideMapLab/CityB_world_named_v09.glb` tem 5.185.752 bytes, 2.658 nós e nomes com caminhos originais do template. Parse confirmado em Chromium (sem WebGL). Pendente renderizar/testar no Poco e relatar fluidez.
+- **Atenção:** o GLB v0.9 é sem texturas/água e importado via seletor de arquivos; a v0.8 visual com texturas permanece no mesmo APK separadamente. Compatibilidade com jogo real não foi implementada.
