@@ -1,10 +1,13 @@
 import io
+import pathlib
+import tempfile
+import zipfile
 import os
 import struct
 import sys
 import unittest
 sys.path.insert(0,os.path.abspath(os.path.join(os.path.dirname(__file__),'..','tools')))
-from scene_dependencies import index_apf, scan_scene, payload
+from scene_dependencies import index_apf, scan_scene, payload, local_apf
 
 class WaterSceneIndexTest(unittest.TestCase):
     def mk_apf(self):
@@ -28,6 +31,16 @@ class WaterSceneIndexTest(unittest.TestCase):
         self.assertEqual(one['map_formats']['CityA/WS01']['format'],'DXT5')
         self.assertIn('VuWaterSurfaceEntity',one['entity_types'])
         self.assertNotIn('geometry',one)
+    def test_xapk_nested_archives_are_processed_locally(self):
+        with tempfile.TemporaryDirectory() as directory:
+            src=pathlib.Path(directory)/'game.xapk'
+            base=io.BytesIO()
+            with zipfile.ZipFile(base,'w') as apk:apk.writestr('assets/Assets.apf',self.mk_apf().getvalue())
+            with zipfile.ZipFile(src,'w') as xapk:xapk.writestr('base.apk',base.getvalue())
+            with local_apf(src) as unpacked:
+                scene=scan_scene(unpacked,index_apf(unpacked))
+                self.assertEqual(scene['arenas'][0]['water_references'],1)
+
     def test_unsupported_version(self):
         f=self.mk_apf();blob=bytearray(f.getvalue());struct.pack_into('<I',blob,4,7)
         with self.assertRaisesRegex(ValueError,'Cabeçalho'):index_apf(io.BytesIO(blob))
