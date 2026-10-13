@@ -221,3 +221,10 @@ A v0.9 exigia selecionar manualmente um GLB e só havia uma prévia CityB dispon
 A prévia aquática usa somente posições e tamanhos reconhecidos, como **planos diagnósticos**; não recria as ondas/mapas reais. Os GLBs **ainda não exibem as texturas da v0.8**, e diversos objetos/efeitos faltam. Ainda não há integração direta desse compositor ao importador XAPK Android; gerar o ZIP no próprio Poco via Termux é um passo separado, executado uma só vez. [Instruções e limites](docs/WORLD_LIBRARY_V010.md).
 
 Status: **código experimental não validado no Poco e não equivale a pista jogável**.
+
+
+### v0.11 alfa — texturas UV em GLB e água original indexada (em desenvolvimento)
+
+A ramificação `feature/materials-water-world-v011` adiciona **UVs verificadas**, recorte da geometria por grupo de material e nomes `VuMaterialAsset` ao exportador GLB das nove arenas. O renderizador WebGL do Android consulta o mesmo catálogo **privado** de PNGs difusos do importador v0.8, aplicando imagens onde existe UV e formato suportado; desconhecidos recebem sombreamento. Não são extraídas novas texturas para o GitHub. O exportador extrai o APF do XAPK uma única vez para as nove arenas.
+
+Cada entidade aquática recebe o seu identificador `WaterMap` e o gerador registra resolução/formato dos `VuWaterMapAsset` realmente referenciados, além de renderizar somente superfícies planas com tamanho reconhecido. **Isso ainda NÃO decodifica a topologia/ondas/shaders da água**, e não garante 100% das texturas ou componentes dinâmicos. Nenhuma modificação é enviada ao jogo. [Relatório de limitações da v0.11](docs/WORLD_MATERIALS_V011.md).
