@@ -7,7 +7,7 @@ function element(id){return map[id]||(map[id]={id,style:{},classList:cls(),appen
 const document={getElementById:element,createElement:t=>({tagName:t,style:{},classList:cls(),append(){},addEventListener(){},setAttribute(){},set innerHTML(v){this._html=v},get innerHTML(){return this._html}}),head:{append(){}},body:{append(){}}};
 const ext={vertexAttribDivisorANGLE(){},drawElementsInstancedANGLE(){}};
 const gpu={ARRAY_BUFFER:34962,ELEMENT_ARRAY_BUFFER:34963,STATIC_DRAW:35044,DYNAMIC_DRAW:35048,UNSIGNED_INT:5125,UNSIGNED_BYTE:5121,UNSIGNED_SHORT:5123,TRIANGLES:4,DEPTH_TEST:2929,VERTEX_SHADER:35633,FRAGMENT_SHADER:35632,COMPILE_STATUS:35713,LINK_STATUS:35714,COLOR_BUFFER_BIT:16384,DEPTH_BUFFER_BIT:256,
- getExtension(name){return name==='ANGLE_instanced_arrays'?ext:{}},createShader(){return {}},shaderSource(){},compileShader(){},getShaderParameter(){return true},createProgram(){return {}},attachShader(){},linkProgram(){},getProgramParameter(){return true},getAttribLocation(_,name){return name==='pos'?0:1+Number(name[1]||0)},getUniformLocation(){return {}},createBuffer(){return {}},deleteBuffer(){},bindBuffer(){},bufferData(){},viewport(){},enable(){},disable(){},clearColor(){},clear(){},useProgram(){},uniformMatrix4fv(){},enableVertexAttribArray(){},disableVertexAttribArray(){},vertexAttribPointer(){},drawElements(){}};
+ getExtension(name){return name==='ANGLE_instanced_arrays'?ext:{}},createShader(){return {}},shaderSource(){},compileShader(){},getShaderParameter(){return true},createProgram(){return {}},attachShader(){},linkProgram(){},getProgramParameter(){return true},getAttribLocation(_,name){return name==='pos'?0:1+Number(name[1]||0)},getUniformLocation(){return {}},createBuffer(){return {}},deleteBuffer(){},bindBuffer(){},bufferData(){},viewport(){},enable(){},disable(){},clearColor(){},clear(){},useProgram(){},uniformMatrix4fv(){},uniform4f(){},depthMask(){},blendFunc(){},enableVertexAttribArray(){},disableVertexAttribArray(){},vertexAttribPointer(){},drawElements(){}};
 element('rw-canvas').getContext=()=>gpu;
 element('rw-canvas').getBoundingClientRect=()=>({width:932,height:420,left:0,top:0});
 element('rw-canvas').clientWidth=932;element('rw-canvas').clientHeight=420;
@@ -40,4 +40,7 @@ const broken=ab.slice(0);new DataView(broken).setUint32(4,1,true);assert.throws(
 assert.ok(fs.readFileSync('android/app/src/main/assets/editor_template.html','utf8').includes('RiptideWorldV09'));
 const java=fs.readFileSync('android/app/src/main/java/com/nicky7x/riptidemaplab/MainActivity.java','utf8');
 assert.ok(java.includes('onShowFileChooser'));assert.ok(java.includes('REQUEST_WORLD_FILE'));
+assert.ok(java.includes('REQUEST_WORLD_LIBRARY'));assert.ok(java.includes('riptide-world-library.zip'));
+assert.ok(source.includes('riptide-private-world-library-v1'));
+assert.ok(source.includes("loaded.water=cleanWater(waterMetadata)"));
 console.log('v0.9: GLB 2.0 private scene parser, hierarchy, column-major transforms, bounds validation and SAF integration: OK');
