@@ -1,0 +1,100 @@
+{
+  "arenas": [
+    {
+      "arena": "CityA",
+      "entities_visited": 15820,
+      "renderable_static_references": 2437,
+      "water_entities": 27,
+      "prefab_instances_expanded": 5145,
+      "animated_references": 12,
+      "applied_prefab_child_overrides": 1128,
+      "warnings": {}
+    },
+    {
+      "arena": "CityB",
+      "entities_visited": 15130,
+      "renderable_static_references": 2818,
+      "water_entities": 14,
+      "prefab_instances_expanded": 4844,
+      "animated_references": 21,
+      "applied_prefab_child_overrides": 1141,
+      "warnings": {}
+    },
+    {
+      "arena": "FactoryA",
+      "entities_visited": 8734,
+      "renderable_static_references": 2288,
+      "water_entities": 23,
+      "prefab_instances_expanded": 2615,
+      "animated_references": 14,
+      "applied_prefab_child_overrides": 352,
+      "warnings": {
+        "unknown_prefab_child_override": 28
+      }
+    },
+    {
+      "arena": "FactoryB",
+      "entities_visited": 2120,
+      "renderable_static_references": 511,
+      "water_entities": 10,
+      "prefab_instances_expanded": 735,
+      "animated_references": 18,
+      "applied_prefab_child_overrides": 78,
+      "warnings": {}
+    },
+    {
+      "arena": "MilitaryA",
+      "entities_visited": 3626,
+      "renderable_static_references": 798,
+      "water_entities": 6,
+      "prefab_instances_expanded": 1119,
+      "animated_references": 4,
+      "applied_prefab_child_overrides": 112,
+      "warnings": {
+        "unknown_prefab_child_override": 2
+      }
+    },
+    {
+      "arena": "OldCityA",
+      "entities_visited": 13152,
+      "renderable_static_references": 1537,
+      "water_entities": 2,
+      "prefab_instances_expanded": 5565,
+      "animated_references": 0,
+      "applied_prefab_child_overrides": 88,
+      "warnings": {}
+    },
+    {
+      "arena": "ParkA",
+      "entities_visited": 22643,
+      "renderable_static_references": 2251,
+      "water_entities": 39,
+      "prefab_instances_expanded": 7596,
+      "animated_references": 12,
+      "applied_prefab_child_overrides": 1145,
+      "warnings": {}
+    },
+    {
+      "arena": "ParkB",
+      "entities_visited": 13431,
+      "renderable_static_references": 666,
+      "water_entities": 20,
+      "prefab_instances_expanded": 5290,
+      "animated_references": 11,
+      "applied_prefab_child_overrides": 360,
+      "warnings": {}
+    },
+    {
+      "arena": "SpaceportA",
+      "entities_visited": 4221,
+      "renderable_static_references": 1181,
+      "water_entities": 10,
+      "prefab_instances_expanded": 1194,
+      "animated_references": 2,
+      "applied_prefab_child_overrides": 156,
+      "warnings": {
+        "unknown_prefab_child_override": 2
+      }
+    }
+  ]
+}
