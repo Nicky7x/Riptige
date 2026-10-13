@@ -177,3 +177,18 @@ python tools/parse_scene_graph.py SEU_JOGO.xapk --arena CityB --out cityb-instan
 ```
 
 O JSON com coordenadas originais deve permanecer privado. **Ainda não compomos todas as transformações hierárquicas nem renderizamos as superfícies aquáticas completas no Android**; portanto a v0.8 instalada continua sendo o editor mais recente. Testes sintéticos e verificação [CI](https://github.com/Nicky7x/Riptige/actions/runs/38337038053) aprovados.
+
+
+### Marco M1.18 — modelos do cenário posicionados com hierarquia original
+
+[Compositor matemático de instâncias](tools/resolve_world_instances.py) percorre as nove arenas, aplica transforms de entidades/prefabs e produz coordenadas de mundo a partir da cena original, sem incluir assets comerciais no GitHub. **14.487 referências estáticas posicionadas** (contagem de instâncias expandidas), com **4.560 overrides de propriedades** aplicados. A ordem Euler ainda é hipótese; 32 overrides nas outras arenas não foram associados a filhos.
+
+O [exportador de prévia pessoal GLB](tools/export_world_glb.py) já gerou **2.658 instâncias de modelos estáticos originais na CityB**, de 2.818 referências totais; 87 modelos distintos decodificados e 160 instâncias ainda não suportadas. O GLB e os JSONs com dados originais foram entregues **apenas na Biblioteca pessoal do proprietário**, não no repositório. É uma prévia 3D offline SEM texturas/água/efeitos do jogo. [Documentação e testes](docs/WORLD_TRANSFORMS.md).
+
+```sh
+python tools/resolve_world_instances.py game.xapk --arena CityB --out cityb-world-private.json
+pip install numpy trimesh
+python tools/export_world_glb.py game.xapk --arena CityB --output cityb-private.glb
+```
+
+**Status Android:** o app v0.8 instalado não recebeu ainda o leitor de hierarquias. Precisamos validar matrizes/pivôs e otimizar instâncias antes de inserir tudo na WebView Android; nenhum APK novo foi apresentado neste marco.
