@@ -74,6 +74,13 @@ def payload(f,entry,max_bytes=15_000_000):
         out=lzma.LZMADecompressor(format=lzma.FORMAT_RAW,filters=filters).decompress(raw[5:],max_length=max_bytes)
     elif kind==0:out=raw
     else:raise ValueError('Compressão não suportada')
+    # Some original LZMA1-encoded prefab templates decode to exactly one extra
+    # NUL byte; the APF index and embedded template header agree on the true
+    # length. Safely remove ONLY that observed padding byte, never other data.
+    if (entry.name.startswith('VuTemplateAsset/') and kind==2 and
+        len(out)==entry.decoded_size+1 and out[-1:]==b'\x00' and
+        len(out)>=8 and struct.unpack_from('<I',out,4)[0]==entry.decoded_size):
+        out=out[:-1]
     if len(out)!=entry.decoded_size:raise ValueError('Tamanho do recurso divergente '+entry.name)
     return out
 
