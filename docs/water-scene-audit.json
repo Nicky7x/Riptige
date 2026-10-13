@@ -1,866 +1,247 @@
 {
-  "format": "riptide-scene-dependency-audit-v1",
+  "format": "riptide-scene-coverage-v1",
+  "source": "user local XAPK Assets.apf (research metadata only)",
   "arenas": [
     {
       "arena": "CityA",
-      "scene_asset": "VuTemplateAsset/Levels/CityA",
-      "scene_bytes": 1198119,
-      "water_assets": 26,
-      "water_references": 26,
-      "unlinked_water": [],
-      "entity_types": [
+      "template_bytes": 1198119,
+      "original_water_assets": 26,
+      "water_references_resolved": 26,
+      "water_image_formats": {
+        "DXT1": 24,
+        "ETC1": 2
+      },
+      "original_entity_types": [
         "VuWaterSurfaceEntity",
         "VuWaterRampEntity",
         "VuInfiniteOceanWaveEntity"
       ],
-      "map_formats": {
-        "CityA/WR01": {
-          "width": 16,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "CityA/WR02": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "CityA/WR03": {
-          "width": 256,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "CityA/WR04": {
-          "width": 128,
-          "height": 32,
-          "format": "ETC1"
-        },
-        "CityA/WR05": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "CityA/WR06": {
-          "width": 64,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "CityA/WR07": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "CityA/WR08": {
-          "width": 16,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "CityA/WS01": {
-          "width": 64,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "CityA/WS02": {
-          "width": 32,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "CityA/WS03": {
-          "width": 64,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "CityA/WS04": {
-          "width": 32,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "CityA/WS05": {
-          "width": 64,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "CityA/WS06": {
-          "width": 64,
-          "height": 512,
-          "format": "DXT1"
-        },
-        "CityA/WS07": {
-          "width": 16,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "CityA/WS08": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "CityA/WS09": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "CityA/WS10": {
-          "width": 256,
-          "height": 512,
-          "format": "DXT1"
-        },
-        "CityA/WS11": {
-          "width": 16,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "CityA/WS12": {
-          "width": 16,
-          "height": 64,
-          "format": "ETC1"
-        },
-        "CityA/WS13": {
-          "width": 32,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "CityA/WS14": {
-          "width": 16,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "CityA/WS15": {
-          "width": 512,
-          "height": 512,
-          "format": "DXT1"
-        },
-        "CityA/WS16": {
-          "width": 64,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "CityA/WS17": {
-          "width": 32,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "CityA/WS18": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        }
+      "level_template_direct_asset_reference_counts": {
+        "VuStaticModelAsset": 35,
+        "VuAnimatedModelAsset": 1,
+        "VuLightMapAsset": 13,
+        "VuCubeTextureAsset": 3,
+        "VuTextureAsset": 5,
+        "VuMaterialAsset": 1,
+        "VuTemplateAsset": 1
       },
-      "unreadable": [],
-      "render_status": "requires original water entity transforms and surface topology"
+      "unlinked_water": [],
+      "header_decode_failures": 0,
+      "water_surface_rendered": false
     },
     {
       "arena": "CityB",
-      "scene_asset": "VuTemplateAsset/Levels/CityB",
-      "scene_bytes": 1488483,
-      "water_assets": 13,
-      "water_references": 13,
-      "unlinked_water": [],
-      "entity_types": [
+      "template_bytes": 1488483,
+      "original_water_assets": 13,
+      "water_references_resolved": 13,
+      "water_image_formats": {
+        "DXT1": 13
+      },
+      "original_entity_types": [
         "VuWaterSurfaceEntity",
         "VuWaterRampEntity",
         "VuInfiniteOceanWaveEntity",
         "VuWaterTextureSettingsEntity"
       ],
-      "map_formats": {
-        "CityB/WR01": {
-          "width": 64,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "CityB/WR02": {
-          "width": 128,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "CityB/WS01": {
-          "width": 256,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "CityB/WS02": {
-          "width": 64,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "CityB/WS03": {
-          "width": 256,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "CityB/WS04": {
-          "width": 64,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "CityB/WS05": {
-          "width": 256,
-          "height": 512,
-          "format": "DXT1"
-        },
-        "CityB/WS06": {
-          "width": 16,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "CityB/WS07": {
-          "width": 64,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "CityB/WS08": {
-          "width": 64,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "CityB/WS09": {
-          "width": 16,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "CityB/WS10": {
-          "width": 64,
-          "height": 16,
-          "format": "DXT1"
-        },
-        "CityB/WS12": {
-          "width": 16,
-          "height": 16,
-          "format": "DXT1"
-        }
+      "level_template_direct_asset_reference_counts": {
+        "VuStaticModelAsset": 50,
+        "VuAnimatedModelAsset": 2,
+        "VuLightMapAsset": 0,
+        "VuCubeTextureAsset": 2,
+        "VuTextureAsset": 1,
+        "VuMaterialAsset": 0,
+        "VuTemplateAsset": 0
       },
-      "unreadable": [],
-      "render_status": "requires original water entity transforms and surface topology"
+      "unlinked_water": [],
+      "header_decode_failures": 0,
+      "water_surface_rendered": false
     },
     {
       "arena": "FactoryA",
-      "scene_asset": "VuTemplateAsset/Levels/FactoryA",
-      "scene_bytes": 1909496,
-      "water_assets": 23,
-      "water_references": 23,
-      "unlinked_water": [],
-      "entity_types": [
+      "template_bytes": 1909496,
+      "original_water_assets": 23,
+      "water_references_resolved": 23,
+      "water_image_formats": {
+        "DXT1": 23
+      },
+      "original_entity_types": [
         "VuWaterSurfaceEntity",
         "VuWaterRampEntity"
       ],
-      "map_formats": {
-        "FactoryA/Zone1_WS01": {
-          "width": 128,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone2_WS02": {
-          "width": 32,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone2_WS04": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone2_WS042": {
-          "width": 32,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone2_WS12": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone3_WS01": {
-          "width": 256,
-          "height": 1024,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone3_WS02": {
-          "width": 512,
-          "height": 1024,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone4_WS01": {
-          "width": 256,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone4_WS04": {
-          "width": 16,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone4_WS05": {
-          "width": 16,
-          "height": 8,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone4_WS06": {
-          "width": 256,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone4_WS08": {
-          "width": 8,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone4_WS09": {
-          "width": 8,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone5_WR01": {
-          "width": 128,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone5_WS01": {
-          "width": 128,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone5_WS02": {
-          "width": 32,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone5_WS03": {
-          "width": 32,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone5_WS04": {
-          "width": 32,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone5_WS05": {
-          "width": 32,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone5_WS11": {
-          "width": 64,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone7_WS01": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone7_WS02": {
-          "width": 128,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "FactoryA/Zone7_WS04": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        }
+      "level_template_direct_asset_reference_counts": {
+        "VuStaticModelAsset": 53,
+        "VuAnimatedModelAsset": 1,
+        "VuLightMapAsset": 1,
+        "VuCubeTextureAsset": 2,
+        "VuTextureAsset": 3,
+        "VuMaterialAsset": 1,
+        "VuTemplateAsset": 2
       },
-      "unreadable": [],
-      "render_status": "requires original water entity transforms and surface topology"
+      "unlinked_water": [],
+      "header_decode_failures": 0,
+      "water_surface_rendered": false
     },
     {
       "arena": "FactoryB",
-      "scene_asset": "VuTemplateAsset/Levels/FactoryB",
-      "scene_bytes": 492899,
-      "water_assets": 8,
-      "water_references": 8,
-      "unlinked_water": [],
-      "entity_types": [
+      "template_bytes": 492899,
+      "original_water_assets": 8,
+      "water_references_resolved": 8,
+      "water_image_formats": {
+        "ETC1": 2,
+        "DXT1": 6
+      },
+      "original_entity_types": [
         "VuWaterSurfaceEntity",
         "VuInfiniteOceanWaveEntity"
       ],
-      "map_formats": {
-        "FactoryB/WPlat01": {
-          "width": 8,
-          "height": 32,
-          "format": "ETC1"
-        },
-        "FactoryB/WPlat02": {
-          "width": 8,
-          "height": 32,
-          "format": "ETC1"
-        },
-        "FactoryB/WS01": {
-          "width": 256,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "FactoryB/WS02": {
-          "width": 64,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "FactoryB/WS03": {
-          "width": 64,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "FactoryB/WS04": {
-          "width": 256,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "FactoryB/WS05": {
-          "width": 128,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "FactoryB/WS06": {
-          "width": 128,
-          "height": 64,
-          "format": "DXT1"
-        }
+      "level_template_direct_asset_reference_counts": {
+        "VuStaticModelAsset": 45,
+        "VuAnimatedModelAsset": 1,
+        "VuLightMapAsset": 1,
+        "VuCubeTextureAsset": 3,
+        "VuTextureAsset": 2,
+        "VuMaterialAsset": 0,
+        "VuTemplateAsset": 0
       },
-      "unreadable": [],
-      "render_status": "requires original water entity transforms and surface topology"
+      "unlinked_water": [],
+      "header_decode_failures": 0,
+      "water_surface_rendered": false
     },
     {
       "arena": "MilitaryA",
-      "scene_asset": "VuTemplateAsset/Levels/MilitaryA",
-      "scene_bytes": 1119335,
-      "water_assets": 4,
-      "water_references": 4,
-      "unlinked_water": [],
-      "entity_types": [
+      "template_bytes": 1119335,
+      "original_water_assets": 4,
+      "water_references_resolved": 4,
+      "water_image_formats": {
+        "DXT1": 4
+      },
+      "original_entity_types": [
         "VuWaterSurfaceEntity",
         "VuInfiniteOceanWaveEntity"
       ],
-      "map_formats": {
-        "MilitaryA/WS01": {
-          "width": 256,
-          "height": 512,
-          "format": "DXT1"
-        },
-        "MilitaryA/WS02": {
-          "width": 512,
-          "height": 512,
-          "format": "DXT1"
-        },
-        "MilitaryA/WS03": {
-          "width": 128,
-          "height": 512,
-          "format": "DXT1"
-        },
-        "MilitaryA/WS04": {
-          "width": 256,
-          "height": 128,
-          "format": "DXT1"
-        }
+      "level_template_direct_asset_reference_counts": {
+        "VuStaticModelAsset": 59,
+        "VuAnimatedModelAsset": 1,
+        "VuLightMapAsset": 4,
+        "VuCubeTextureAsset": 2,
+        "VuTextureAsset": 4,
+        "VuMaterialAsset": 1,
+        "VuTemplateAsset": 4
       },
-      "unreadable": [],
-      "render_status": "requires original water entity transforms and surface topology"
+      "unlinked_water": [],
+      "header_decode_failures": 0,
+      "water_surface_rendered": false
     },
     {
       "arena": "OldCityA",
-      "scene_asset": "VuTemplateAsset/Levels/OldCityA",
-      "scene_bytes": 2310950,
-      "water_assets": 1,
-      "water_references": 1,
-      "unlinked_water": [],
-      "entity_types": [
+      "template_bytes": 2310950,
+      "original_water_assets": 1,
+      "water_references_resolved": 1,
+      "water_image_formats": {
+        "DXT1": 1
+      },
+      "original_entity_types": [
         "VuWaterSurfaceEntity",
         "VuInfiniteOceanWaveEntity"
       ],
-      "map_formats": {
-        "OldCityA/WS01_v2": {
-          "width": 1024,
-          "height": 1024,
-          "format": "DXT1"
-        }
+      "level_template_direct_asset_reference_counts": {
+        "VuStaticModelAsset": 21,
+        "VuAnimatedModelAsset": 0,
+        "VuLightMapAsset": 0,
+        "VuCubeTextureAsset": 2,
+        "VuTextureAsset": 3,
+        "VuMaterialAsset": 0,
+        "VuTemplateAsset": 0
       },
-      "unreadable": [],
-      "render_status": "requires original water entity transforms and surface topology"
+      "unlinked_water": [],
+      "header_decode_failures": 0,
+      "water_surface_rendered": false
     },
     {
       "arena": "ParkA",
-      "scene_asset": "VuTemplateAsset/Levels/ParkA",
-      "scene_bytes": 3057174,
-      "water_assets": 38,
-      "water_references": 38,
-      "unlinked_water": [],
-      "entity_types": [
+      "template_bytes": 3057174,
+      "original_water_assets": 38,
+      "water_references_resolved": 38,
+      "water_image_formats": {
+        "DXT1": 36,
+        "ETC1": 2
+      },
+      "original_entity_types": [
         "VuWaterSurfaceEntity",
         "VuWaterRampEntity",
         "VuInfiniteOceanWaveEntity"
       ],
-      "map_formats": {
-        "ParkA/WR01": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkA/WR02": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkA/WR03": {
-          "width": 64,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkA/WR04": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkA/WS01": {
-          "width": 64,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "ParkA/WS02": {
-          "width": 256,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "ParkA/WS03": {
-          "width": 128,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkA/WS04": {
-          "width": 16,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkA/WS05": {
-          "width": 16,
-          "height": 16,
-          "format": "DXT1"
-        },
-        "ParkA/WS06": {
-          "width": 64,
-          "height": 8,
-          "format": "DXT1"
-        },
-        "ParkA/WS07": {
-          "width": 64,
-          "height": 4,
-          "format": "DXT1"
-        },
-        "ParkA/WS08": {
-          "width": 128,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkA/WS09": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkA/WS10": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkA/WS11": {
-          "width": 32,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "ParkA/WS12": {
-          "width": 64,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkA/WS13": {
-          "width": 32,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "ParkA/WS14": {
-          "width": 16,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkA/WS15": {
-          "width": 128,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "ParkA/WS16": {
-          "width": 32,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "ParkA/WS17": {
-          "width": 256,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkA/WS18": {
-          "width": 16,
-          "height": 32,
-          "format": "ETC1"
-        },
-        "ParkA/WS19": {
-          "width": 128,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkA/WS20": {
-          "width": 128,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkA/WS21": {
-          "width": 64,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "ParkA/WS22": {
-          "width": 64,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "ParkA/WS23": {
-          "width": 64,
-          "height": 16,
-          "format": "DXT1"
-        },
-        "ParkA/WS24": {
-          "width": 16,
-          "height": 32,
-          "format": "ETC1"
-        },
-        "ParkA/WS25": {
-          "width": 256,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "ParkA/WS26": {
-          "width": 32,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "ParkA/WS27": {
-          "width": 16,
-          "height": 16,
-          "format": "DXT1"
-        },
-        "ParkA/WS28": {
-          "width": 128,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "ParkA/WS29": {
-          "width": 64,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "ParkA/WS30": {
-          "width": 32,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "ParkA/WS31": {
-          "width": 32,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "ParkA/WS32": {
-          "width": 64,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "ParkA/WS33": {
-          "width": 32,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "ParkA/WS34": {
-          "width": 512,
-          "height": 512,
-          "format": "DXT1"
-        }
+      "level_template_direct_asset_reference_counts": {
+        "VuStaticModelAsset": 62,
+        "VuAnimatedModelAsset": 0,
+        "VuLightMapAsset": 2,
+        "VuCubeTextureAsset": 5,
+        "VuTextureAsset": 7,
+        "VuMaterialAsset": 3,
+        "VuTemplateAsset": 0
       },
-      "unreadable": [],
-      "render_status": "requires original water entity transforms and surface topology"
+      "unlinked_water": [],
+      "header_decode_failures": 0,
+      "water_surface_rendered": false
     },
     {
       "arena": "ParkB",
-      "scene_asset": "VuTemplateAsset/Levels/ParkB",
-      "scene_bytes": 1420240,
-      "water_assets": 19,
-      "water_references": 19,
-      "unlinked_water": [],
-      "entity_types": [
+      "template_bytes": 1420240,
+      "original_water_assets": 19,
+      "water_references_resolved": 19,
+      "water_image_formats": {
+        "DXT1": 19
+      },
+      "original_entity_types": [
         "VuWaterSurfaceEntity",
         "VuWaterRampEntity",
         "VuInfiniteOceanWaveEntity",
         "VuWaterTextureSettingsEntity"
       ],
-      "map_formats": {
-        "ParkB/WR01": {
-          "width": 128,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "ParkB/WR02": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkB/WR03": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkB/WR04": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkB/WR05": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkB/WR06": {
-          "width": 32,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkB/WS01": {
-          "width": 64,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkB/WS02": {
-          "width": 256,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "ParkB/WS03": {
-          "width": 128,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "ParkB/WS04": {
-          "width": 256,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "ParkB/WS05": {
-          "width": 32,
-          "height": 32,
-          "format": "DXT1"
-        },
-        "ParkB/WS06": {
-          "width": 64,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "ParkB/WS07": {
-          "width": 64,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "ParkB/WS08": {
-          "width": 64,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "ParkB/WS09": {
-          "width": 256,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "ParkB/WS10": {
-          "width": 128,
-          "height": 512,
-          "format": "DXT1"
-        },
-        "ParkB/WS11": {
-          "width": 128,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "ParkB/WS12": {
-          "width": 256,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "ParkB/WS13": {
-          "width": 128,
-          "height": 256,
-          "format": "DXT1"
-        }
+      "level_template_direct_asset_reference_counts": {
+        "VuStaticModelAsset": 29,
+        "VuAnimatedModelAsset": 2,
+        "VuLightMapAsset": 0,
+        "VuCubeTextureAsset": 5,
+        "VuTextureAsset": 4,
+        "VuMaterialAsset": 0,
+        "VuTemplateAsset": 0
       },
-      "unreadable": [],
-      "render_status": "requires original water entity transforms and surface topology"
+      "unlinked_water": [],
+      "header_decode_failures": 0,
+      "water_surface_rendered": false
     },
     {
       "arena": "SpaceportA",
-      "scene_asset": "VuTemplateAsset/Levels/SpaceportA",
-      "scene_bytes": 1109375,
-      "water_assets": 9,
-      "water_references": 9,
-      "unlinked_water": [],
-      "entity_types": [
+      "template_bytes": 1109375,
+      "original_water_assets": 9,
+      "water_references_resolved": 9,
+      "water_image_formats": {
+        "DXT1": 9
+      },
+      "original_entity_types": [
         "VuWaterSurfaceEntity",
         "VuInfiniteOceanWaveEntity",
         "VuWaterTextureSettingsEntity"
       ],
-      "map_formats": {
-        "SpaceportA/WS01": {
-          "width": 128,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "SpaceportA/WS02": {
-          "width": 64,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "SpaceportA/WS03": {
-          "width": 256,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "SpaceportA/WS04": {
-          "width": 64,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "SpaceportA/WS05": {
-          "width": 512,
-          "height": 64,
-          "format": "DXT1"
-        },
-        "SpaceportA/WS06": {
-          "width": 64,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "SpaceportA/WS07": {
-          "width": 256,
-          "height": 128,
-          "format": "DXT1"
-        },
-        "SpaceportA/WS08": {
-          "width": 256,
-          "height": 256,
-          "format": "DXT1"
-        },
-        "SpaceportA/WS09": {
-          "width": 256,
-          "height": 128,
-          "format": "DXT1"
-        }
+      "level_template_direct_asset_reference_counts": {
+        "VuStaticModelAsset": 55,
+        "VuAnimatedModelAsset": 1,
+        "VuLightMapAsset": 0,
+        "VuCubeTextureAsset": 4,
+        "VuTextureAsset": 2,
+        "VuMaterialAsset": 0,
+        "VuTemplateAsset": 2
       },
-      "unreadable": [],
-      "render_status": "requires original water entity transforms and surface topology"
+      "unlinked_water": [],
+      "header_decode_failures": 0,
+      "water_surface_rendered": false
     }
   ],
   "limitations": [
     "The water maps are compressed image/data resources, not water surface meshes.",
     "This audit does not decode entity transforms, water vertices, waves or shader properties.",
+    "Resource paths referenced indirectly by prefab templates are not covered by this top-level scene scan.",
     "No resource contents from the game are included in this JSON, only references and metadata."
   ]
 }
