@@ -118,7 +118,7 @@ def build_library(source: pathlib.Path, output: pathlib.Path, levels=LEVELS):
                         try:
                             header = water_map_header(apf, entries[key])
                             water_maps[ref] = {'status': 'indexed', **header}
-                        except (ValueError, OSError, EOFError) as exc:
+                        except Exception as exc:
                             water_maps[ref] = {'status': 'unsupported',
                                                'reason': type(exc).__name__}
                     world_name = 'world/' + arena + '.glb'
