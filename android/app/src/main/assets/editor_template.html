@@ -454,6 +454,7 @@ setEnabled(false);updateSummary();render();
 })(typeof window!=='undefined'?window:null);
 
 </script><script>
+
 /* Riptide Map Lab / Scene 3D alpha. WebGL1, no external libraries.
  * Displays actual collision geometry, not textured visual assets.
  * Touch: orbit (one finger), pan (two fingers), pinch zoom, select by tapping.
@@ -475,6 +476,41 @@ setEnabled(false);updateSummary();render();
   function shader(type,src){const x=gl.createShader(type);gl.shaderSource(x,src);gl.compileShader(x);if(!gl.getShaderParameter(x,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(x));return x;}
   function program(v,f){const p=gl.createProgram();gl.attachShader(p,shader(gl.VERTEX_SHADER,v));gl.attachShader(p,shader(gl.FRAGMENT_SHADER,f));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(p));return {program:p,pos:gl.getAttribLocation(p,'pos'),normal:gl.getAttribLocation(p,'normal'),matrix:gl.getUniformLocation(p,'viewProj'),shift:gl.getUniformLocation(p,'shift'),shade:gl.getUniformLocation(p,'shade')};}
   const smooth=program(versus,fs), flat=program(flatV,flatF);
+  // Diffuse-only texture preview. Original compressed images decoded on the user's phone.
+  const texV=`attribute vec3 pos;attribute vec3 normal;attribute vec2 uv;uniform mat4 viewProj;
+    uniform vec3 shift;varying vec2 vUV;varying float diffuse;
+    void main(){vUV=uv;vec3 n=normalize(normal);diffuse=max(0.25,abs(dot(n,normalize(vec3(.4,-.3,.85)))));
+    gl_Position=viewProj*vec4(pos+shift,1.);}`;
+  const texF=`precision mediump float;uniform sampler2D image;uniform vec4 shade;
+    varying vec2 vUV;varying float diffuse;
+    void main(){vec4 c=texture2D(image,vUV);gl_FragColor=vec4(c.rgb*shade.rgb*diffuse,c.a*shade.a);}`;
+  const textured=program(texV,texF);
+  textured.uv=gl.getAttribLocation(textured.program,'uv');
+  textured.image=gl.getUniformLocation(textured.program,'image');
+  let diffuseCatalog={},materialCatalog={};
+  const gpuTextures=new Map();
+  function getTexture(name){
+    if(!name||!diffuseCatalog[name])return null;
+    if(gpuTextures.has(name))return gpuTextures.get(name);
+    const state={texture:null,loaded:false};gpuTextures.set(name,state);
+    const img=new Image();
+    img.onload=()=>{
+      try{
+        const texture=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,texture);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
+        gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+        const pot=n=>n>0&&(n&(n-1))===0,repeat=pot(img.width)&&pot(img.height);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,repeat?gl.REPEAT:gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,repeat?gl.REPEAT:gl.CLAMP_TO_EDGE);
+        state.loaded=true;state.texture=texture;dirty=true;draw();
+      }catch(e){console.warn('Preview da textura indisponível:',name,e.message);}
+    };
+    img.onerror=()=>console.warn('Imagem PNG não pôde ser lida:',name);
+    img.src='data:image/png;base64,'+diffuseCatalog[name].data;
+    return state;
+  }
   let meshes=[],meshByKey=new Map(),selected='',onlySelected=false,pickMeshes=[],callbacks={},mode='orbit',yaw=-.85,elevation=.64,range=1200,target=[0,0,0],bounds=null,drag=null,dirty=true;
   let viewproj=new Float32Array(16),grid=null,pickFbo=null,pickTex=null,pickDepth=null,pickW=0,pickH=0;
   // First-person inspection: free-flight camera. This is NOT game physics or a playable race.
@@ -514,7 +550,7 @@ setEnabled(false);updateSummary();render();
   function mul(a,b){const o=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)for(let k=0;k<4;k++)o[c*4+r]+=a[k*4+r]*b[c*4+k];return o;}
   function camera(){const ce=Math.cos(elevation);return[target[0]+range*ce*Math.cos(yaw),target[1]+range*ce*Math.sin(yaw),target[2]+range*Math.sin(elevation)];}
   function uploadBuffer(data,itemSize,targetType=gl.ARRAY_BUFFER){const buf=gl.createBuffer();gl.bindBuffer(targetType,buf);gl.bufferData(targetType,data,gl.STATIC_DRAW);return buf;}
-  function makeMesh(key,array){const m=root.RiptideCore.parse(array);const positions=new Float32Array(m.vertexCount*3),normals=new Float32Array(m.vertexCount*3),indices=new Uint16Array(m.indexCount);
+  function makeMesh(key,array,uv=null,groups=null){const m=root.RiptideCore.parse(array);const positions=new Float32Array(m.vertexCount*3),normals=new Float32Array(m.vertexCount*3),indices=new Uint16Array(m.indexCount);
     for(let i=0;i<m.vertexCount;i++)for(let k=0;k<3;k++)positions[i*3+k]=m.vertices[i][k];
     for(let i=0;i<m.indexCount;i++)indices[i]=root.RiptideCore.getIndex(m,i);
     for(let i=0;i<indices.length;i+=3){const a=indices[i]*3,b=indices[i+1]*3,c=indices[i+2]*3;
@@ -524,7 +560,13 @@ setEnabled(false);updateSummary();render();
     const lines=new Uint16Array(indices.length*2);
     for(let i=0;i<indices.length;i+=3){const p=i*2;lines.set([indices[i],indices[i+1],indices[i+1],indices[i+2],indices[i+2],indices[i]],p);}
     const b=m.min,hi=m.max;
-    return {key,positions,normals,indices,lines,min:b,max:hi,shift:[0,0,0],gpu:{positions:uploadBuffer(positions),normals:uploadBuffer(normals),indices:uploadBuffer(indices,2,gl.ELEMENT_ARRAY_BUFFER),lines:uploadBuffer(lines,2,gl.ELEMENT_ARRAY_BUFFER)}};}
+    const validUV=uv instanceof Float32Array&&uv.length===m.vertexCount*2&&
+      uv.every(Number.isFinite)&&Array.isArray(groups)&&groups.length>0;
+    const gpu={positions:uploadBuffer(positions),normals:uploadBuffer(normals),
+      indices:uploadBuffer(indices,2,gl.ELEMENT_ARRAY_BUFFER),lines:uploadBuffer(lines,2,gl.ELEMENT_ARRAY_BUFFER)};
+    if(validUV)gpu.uv=uploadBuffer(uv);
+    return {key,positions,normals,indices,lines,min:b,max:hi,shift:[0,0,0],
+      uv:validUV?uv:null,groups:validUV?groups:null,gpu};}
   function dispose(g){if(!g)return;for(const val of Object.values(g))gl.deleteBuffer(val);}
   function calcBounds(items){let lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];for(const m of items)for(let k=0;k<3;k++){lo[k]=Math.min(lo[k],m.min[k]);hi[k]=Math.max(hi[k],m.max[k]);}return{lo,hi};}
   function focus(full=false){const list=full?meshes:(meshByKey.get(selected)?[meshByKey.get(selected)]:meshes);if(!list.length)return;
@@ -545,6 +587,45 @@ setEnabled(false);updateSummary();render();
     if(p.normal>=0){gl.bindBuffer(gl.ARRAY_BUFFER,m.gpu.normals);gl.vertexAttribPointer(p.normal,3,gl.FLOAT,false,0,0);}
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,kind===gl.LINES?m.gpu.lines:m.gpu.indices);
     gl.drawElements(kind,kind===gl.LINES?m.lines.length:m.indices.length,gl.UNSIGNED_SHORT,0);}
+  function drawTextured(m,color){
+    if(!m.gpu.uv||!m.groups?.length){use(smooth);drawMesh(m,smooth,color,gl.TRIANGLES);return;}
+    use(textured);
+    gl.uniform3fv(textured.shift,m.shift);
+    gl.uniform4fv(textured.shade,color);
+    gl.uniform1i(textured.image,0);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindBuffer(gl.ARRAY_BUFFER,m.gpu.positions);gl.vertexAttribPointer(textured.pos,3,gl.FLOAT,false,0,0);
+    gl.bindBuffer(gl.ARRAY_BUFFER,m.gpu.normals);gl.vertexAttribPointer(textured.normal,3,gl.FLOAT,false,0,0);
+    gl.enableVertexAttribArray(textured.uv);
+    gl.bindBuffer(gl.ARRAY_BUFFER,m.gpu.uv);gl.vertexAttribPointer(textured.uv,2,gl.FLOAT,false,0,0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,m.gpu.indices);
+    const completed=new Uint8Array(m.indices.length);
+    for(const group of m.groups){
+      const start=group.start|0,count=group.count|0;
+      if(count<1||start<0||start+count>m.indices.length)continue;
+      const diffuse=materialCatalog[group.material]?.diffuse;
+      const texture=getTexture(diffuse);
+      if(texture?.loaded){
+        gl.bindTexture(gl.TEXTURE_2D,texture.texture);
+        gl.drawElements(gl.TRIANGLES,count,gl.UNSIGNED_SHORT,start*2);
+      }else{
+        use(smooth);
+        gl.uniform3fv(smooth.shift,m.shift);gl.uniform4fv(smooth.shade,color);
+        gl.bindBuffer(gl.ARRAY_BUFFER,m.gpu.positions);gl.vertexAttribPointer(smooth.pos,3,gl.FLOAT,false,0,0);
+        gl.bindBuffer(gl.ARRAY_BUFFER,m.gpu.normals);gl.vertexAttribPointer(smooth.normal,3,gl.FLOAT,false,0,0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,m.gpu.indices);
+        gl.drawElements(gl.TRIANGLES,count,gl.UNSIGNED_SHORT,start*2);
+        use(textured);gl.uniform3fv(textured.shift,m.shift);gl.uniform4fv(textured.shade,color);
+        gl.uniform1i(textured.image,0);
+        gl.bindBuffer(gl.ARRAY_BUFFER,m.gpu.positions);gl.vertexAttribPointer(textured.pos,3,gl.FLOAT,false,0,0);
+        gl.bindBuffer(gl.ARRAY_BUFFER,m.gpu.normals);gl.vertexAttribPointer(textured.normal,3,gl.FLOAT,false,0,0);
+        gl.bindBuffer(gl.ARRAY_BUFFER,m.gpu.uv);gl.vertexAttribPointer(textured.uv,2,gl.FLOAT,false,0,0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,m.gpu.indices);
+      }
+      completed.fill(1,start,start+count);
+    }
+    gl.disableVertexAttribArray(textured.uv);
+  }
   function render(picking=false){const[w,h]=resize();gl.viewport(0,0,w,h);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);gl.clearColor(...C.bg);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
     viewproj=mul(perspective(w/h),player?look(playerPos,playerPos.map((v,i)=>v+playerForward()[i])):look(camera(),target));
     if(!meshes.length)return;
@@ -552,7 +633,10 @@ setEnabled(false);updateSummary();render();
     use(picking?flat:smooth);
     gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(1,1);
     const visible=onlySelected&&meshByKey.has(selected)?[meshByKey.get(selected)]:meshes;pickMeshes=visible;
-    visible.forEach((m,i)=>{const c=picking?[(i+1&255)/255,((i+1)>>8&255)/255,((i+1)>>16&255)/255,1]:m.key===selected?C.chosen:C.other;drawMesh(m,picking?flat:smooth,c,gl.TRIANGLES);});
+    visible.forEach((m,i)=>{const c=picking?[(i+1&255)/255,((i+1)>>8&255)/255,((i+1)>>16&255)/255,1]:m.uv?[1,1,1,1]:(m.key===selected?C.chosen:C.other);
+      if(!picking&&m.uv)drawTextured(m,c);
+      else {use(picking?flat:smooth);drawMesh(m,picking?flat:smooth,c,gl.TRIANGLES);}
+    });
     gl.disable(gl.POLYGON_OFFSET_FILL);
     if(!picking&&$('scene3d-wire').checked){use(flat);visible.forEach(m=>{if(m.key===selected)drawMesh(m,flat,C.wire,gl.LINES);});}
   }
@@ -597,8 +681,15 @@ setEnabled(false);updateSummary();render();
   canvas.addEventListener('wheel',e=>{e.preventDefault();range=Math.max(MIN_DIST,range*Math.exp(e.deltaY*.001));dirty=true;draw();},{passive:false});
   root.RiptideScene3D={
     on(cb){callbacks=cb||{};},
+    setTextureCatalog(images,materials){
+      diffuseCatalog=images||{};materialCatalog=materials||{};
+      for(const state of gpuTextures.values())if(state.texture)gl.deleteTexture(state.texture);
+      gpuTextures.clear();
+    },
     async loadArena(records){meshes.forEach(m=>dispose(m.gpu));meshes=[];meshByKey.clear();
-      const bad=[];for(const {key,data} of records){try{const m=makeMesh(key,data);meshes.push(m);meshByKey.set(key,m);}catch(e){bad.push(key+': '+e.message);}}
+      const bad=[];for(const {key,data,uv,groups} of records){try{
+        const m=makeMesh(key,data,uv,groups);meshes.push(m);meshByKey.set(key,m);
+      }catch(e){bad.push(key+': '+e.message);}}
       bounds=meshes.length?calcBounds(meshes):null;createGrid();if(meshes.length)focus(true);selectedKey('');if(player)enterPlayer();
       info.textContent=meshes.length+' trechos físicos carregados'+(bad.length?' · '+bad.length+' ignorados':'')+' · arraste para orbitar.';
       return bad;
@@ -624,17 +715,21 @@ setEnabled(false);updateSummary();render();
 </script>
 <script id="private-assets" type="application/json">__EMBEDDED_ASSETS__</script>
 <script>
+
 (async()=>{'use strict';
 const $=s=>document.getElementById(s);
 let bundle=JSON.parse($('private-assets').textContent);
 if(bundle.__external_bundle){const response=await fetch('/arenas_bundle.json');if(!response.ok)throw Error('Falha ao carregar arenas: '+response.status);bundle=await response.json();}
 const visuals=bundle.__visuals||{};delete bundle.__visuals;
+const materials=bundle.__materials||{};delete bundle.__materials;
+const textures=bundle.__textures||{};delete bundle.__textures;
 const editor=window.RiptideEditor;
 const arena=$('arena-select'),zone=$('zone-select'),notes=$('bundle-message');
 const cache=new Map(),modified=new Map(),scene=window.RiptideScene3D||null;
+scene?.setTextureCatalog?.(textures,materials);
 let arenaToken=0;
 let viewMode='arena',layer='collision';
-const visualCache=new Map();
+const visualCache=new Map(),uvCache=new Map();
 $('arena-count').textContent=Object.keys(bundle).length;
 $('mesh-count').textContent=Object.values(bundle).reduce((s,v)=>s+Object.keys(v).length,0);
 const key=()=>arena.value+'/'+zone.value;
@@ -661,6 +756,17 @@ async function getVisual(ar,name){
   const bytes=await inflate(asset.blob);
   if(bytes.byteLength!==asset.size)throw new Error('Modelo visual corrompido: '+name);
   visualCache.set(id,bytes);return bytes;
+}
+async function getVisualUV(ar,name){
+  const id=ar+'/'+name,asset=visuals[ar]?.[name];
+  if(!asset?.uvblob)return null;
+  if(uvCache.has(id))return uvCache.get(id);
+  const bytes=await inflate(asset.uvblob);
+  if(bytes.byteLength!==asset.uvsize||bytes.byteLength%8!==0)
+    throw Error('UVs inválidas do modelo '+name);
+  const uvs=new Float32Array(bytes);
+  uvCache.set(id,uvs);
+  return uvs;
 }
 function modelForSection(section){
   const models=Object.keys(visuals[arena.value]||{});
@@ -696,7 +802,9 @@ async function openSceneArena(){
       }
       for(const name of names){
         const data=await getVisual(ar,name);if(token!==arenaToken)return;
-        records.push({key:name,data});
+        let uv=null;try{uv=await getVisualUV(ar,name);}catch(e){console.warn(e.message);}
+        if(token!==arenaToken)return;
+        records.push({key:name,data,uv,groups:visuals[ar][name]?.groups||null});
       }
     }else{
       let names=Object.keys(bundle[ar]).sort();
