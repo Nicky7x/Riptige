@@ -17,6 +17,7 @@ import zlib
 from dataclasses import dataclass
 
 LEVELS = ('CityA', 'CityB', 'FactoryA', 'FactoryB', 'MilitaryA', 'OldCityA', 'ParkA', 'ParkB', 'SpaceportA')
+RESOURCE_CLASSES = ('VuStaticModelAsset','VuAnimatedModelAsset','VuLightMapAsset','VuCubeTextureAsset','VuTextureAsset','VuMaterialAsset','VuTemplateAsset')
 TYPES = (b'VuWaterSurfaceEntity', b'VuWaterRampEntity', b'VuInfiniteOceanWaveEntity', b'VuWaterTextureSettingsEntity')
 GL_FORMATS = {0x83f1:'DXT1', 0x83f3:'DXT5', 0x8d64:'ETC1', 0x1908:'RGBA', 0x1909:'LUMINANCE'}
 
@@ -107,6 +108,12 @@ def scan_scene(f,entries):
         level='VuTemplateAsset/Levels/'+arena
         if level not in entries:continue
         data=payload(f,entries[level])
+        scene_names=set(data.split(b'\x00'))
+        original_dependencies={}
+        for cls in RESOURCE_CLASSES:
+            original_dependencies[cls]=sorted(
+                key.partition('/')[2] for key in entries
+                if key.startswith(cls+'/') and key.partition('/')[2].encode('utf-8') in scene_names)
         prefix='VuWaterMapAsset/'+arena+'/'
         water=[e for n,e in entries.items() if n.startswith(prefix)]
         matched=[];formats={};unreadable=[]
@@ -121,11 +128,12 @@ def scan_scene(f,entries):
         arenas.append({'arena':arena,'scene_asset':level,'scene_bytes':len(data),
             'water_assets':len(water),'water_references':len(matched),
             'unlinked_water':[e.name.removeprefix('VuWaterMapAsset/') for e in water if e.name.removeprefix('VuWaterMapAsset/') not in matched],
-            'entity_types':classes,'map_formats':formats,'unreadable':unreadable,
+            'entity_types':classes,'scene_resource_dependencies':original_dependencies,'map_formats':formats,'unreadable':unreadable,
             'render_status':'requires original water entity transforms and surface topology'})
     return {'format':'riptide-scene-dependency-audit-v1','arenas':arenas,
             'limitations':['The water maps are compressed image/data resources, not water surface meshes.',
             'This audit does not decode entity transforms, water vertices, waves or shader properties.',
+            'Resource paths referenced indirectly by prefab templates are not covered by this top-level scene scan.',
             'No resource contents from the game are included in this JSON, only references and metadata.']}
 
 def main():
