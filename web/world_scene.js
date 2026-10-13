@@ -235,7 +235,7 @@ mainWorld.addEventListener('click',()=>{
  if(privateLibrary)openArena($('arena-select').value).catch(err=>note(err.message));
  else { $('v07-drawer').hidden=false;note('Importe primeiro a biblioteca privada com as 9 arenas.'); }
 });
-const rail=document.querySelector('#v07-main .v07-rail:last-child')||document.querySelector('#v07-main .v07-rail');
+const rail=document.querySelector?.('#v07-main .v07-rail:last-child')||document.querySelector?.('#v07-main .v07-rail');
 if(rail)rail.append(mainWorld);
 if(root.AndroidBridge?.pickWorldLibrary){
  const importLib=document.createElement('button');
@@ -252,7 +252,7 @@ waterToggle.onclick=()=>{
  waterToggle.textContent=loaded.showWater?'Água: ligada':'Água: oculta';
  recompute();
 };
-$('rw-bar').insertBefore(waterToggle,$('rw-home'));
+$('rw-bar')?.insertBefore?.(waterToggle,$('rw-home'));
 const button=document.createElement('button');button.textContent='Abrir cena 3D (GLB)';button.id='rw-import';button.addEventListener('click',()=>input.click());$('v07-drawer-top').append(button);
 input.addEventListener('change',()=>{const f=input.files?.[0];if(f)activateFile(f);input.value='';});
 jsonInput.addEventListener('change',()=>{const f=jsonInput.files?.[0];if(!f)return;f.text().then(applyJSON).catch(e=>note('JSON inválido: '+e.message));jsonInput.value='';});
