@@ -723,6 +723,9 @@ if(bundle.__external_bundle){const response=await fetch('/arenas_bundle.json');i
 const visuals=bundle.__visuals||{};delete bundle.__visuals;
 const materials=bundle.__materials||{};delete bundle.__materials;
 const textures=bundle.__textures||{};delete bundle.__textures;
+// Both viewers share the SAME private PNG/material cache decoded from this XAPK.
+window.RiptidePrivateTextures={images:textures,materials};
+window.RiptideWorldV09?.setTextureCatalog?.(textures,materials);
 const editor=window.RiptideEditor;
 const arena=$('arena-select'),zone=$('zone-select'),notes=$('bundle-message');
 const cache=new Map(),modified=new Map(),scene=window.RiptideScene3D||null;
@@ -1068,7 +1071,7 @@ function readGLB(array){if(!(array instanceof ArrayBuffer)||array.byteLength<28|
  if(g.nodes.length>MAX_NODES||g.meshes.length>MAX_NODES)fail('Cena grande demais');
  if(g.extensionsRequired?.length)fail('Extensões glTF requeridas não suportadas: '+g.extensionsRequired.join(', '));
  function accessor(id){const a=g.accessors[id],v=g.bufferViews[a?.bufferView];if(!a||!v||v.buffer!==0||a.sparse||a.byteOffset<0||v.byteOffset<0)fail('Accessor GLB não suportado');
- const elem=a.type==='VEC3'?3:a.type==='SCALAR'?1:0,bytes=a.componentType===5126||a.componentType===5125?4:a.componentType===5123?2:a.componentType===5121?1:0;
+ const elem=a.type==='VEC3'?3:a.type==='VEC2'?2:a.type==='SCALAR'?1:0,bytes=a.componentType===5126||a.componentType===5125?4:a.componentType===5123?2:a.componentType===5121?1:0;
  if(!elem||!bytes||a.count>8000000)fail('Atributo GLB inválido');const stride=v.byteStride||elem*bytes;
  if(stride<elem*bytes||stride>256)fail('Stride GLB inválido');const off=(v.byteOffset||0)+(a.byteOffset||0);
  if(off+(a.count?a.count-1:0)*stride+elem*bytes>bin.byteLength)fail('Accessor GLB ultrapassa BIN');
@@ -1079,13 +1082,23 @@ function readGLB(array){if(!(array instanceof ArrayBuffer)||array.byteLength<28|
  const cache=new Map(),geometry=new Map();
  for(let mi=0;mi<g.meshes.length;mi++){
  const m=g.meshes[mi];if(!m.primitives?.length)continue;const groups=[];
- for(const p of m.primitives){if(p.mode!==undefined&&p.mode!==4)continue;let key=p.attributes?.POSITION+'|'+p.indices;
+ for(const p of m.primitives){if(p.mode!==undefined&&p.mode!==4)continue;let key=p.attributes?.POSITION+'|'+p.indices+'|'+(p.attributes?.TEXCOORD_0??'none')+'|'+(p.material??'none');
  if(!geometry.has(key)){
  const pos=cache.get(p.attributes.POSITION)||accessor(p.attributes.POSITION);cache.set(p.attributes.POSITION,pos);
  if(pos.type!=='VEC3'||pos.componentType!==5126)fail('Posições devem ser VEC3 FLOAT');
  let ix;if(p.indices===undefined){ix={array:Uint32Array.from({length:pos.count},(_,i)=>i),type:'SCALAR'};}
  else{ix=cache.get('i'+p.indices)||accessor(p.indices);cache.set('i'+p.indices,ix);}if(ix.type!=='SCALAR'||ix.array.length%3)fail('Triângulos inválidos');
- geometry.set(key,{key,positions:pos.array,indices:ix.array,min:pos.min||[0,0,0],max:pos.max||[0,0,0],group:[]});}
+ let uv=null;
+ if(Number.isInteger(p.attributes?.TEXCOORD_0)){
+   const coords=cache.get('uv'+p.attributes.TEXCOORD_0)||accessor(p.attributes.TEXCOORD_0);
+   cache.set('uv'+p.attributes.TEXCOORD_0,coords);
+   if(coords.type==='VEC2' && coords.componentType===5126 && coords.count===pos.count)
+     uv=coords.array;
+ }
+ const material=Number.isInteger(p.material)&&g.materials?.[p.material]?.name||
+   null;
+ geometry.set(key,{key,positions:pos.array,indices:ix.array,uv,material,
+   min:pos.min||[0,0,0],max:pos.max||[0,0,0]});}
  groups.push(key);
  }m.__riptide=groups;
  }
@@ -1118,17 +1131,48 @@ const wrap=document.createElement('div');wrap.id='rw-world';wrap.innerHTML=`<can
 const input=document.createElement('input');input.type='file';input.accept='.glb,model/gltf-binary,application/octet-stream';input.style.display='none';document.body.append(input);
 const jsonInput=document.createElement('input');jsonInput.type='file';jsonInput.accept='.json,application/json';jsonInput.style.display='none';document.body.append(jsonInput);
 const canvas=$('rw-canvas'),gl=canvas.getContext('webgl',{antialias:true,alpha:false});
-let ext=gl?.getExtension('ANGLE_instanced_arrays'),UINT=gl?.getExtension('OES_element_index_uint'),loaded=null,selected=null,dirty=true,privateLibrary=null,worldLoadToken=0,activeArena=null,cacheGPU=new Map(),batches=[],center=[0,0,0],distance=500,yaw=.7,pitch=.58,vp=null,pointers=new Map(),gesture=null;
+let ext=gl?.getExtension('ANGLE_instanced_arrays'),UINT=gl?.getExtension('OES_element_index_uint'),textureCatalog={},materialCatalog={},textureGPU=new Map(),loaded=null,selected=null,dirty=true,privateLibrary=null,worldLoadToken=0,activeArena=null,cacheGPU=new Map(),batches=[],center=[0,0,0],distance=500,yaw=.7,pitch=.58,vp=null,pointers=new Map(),gesture=null;
 function note(s){$('rw-toast').textContent=s}
 function shader(type,code){const o=gl.createShader(type);gl.shaderSource(o,code);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))fail('Shader: '+gl.getShaderInfoLog(o));return o}
 let program=null,loc=null;
 if(gl){program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,`
-attribute vec3 pos;attribute vec4 m0,m1,m2,m3;uniform mat4 viewProj;varying float shade;
-void main(){vec4 p=mat4(m0,m1,m2,m3)*vec4(pos,1.0);shade=clamp(.48+.003*p.y,.22,.95);gl_Position=viewProj*p;}`));
-gl.attachShader(program,shader(gl.FRAGMENT_SHADER,`precision mediump float;varying float shade;uniform vec4 layerColor;void main(){gl_FragColor=vec4(layerColor.rgb*shade,layerColor.a);}`));gl.linkProgram(program);
+attribute vec3 pos;attribute vec2 uv;attribute vec4 m0,m1,m2,m3;uniform mat4 viewProj;varying float shade;varying vec2 vUV;
+void main(){vec4 p=mat4(m0,m1,m2,m3)*vec4(pos,1.0);shade=clamp(.48+.003*p.y,.22,.95);vUV=uv;gl_Position=viewProj*p;}`));
+gl.attachShader(program,shader(gl.FRAGMENT_SHADER,`precision mediump float;varying float shade;varying vec2 vUV;uniform vec4 layerColor;uniform sampler2D diffuseTex;uniform int textured;void main(){vec4 c=textured==1?texture2D(diffuseTex,vUV):vec4(1.0);if(c.a<0.05)discard;gl_FragColor=vec4(layerColor.rgb*c.rgb*shade,layerColor.a*c.a);}`));gl.linkProgram(program);
 if(!gl.getProgramParameter(program,gl.LINK_STATUS))fail(gl.getProgramInfoLog(program));
-loc={pos:gl.getAttribLocation(program,'pos'),matrix:[0,1,2,3].map(i=>gl.getAttribLocation(program,'m'+i)),vp:gl.getUniformLocation(program,'viewProj'),color:gl.getUniformLocation(program,'layerColor')};}
-function clearGPU(){if(!gl)return;for(const g of cacheGPU.values()){gl.deleteBuffer(g.pos);gl.deleteBuffer(g.idx);}for(const b of batches)gl.deleteBuffer(b.matrixBuffer);cacheGPU.clear();batches=[]}
+loc={pos:gl.getAttribLocation(program,'pos'),uv:gl.getAttribLocation(program,'uv'),matrix:[0,1,2,3].map(i=>gl.getAttribLocation(program,'m'+i)),vp:gl.getUniformLocation(program,'viewProj'),color:gl.getUniformLocation(program,'layerColor'),tex:gl.getUniformLocation(program,'diffuseTex'),textured:gl.getUniformLocation(program,'textured')};}
+function getDiffuse(materialName){
+ const textureName=materialCatalog[materialName]?.diffuse;
+ const record=textureCatalog[textureName];
+ if(!record?.data||!gl)return null;
+ if(textureGPU.has(textureName))return textureGPU.get(textureName);
+ const state={ready:false,texture:null};textureGPU.set(textureName,state);
+ // Never fetch external resources: PNG is decoded locally by Android's importer.
+ if(typeof Image==='undefined')return state;
+ const img=new Image();
+ img.onload=()=>{
+  try{
+   if(!gl||!textureGPU.has(textureName))return;
+   const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);
+   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
+   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
+   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+   state.texture=tex;state.ready=true;dirty=true;draw();
+  }catch(e){console.warn('Textura GLB não suportada:',textureName,e);}
+ };
+ img.onerror=()=>console.warn('PNG difusa inválida:',textureName);
+ img.src='data:image/png;base64,'+record.data;
+ return state;
+}
+function setTextureCatalog(images,materials){
+ textureCatalog=images||{};materialCatalog=materials||{};
+ if(gl)for(const state of textureGPU.values())if(state.texture)gl.deleteTexture(state.texture);
+ textureGPU.clear();dirty=true;draw();
+}
+function clearGPU(){if(!gl)return;for(const g of cacheGPU.values()){gl.deleteBuffer(g.pos);gl.deleteBuffer(g.idx);if(g.uv)gl.deleteBuffer(g.uv);}for(const b of batches)gl.deleteBuffer(b.matrixBuffer);cacheGPU.clear();batches=[]}
 function recompute(){if(!loaded||!gl)return;for(const b of batches)gl.deleteBuffer(b.matrixBuffer);batches=[];
  const sorted=new Map();for(const node of loaded.nodes){if(node.hidden)continue;for(const key of node.geometry||[]){if(!sorted.has(key))sorted.set(key,[]);sorted.get(key).push(node);}}
  // Water uses the ORIGINAL entity placement and dimensions, not a fake arena-wide plane.
@@ -1143,7 +1187,12 @@ function recompute(){if(!loaded||!gl)return;for(const b of batches)gl.deleteBuff
  for(const [key,nodes] of sorted){const resource=loaded.geometry.get(key);if(!resource)continue;let gpu=cacheGPU.get(key);if(!gpu){let indices=resource.indices;let type=indices instanceof Uint32Array?gl.UNSIGNED_INT:indices instanceof Uint8Array?gl.UNSIGNED_BYTE:gl.UNSIGNED_SHORT;
  if(type===gl.UNSIGNED_INT&&!UINT){const maxIndex=indices.reduce((max,v)=>Math.max(max,v),0);if(maxIndex>65535){note('GPU sem índices de 32 bits; parte da cena não será exibida.');continue;}indices=Uint16Array.from(indices);type=gl.UNSIGNED_SHORT;}
  const pos=gl.createBuffer(),idx=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,pos);gl.bufferData(gl.ARRAY_BUFFER,resource.positions,gl.STATIC_DRAW);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,idx);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,indices,gl.STATIC_DRAW);
- gpu={pos,idx,type,count:indices.length};cacheGPU.set(key,gpu);}
+ let uv=null;
+ if(resource.uv&&resource.uv.length===resource.positions.length/3*2){
+  uv=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,uv);
+  gl.bufferData(gl.ARRAY_BUFFER,resource.uv,gl.STATIC_DRAW);
+ }
+ gpu={pos,idx,uv,type,count:indices.length,material:resource.material};cacheGPU.set(key,gpu);}
  const matrices=new Float32Array(nodes.length*16);nodes.forEach((n,i)=>matrices.set(n.matrix,i*16));const matrixBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,matrixBuffer);gl.bufferData(gl.ARRAY_BUFFER,matrices,gl.DYNAMIC_DRAW);
  batches.push({gpu,matrixBuffer,count:nodes.length,nodes,matrices,water:key==='__water_surface__'});
  }dirty=true;draw();}
@@ -1153,11 +1202,23 @@ function bounds(){let lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-I
 function focus(){if(!loaded)return;const b=bounds();center=b.lo.map((v,i)=>(v+b.hi[i])/2);const diag=Math.hypot(...b.lo.map((v,i)=>b.hi[i]-v));distance=Math.max(15,diag*1.4);yaw=.7;pitch=.55;dirty=true;draw();}
 function eye(){return [center[0]+distance*Math.cos(pitch)*Math.sin(yaw),center[1]+distance*Math.sin(pitch),center[2]+distance*Math.cos(pitch)*Math.cos(yaw)]}
 function resize(){const rect=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,1.7),w=Math.max(1,Math.floor(rect.width*dpr)),h=Math.max(1,Math.floor(rect.height*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;dirty=true;}return[w,h]}
-function draw(){if(!loaded||!gl||!wrap.classList.contains('show')||!dirty)return;dirty=false;const[w,h]=resize();gl.viewport(0,0,w,h);gl.enable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.clearColor(.028,.061,.106,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);vp=mul(projection(w/h,distance*10+500),look(eye(),center));gl.useProgram(program);gl.uniformMatrix4fv(loc.vp,false,new Float32Array(vp));
+function draw(){if(!loaded||!gl||!wrap.classList.contains('show')||!dirty)return;dirty=false;const[w,h]=resize();gl.viewport(0,0,w,h);gl.enable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.clearColor(.028,.061,.106,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);vp=mul(projection(w/h,distance*10+500),look(eye(),center));gl.useProgram(program);gl.uniformMatrix4fv(loc.vp,false,new Float32Array(vp));gl.uniform1i(loc.tex,0);
  for(const batch of batches){
  if(batch.water){gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
   gl.uniform4f(loc.color,.07,.63,.88,.55);}
  else {gl.disable(gl.BLEND);gl.depthMask(true);gl.uniform4f(loc.color,.37,.57,.66,1);}
+ const diffuse=!batch.water && batch.gpu.uv && batch.gpu.material
+    ?getDiffuse(batch.gpu.material):null;
+ const textured=!!(diffuse?.ready && diffuse.texture);
+ gl.uniform1i(loc.textured,textured?1:0);
+ if(textured){
+  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,diffuse.texture);
+ }
+ if(loc.uv>=0){
+  if(batch.gpu.uv){gl.bindBuffer(gl.ARRAY_BUFFER,batch.gpu.uv);
+   gl.enableVertexAttribArray(loc.uv);gl.vertexAttribPointer(loc.uv,2,gl.FLOAT,false,0,0);}
+  else{gl.disableVertexAttribArray(loc.uv);gl.vertexAttrib2f(loc.uv,0,0);}
+ }
  gl.bindBuffer(gl.ARRAY_BUFFER,batch.gpu.pos);gl.enableVertexAttribArray(loc.pos);gl.vertexAttribPointer(loc.pos,3,gl.FLOAT,false,0,0);
  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,batch.gpu.idx);gl.bindBuffer(gl.ARRAY_BUFFER,batch.matrixBuffer);
  for(let i=0;i<4;i++){const a=loc.matrix[i];gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,4,gl.FLOAT,false,64,i*16);if(ext)ext.vertexAttribDivisorANGLE(a,1);}
@@ -1185,7 +1246,7 @@ function cleanWater(entities){
  return waters;
 }
 function load(buffer,name,waterMetadata=[]){if(!gl)fail('WebGL indisponível para a visualização de instâncias.');let scene=readGLB(buffer);
- scene.water=cleanWater(waterMetadata);clearGPU();loaded=scene;selected=null;recompute();wrap.classList.add('show');$('rw-title').textContent='Cena: '+name+' · '+loaded.nodes.length+' objetos';$('rw-meta').textContent='Toque para selecionar';focus();note('Cena: '+loaded.nodes.length+' objetos; '+scene.water.length+' superfícies de água com dimensões verificadas (prévia aproximada). Modelos GLB ainda sem materiais/texturas.');$('v07-drawer').hidden=true;}
+ scene.water=cleanWater(waterMetadata);clearGPU();loaded=scene;selected=null;recompute();wrap.classList.add('show');$('rw-title').textContent='Cena: '+name+' · '+loaded.nodes.length+' objetos';$('rw-meta').textContent='Toque para selecionar';focus();note('Cena: '+loaded.nodes.length+' objetos; '+scene.water.length+' superfícies de água com dimensões verificadas (prévia aproximada). Texturas difusas aplicadas onde há UV, material e imagem compatíveis; outras superfícies usam cor simples.');$('v07-drawer').hidden=true;}
 function select(n){selected=n;for(const [k,i] of [['rw-x',12],['rw-y',13],['rw-z',14]])$(k).value=n?Number(n.matrix[i].toFixed(3)):'';
  $('rw-meta').textContent=n?(n.name+' · '+loaded.meshNames[n.mesh]):'Toque para selecionar';dirty=true;draw();}
 function saveScene(){if(!loaded)return;const doc={format:'riptide-world-edit-v1',version:1,units:'glTF_Y_UP',assetSource:'user-selected-private-GLB',entities:loaded.nodes.map(n=>({id:n.id,name:n.name,mesh:loaded.meshNames[n.mesh],meshIndex:n.mesh,matrix:n.matrix.map(x=>Number(x.toFixed(6))),hidden:n.hidden}))};
@@ -1294,7 +1355,8 @@ function end(e){const o=pointers.get(e.pointerId);if(!o)return;pointers.delete(e
  if(best){select(best);note('Selecionado: '+best.name+'. Edite X/Y/Z para mover.')}else note('Nenhum objeto próximo do toque; aproxime a câmera.');}
 canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',e=>pointers.delete(e.pointerId));canvas.addEventListener('wheel',e=>{e.preventDefault();distance*=Math.exp(e.deltaY*.001);dirty=true;draw();},{passive:false});
 root.addEventListener('resize',()=>{dirty=true;draw()});
-root.RiptideWorldV09={parse:readGLB,openFile:activateFile,loadArrayBuffer:load,getScene:()=>loaded,exportScene:saveScene,applyJSON,openArena,refreshLibrary};
+root.RiptideWorldV09={parse:readGLB,openFile:activateFile,loadArrayBuffer:load,getScene:()=>loaded,exportScene:saveScene,applyJSON,openArena,refreshLibrary,setTextureCatalog};
+if(root.RiptidePrivateTextures)setTextureCatalog(root.RiptidePrivateTextures.images,root.RiptidePrivateTextures.materials);
 })(typeof window!=='undefined'?window:null);
 
 </script>
