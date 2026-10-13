@@ -4,12 +4,15 @@ const $=s=>document.getElementById(s);
 let bundle=JSON.parse($('private-assets').textContent);
 if(bundle.__external_bundle){const response=await fetch('/arenas_bundle.json');if(!response.ok)throw Error('Falha ao carregar arenas: '+response.status);bundle=await response.json();}
 const visuals=bundle.__visuals||{};delete bundle.__visuals;
+const materials=bundle.__materials||{};delete bundle.__materials;
+const textures=bundle.__textures||{};delete bundle.__textures;
 const editor=window.RiptideEditor;
 const arena=$('arena-select'),zone=$('zone-select'),notes=$('bundle-message');
 const cache=new Map(),modified=new Map(),scene=window.RiptideScene3D||null;
+scene?.setTextureCatalog?.(textures,materials);
 let arenaToken=0;
 let viewMode='arena',layer='collision';
-const visualCache=new Map();
+const visualCache=new Map(),uvCache=new Map();
 $('arena-count').textContent=Object.keys(bundle).length;
 $('mesh-count').textContent=Object.values(bundle).reduce((s,v)=>s+Object.keys(v).length,0);
 const key=()=>arena.value+'/'+zone.value;
@@ -36,6 +39,17 @@ async function getVisual(ar,name){
   const bytes=await inflate(asset.blob);
   if(bytes.byteLength!==asset.size)throw new Error('Modelo visual corrompido: '+name);
   visualCache.set(id,bytes);return bytes;
+}
+async function getVisualUV(ar,name){
+  const id=ar+'/'+name,asset=visuals[ar]?.[name];
+  if(!asset?.uvblob)return null;
+  if(uvCache.has(id))return uvCache.get(id);
+  const bytes=await inflate(asset.uvblob);
+  if(bytes.byteLength!==asset.uvsize||bytes.byteLength%8!==0)
+    throw Error('UVs inválidas do modelo '+name);
+  const uvs=new Float32Array(bytes);
+  uvCache.set(id,uvs);
+  return uvs;
 }
 function modelForSection(section){
   const models=Object.keys(visuals[arena.value]||{});
@@ -71,7 +85,9 @@ async function openSceneArena(){
       }
       for(const name of names){
         const data=await getVisual(ar,name);if(token!==arenaToken)return;
-        records.push({key:name,data});
+        let uv=null;try{uv=await getVisualUV(ar,name);}catch(e){console.warn(e.message);}
+        if(token!==arenaToken)return;
+        records.push({key:name,data,uv,groups:visuals[ar][name]?.groups||null});
       }
     }else{
       let names=Object.keys(bundle[ar]).sort();
