@@ -6,6 +6,9 @@ if(bundle.__external_bundle){const response=await fetch('/arenas_bundle.json');i
 const visuals=bundle.__visuals||{};delete bundle.__visuals;
 const materials=bundle.__materials||{};delete bundle.__materials;
 const textures=bundle.__textures||{};delete bundle.__textures;
+// Both viewers share the SAME private PNG/material cache decoded from this XAPK.
+window.RiptidePrivateTextures={images:textures,materials};
+window.RiptideWorldV09?.setTextureCatalog?.(textures,materials);
 const editor=window.RiptideEditor;
 const arena=$('arena-select'),zone=$('zone-select'),notes=$('bundle-message');
 const cache=new Map(),modified=new Map(),scene=window.RiptideScene3D||null;
