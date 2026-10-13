@@ -14,7 +14,7 @@ import pathlib
 import tempfile
 import zipfile
 
-from scene_dependencies import LEVELS
+from scene_dependencies import LEVELS, index_apf, local_apf, water_map_header
 
 FORMAT = 'riptide-private-world-library-v1'
 # Source game uses XY horizontal / Z up. glTF uses Y up.
@@ -97,12 +97,28 @@ def build_library(source: pathlib.Path, output: pathlib.Path, levels=LEVELS):
                     if not glb.is_file() or glb.stat().st_size < 28:
                         raise ValueError('GLB não foi gerado para ' + arena)
                     water = water_records(resolve(source, arena))
+                    # Original water-map metadata is indexed by the *actual* WaterMap
+                    # reference on each surface, not guessed by proximity or arena name.
+                    water_maps = {}
+                    with local_apf(source) as apf:
+                        entries = index_apf(apf)
+                        for ref in sorted({w['waterMap'] for w in water if w['waterMap']}):
+                            key = 'VuWaterMapAsset/' + ref.removeprefix('VuWaterMapAsset/')
+                            if key not in entries:
+                                water_maps[ref] = {'status': 'missing'}
+                                continue
+                            try:
+                                header = water_map_header(apf, entries[key])
+                                water_maps[ref] = {'status': 'indexed', **header}
+                            except (ValueError, OSError, EOFError) as exc:
+                                water_maps[ref] = {'status': 'unsupported',
+                                                   'reason': type(exc).__name__}
                     world_name = 'world/' + arena + '.glb'
                     water_name = 'water/' + arena + '.json'
                     archive.write(glb, world_name, compress_type=zipfile.ZIP_STORED)
                     archive.writestr(water_name, json.dumps({
                         'format': 'riptide-water-preview-v1',
-                        'arena': arena, 'entities': water
+                        'arena': arena, 'entities': water, 'waterMaps': water_maps
                     }, separators=(',', ':')))
                     manifest['arenas'][arena] = {
                         'glb': world_name,
@@ -110,6 +126,8 @@ def build_library(source: pathlib.Path, output: pathlib.Path, levels=LEVELS):
                         'models': counts.get('exported_instances', 0),
                         'waterEntities': len(water),
                         'drawableWater': sum(bool(w['drawable']) for w in water),
+                        'indexedWaterMaps': sum(m['status']=='indexed' for m in water_maps.values()),
+                        'uvMaterialParts': counts.get('uv_material_parts', 0),
                     }
                 archive.writestr('manifest.json', json.dumps(manifest, indent=2))
         tmp.replace(output)
